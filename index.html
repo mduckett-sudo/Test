@@ -951,18 +951,27 @@ navItems.forEach(item => item.addEventListener("click", () => {
 }));
 
 function computeAccess(profile){
-  const role = String(profile?.role ?? "").trim().toLowerCase();
-  const adminRole = String(profile?.admin_role ?? "").trim().toLowerCase();
+  const adminRole = String(profile?.admin_role ?? "").trim();
 
-  const isAdminRole = (adminRole === "admin" || adminRole === "fire chief");
-  const isAdmin = (role === "admin") || isAdminRole;
-  const isOfficer = isAdmin || (role === "officer");
-  const isInstructor = isOfficer || (role === "instructor");
+  const admin =
+    adminRole === "Admin" ||
+    adminRole === "Fire Chief";
 
-  const emsInstr = isInstructor;
-  const fireInstr = isInstructor;
+  const emsInstr =
+    !!profile?.is_ems_instructor ||
+    admin;
 
-  return { admin:isAdmin, officer:isOfficer, instructor:isInstructor, emsInstr, fireInstr };
+  const fireInstr =
+    !!profile?.is_fire_instructor ||
+    admin;
+
+  const instructor = emsInstr || fireInstr;
+
+  // You do not currently have an "Officer" column.
+  // For now, treat Admin as Officer-level.
+  const officer = admin;
+
+  return { admin, officer, instructor, emsInstr, fireInstr };
 }
 
 function gateNav(){
@@ -1302,7 +1311,10 @@ async function refreshAll(){
     currentCandidate = (cand && cand[0]) ? cand[0] : null;
 
     // Sidebar lines
-    setText("whoLine", `${currentProfile.full_name ?? "User"} • ${currentProfile.role ?? "—"}`);
+    const title =
+    access.admin ? "Admin" :
+    access.instructor ? "Instructor" :
+    "Firefighter";
     setText("stationLine", `Station ${String(currentProfile.station ?? "—")}`);
     setText("emsLine", `EMS: ${String(currentProfile.ems_level ?? "—")}`);
     setText("fireLine", `Fire: ${String(currentProfile.fire_level ?? "—")}`);
@@ -1673,6 +1685,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
