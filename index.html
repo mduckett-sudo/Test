@@ -807,6 +807,15 @@ function setLastError(msg){
   $("lastErrorDump").textContent = String(msg ?? "");
 }
 
+function normalizeEnum(value, allowed, fallback){
+  if (value == null) return fallback;
+  const s = String(value).trim();
+  if (allowed.includes(s)) return s;
+  // case-insensitive match
+  const hit = allowed.find(v => v.toLowerCase() === s.toLowerCase());
+  return hit ?? fallback;
+}
+
 // ---------------- Supabase REST (no CDN) ----------------
 const AUTH_URL = () => `${SUPABASE_URL}/auth/v1`;
 const REST_URL = () => `${SUPABASE_URL}/rest/v1`;
@@ -1668,4 +1677,5 @@ init();
 </script>
 </body>
 </html>
+
 
