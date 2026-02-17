@@ -1258,19 +1258,24 @@ const tmFireBtn = $("tmFireBtn");
 const tmEmsBtn = $("tmEmsBtn");
 const tmModeHint = $("tmModeHint");
 
-function setTrainingMode(mode){
+async function setTrainingMode(mode){
   trainingMode = mode === "ems" ? "ems" : "fire";
+
   tmFireBtn.classList.toggle("active", trainingMode === "fire");
   tmEmsBtn.classList.toggle("active", trainingMode === "ems");
+
   tmModeHint.textContent = "Theme: " + (trainingMode === "ems" ? "EMS" : "Fire");
 
-  // Only apply theme if we are currently on trainingManager page
-  const isOnTM = document.getElementById("page-trainingManager").style.display !== "none";
+  const isOnTM =
+    document.getElementById("page-trainingManager").style.display !== "none";
+
   if (isOnTM){
     setTheme(trainingMode === "ems" ? "ems" : "fire");
+
+    // ✅ Refresh queue immediately when switching tracks
+    await loadQueue();
   }
 }
-
 tmFireBtn.addEventListener("click", () => setTrainingMode("fire"));
 tmEmsBtn.addEventListener("click", () => setTrainingMode("ems"));
 
@@ -2166,6 +2171,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
