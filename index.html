@@ -1186,6 +1186,15 @@ async function restPatch(table, patchObj, filters){
   });
 }
 
+  async function restRpc(fnName, payload){
+  const url = `${REST_URL()}/rpc/${fnName}`;
+  return await fetchJson(url, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload || {})
+  });
+}
+
 // ---------------- State ----------------
 let session = null;     // { access_token, refresh_token, user }
 let currentProfile = null;
@@ -2003,5 +2012,6 @@ init();
 </script>
 </body>
 </html>
+
 
 
