@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Department Portal (Static HTML + Supabase)</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --stroke:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.62);
+      --shadow:0 18px 48px rgba(0,0,0,.45);
+      --radius:18px; --radius2:14px;
+
+      --good:#2ee59d;
+      --warn:#ffcc66;
+      --bad:#ff5c7a;
+      --info:#7aa7ff;
+
+      --card:rgba(255,255,255,.05);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:
+        radial-gradient(1200px 800px at 15% 10%, rgba(122,167,255,.22), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(46,229,157,.14), transparent 55%),
+        radial-gradient(900px 600px at 75% 90%, rgba(255,92,122,.10), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+    button,input,select,textarea{font:inherit;color:inherit}
+    .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    .sidebar{
+      position:sticky; top:0; height:100vh;
+      padding:22px;
+      border-right:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      backdrop-filter: blur(10px);
+    }
+    .brand{
+      display:flex; gap:12px; align-items:center;
+      padding:12px; border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
+    }
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 55%),
+        linear-gradient(135deg, rgba(122,167,255,.85), rgba(46,229,157,.85));
+      display:grid;place-items:center;
+      border:1px solid rgba(255,255,255,.18);
+    }
+    .brand h1{margin:0;font-size:14px;letter-spacing:.3px;line-height:1.2}
+    .brand .sub{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
+    .sideCard{
+      margin-top:14px; padding:14px;
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.045);
+      border:1px solid var(--stroke);
+    }
+    .sideCard h3{margin:0 0 10px 0;font-size:13px;letter-spacing:.2px}
+    .metaRow{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:12px;flex-wrap:wrap}
+    .badge{
+      font-size:12px; padding:3px 8px; border-radius:999px;
+      border:1px solid var(--stroke);
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+      white-space:nowrap;
+    }
+    .badge.good{border-color:rgba(46,229,157,.35); background:rgba(46,229,157,.10); color:rgba(46,229,157,.95)}
+    .badge.warn{border-color:rgba(255,204,102,.35); background:rgba(255,204,102,.10); color:rgba(255,204,102,.95)}
+    .badge.bad{border-color:rgba(255,92,122,.35); background:rgba(255,92,122,.10); color:rgba(255,92,122,.95)}
+    .badge.info{border-color:rgba(122,167,255,.35); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
+    .nav{margin-top:14px; display:flex; flex-direction:column; gap:8px}
+    .nav .item{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:14px;
+      border:1px solid transparent;
+      color:var(--muted); cursor:pointer; user-select:none;
+    }
+    .nav .item:hover{background:rgba(255,255,255,.05); color:var(--text)}
+    .nav .item.active{
+      background:rgba(122,167,255,.12);
+      border-color:rgba(122,167,255,.25);
+      color:var(--text);
+    }
+    .pill{
+      margin-left:auto; font-size:12px; padding:3px 9px; border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+    }
+    .main{padding:22px 26px 36px}
+    .topbar{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding:14px; border-radius:var(--radius);
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
+      box-shadow:var(--shadow);
+      flex-wrap:wrap;
+    }
+    .search{
+      flex:1; min-width:220px;
+      display:flex; gap:10px; align-items:center;
+      padding:10px 12px; border-radius:14px;
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .search input{width:100%; border:0; outline:0; background:transparent; font-size:14px}
+    .search input::placeholder{color:rgba(255,255,255,.42)}
+    .rightTools{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .btn{
+      padding:10px 12px; border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.045);
+      color:var(--text); cursor:pointer; user-select:none;
+      display:inline-flex; gap:10px; align-items:center;
+      transition:transform .06s ease, background .12s ease, border-color .12s ease;
+    }
+    .btn:hover{background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.18)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{border-color:rgba(46,229,157,.32); background:rgba(46,229,157,.12)}
+    .btn.primary:hover{background:rgba(46,229,157,.16); border-color:rgba(46,229,157,.42)}
+    .btn.danger{border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.12)}
+    .pageHead{
+      margin:18px 4px 14px;
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+      flex-wrap:wrap;
+    }
+    .pageHead h2{margin:0; font-size:18px; letter-spacing:.2px}
+    .pageHead p{margin:6px 0 0 0; font-size:13px; color:var(--muted)}
+    .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
+    .stats{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin:14px 0 12px}
+    .stat{
+      padding:14px; border-radius:var(--radius);
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
+      box-shadow:0 14px 38px rgba(0,0,0,.24);
+      min-height:92px;
+    }
+    .stat .k{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:10px}
+    .stat .v{margin-top:10px; font-size:22px; font-weight:700; letter-spacing:.2px}
+    .grid{display:grid; grid-template-columns:1.35fr .65fr; gap:12px; margin-top:12px}
+    .panel{
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
+      box-shadow:0 18px 48px rgba(0,0,0,.24);
+      overflow:hidden;
+    }
+    .panelHead{
+      padding:14px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      flex-wrap:wrap;
+    }
+    .panelHead h3{margin:0; font-size:13px; letter-spacing:.25px}
+    .panelHead .small{font-size:12px; color:var(--muted)}
+    .panelBody{padding:14px}
+    .card{
+      padding:12px; border-radius:var(--radius2);
+      background:rgba(0,0,0,.16);
+      border:1px solid rgba(255,255,255,.10);
+      margin-bottom:10px;
+    }
+    .card h4{margin:0; font-size:13px; letter-spacing:.2px}
+    .card p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
+    .table{width:100%; border-collapse:collapse}
+    .table th,.table td{
+      text-align:left; padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      font-size:13px; vertical-align:top;
+    }
+    .table th{
+      font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.25px;
+      background:rgba(0,0,0,.12);
+    }
+    .row:hover td{background:rgba(255,255,255,.04)}
+    .miniBtn{
+      padding:7px 10px; border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      cursor:pointer; color:var(--text); font-size:12px;
+    }
+    .miniBtn:hover{background:rgba(255,255,255,.07)}
+    .needs{display:flex; flex-wrap:wrap; gap:6px}
+    .tag{
+      font-size:12px; padding:4px 8px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .tag.good{border-color:rgba(46,229,157,.30); background:rgba(46,229,157,.10); color:rgba(46,229,157,.95)}
+    .tag.warn{border-color:rgba(255,204,102,.28); background:rgba(255,204,102,.10); color:rgba(255,204,102,.95)}
+    .tag.bad{border-color:rgba(255,92,122,.30); background:rgba(255,92,122,.10); color:rgba(255,92,122,.95)}
+    .tag.info{border-color:rgba(122,167,255,.30); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
+    .progressWrap{display:flex; gap:10px; align-items:center; min-width:170px}
+    .bar{flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.10)}
+    .fill{height:100%; border-radius:999px; background:linear-gradient(90deg, rgba(122,167,255,.95), rgba(46,229,157,.95)); width:0%}
+    .pct{font-size:12px; color:var(--muted); white-space:nowrap}
+
+    /* Login */
+    .center{min-height:100vh; display:grid; place-items:center; padding:22px}
+    .loginCard{
+      width:min(520px, 100%);
+      padding:18px;
+      border-radius:22px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 30px 90px rgba(0,0,0,.45);
+      backdrop-filter: blur(14px);
+    }
+    .field{display:flex; flex-direction:column; gap:6px; margin-top:10px}
+    .field label{font-size:12px; color:var(--muted)}
+    .field input,.field select,.field textarea{
+      width:100%; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      padding:10px; outline:none; font-size:13px;
+    }
+    .hint{font-size:12px; color:var(--muted); line-height:1.45}
+    .err{margin-top:10px; color:rgba(255,92,122,.95); font-size:12px}
+    .ok{margin-top:10px; color:rgba(46,229,157,.95); font-size:12px}
+
+    /* Modal */
+    .overlay{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; padding:18px; z-index:50}
+    .overlay.show{display:flex}
+    .modal{
+      width:min(920px, 100%);
+      border-radius:22px;
+      background:rgba(15,22,38,.78);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 30px 90px rgba(0,0,0,.6);
+      backdrop-filter: blur(16px);
+      overflow:hidden;
+    }
+    .modalHead{
+      display:flex; justify-content:space-between; gap:10px;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .modalHead h3{margin:0; font-size:14px}
+    .modalBody{display:grid; grid-template-columns:1fr 340px; min-height:380px}
+    .rubric{padding:16px; border-right:1px solid rgba(255,255,255,.10)}
+    .sideForm{padding:16px; display:flex; flex-direction:column; gap:12px}
+    textarea{min-height:120px; resize:vertical}
+
+    @media (max-width: 980px){
+      .shell{grid-template-columns:1fr}
+      .sidebar{position:relative; height:auto}
+      .grid{grid-template-columns:1fr}
+      .stats{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .modalBody{grid-template-columns:1fr}
+      .rubric{border-right:0; border-bottom:1px solid rgba(255,255,255,.10)}
+    }
+    @media (max-width: 520px){
+      .stats{grid-template-columns:1fr}
+      .search{width:100%}
+      .rightTools{width:100%; justify-content:space-between}
+    }
+  </style>
+</head>
+
+<body>
+
+<section id="loginView" class="center" style="display:none;">
+  <div class="loginCard">
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <div style="font-weight:800; letter-spacing:.2px;">Department Portal</div>
+        <div class="hint">Static HTML + Supabase (Auth + Database + RLS)</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h4>Paste your Supabase keys</h4>
+      <p>Open this file in a text editor and set <b>SUPABASE_URL</b> and <b>SUPABASE_ANON_KEY</b> in the script at the bottom.</p>
+    </div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="you@department.org" required />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" placeholder="••••••••" required />
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+        <button class="btn primary" type="submit">Sign in</button>
+        <button class="btn" type="button" id="signUpBtn">Create account</button>
+      </div>
+
+      <div id="loginErr" class="err" style="display:none;"></div>
+      <div id="loginOk" class="ok" style="display:none;"></div>
+      <div class="hint" style="margin-top:10px;">
+        Tip: You can also create users in Supabase → Authentication → Users.
+      </div>
+    </form>
+  </div>
+</section>
+
+<section id="appView" style="display:none;">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Department Portal <span class="sub">Single login • Role-based access</span></h1>
+        </div>
+      </div>
+
+      <div class="sideCard">
+        <h3>Active Profile</h3>
+        <div class="metaRow">
+          <span class="badge info" id="whoLine">Loading…</span>
+        </div>
+        <div class="metaRow" style="margin-top:10px;">
+          <span class="badge" id="stationLine">Station</span>
+          <span class="badge" id="shiftLine">Shift</span>
+        </div>
+        <div class="metaRow" style="margin-top:10px;">
+          <span class="badge" id="emsLine">EMS</span>
+          <span class="badge" id="fireLine">Fire</span>
+          <span class="badge" id="aoLine">AO</span>
+        </div>
+        <div class="metaRow" style="margin-top:10px;">
+          <span class="badge" id="staffLine">Access</span>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <div class="item active" data-page="home"><span>Home</span><span class="pill">Widgets</span></div>
+        <div class="item" data-page="training"><span>Training</span><span class="pill" id="trainingPill">My</span></div>
+        <div class="item" data-page="evaluations" data-staff="true"><span>Evaluations</span><span class="pill">Staff</span></div>
+        <div class="item" data-page="inventory" data-staff="officer"><span>Inventory</span><span class="pill">Later</span></div>
+        <div class="item" data-page="settings"><span>Settings</span></div>
+      </nav>
+
+      <div class="sideCard">
+        <h3>Notes</h3>
+        <p class="hint" style="margin:0;">
+          UI gating is cosmetic; your Supabase RLS policies are the real security.
+        </p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search" role="search">
+          <span style="opacity:.8;">🔎</span>
+          <input placeholder="Search (visual only for now) …" />
+        </div>
+
+        <div class="rightTools">
+          <button class="btn" id="refreshBtn">Refresh</button>
+          <button class="btn danger" id="logoutBtn">Log out</button>
+        </div>
+      </div>
+
+      <section id="page-home">
+        <div class="pageHead">
+          <div>
+            <h2>Home Dashboard</h2>
+            <p>Personalized data based on your access level.</p>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="goTrainingBtn">Go to Training</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k"><span>Weather</span><span class="badge">Mock</span></div>
+            <div class="v" style="font-size:18px; font-weight:800;">62°F • Clear</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;">(Later we can pull real weather by station.)</div>
+          </div>
+          <div class="stat">
+            <div class="k"><span>My Candidate</span><span class="badge info">RLS</span></div>
+            <div class="v" style="font-size:18px; font-weight:800;" id="candidateName">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="candidateMeta">—</div>
+          </div>
+          <div class="stat">
+            <div class="k"><span>Progress</span><span class="badge">Training</span></div>
+            <div class="v" id="progressLine">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="progressSub">—</div>
+          </div>
+          <div class="stat">
+            <div class="k"><span>Access</span><span class="badge">Policy</span></div>
+            <div class="v" style="font-size:18px; font-weight:800;" id="accessLine">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;">RLS decides what each person can see.</div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <div class="panelHead">
+              <div>
+                <h3>What’s Next</h3>
+                <div class="small" id="whatsNextSub">Loading…</div>
+              </div>
+              <span class="badge" id="whatsNextBadge">—</span>
+            </div>
+            <div class="panelBody" id="whatsNextBody"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panelHead">
+              <div>
+                <h3>Quick Actions</h3>
+                <div class="small">Based on your access</div>
+              </div>
+              <span class="badge">Live</span>
+            </div>
+            <div class="panelBody" id="quickActions"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-training" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Training</h2>
+            <p id="trainingSub">Your requirements and progress.</p>
+          </div>
+          <div class="actions" id="trainingActions">
+            <button class="btn" id="refreshTrainingBtn">Refresh</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panelHead">
+            <div>
+              <h3>Requirements</h3>
+              <div class="small">From <code>candidate_requirements</code> joined to <code>requirements</code>.</div>
+            </div>
+            <span class="badge" id="trainingCount">—</span>
+          </div>
+          <div class="panelBody" id="trainingTableWrap"></div>
+        </div>
+      </section>
+
+      <section id="page-evaluations" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Evaluations</h2>
+            <p>Staff view: pick a candidate and submit an evaluation.</p>
+          </div>
+          <div class="actions">
+            <button class="btn" id="refreshEvalsBtn">Refresh</button>
+            <button class="btn primary" id="openEvalBtn">Start Evaluation</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panelHead">
+            <div>
+              <h3>Candidate Queue</h3>
+              <div class="small">Shows what your account is allowed to see (RLS).</div>
+            </div>
+            <span class="badge" id="queueCount">—</span>
+          </div>
+          <div id="queueWrap"></div>
+        </div>
+      </section>
+
+      <section id="page-inventory" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Inventory</h2>
+            <p>Placeholder. We’ll add this module later.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panelHead">
+            <h3>Coming soon</h3>
+            <span class="badge">Module</span>
+          </div>
+          <div class="panelBody">
+            <div class="card">
+              <h4>Future features</h4>
+              <p>Low stock • Expirations • Check-out logs • Station transfers</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-settings" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Settings</h2>
+            <p>Basic account info and debugging.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panelHead">
+            <h3>Debug</h3>
+            <span class="badge">Useful</span>
+          </div>
+          <div class="panelBody">
+            <div class="card">
+              <h4>Session</h4>
+              <pre id="sessionDump" style="white-space:pre-wrap;margin:0;color:rgba(255,255,255,.78);font-size:12px;"></pre>
+            </div>
+            <div class="card">
+              <h4>Profile (raw)</h4>
+              <pre id="profileDump" style="white-space:pre-wrap;margin:0;color:rgba(255,255,255,.78);font-size:12px;"></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</section>
+
+<div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Evaluation Modal">
+  <div class="modal">
+    <div class="modalHead">
+      <h3>Submit Evaluation</h3>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <span class="badge">Writes to DB</span>
+        <button class="btn" id="closeEvalBtn">Close</button>
+      </div>
+    </div>
+
+    <div class="modalBody">
+      <div class="rubric">
+        <div class="card">
+          <h4>How this works</h4>
+          <p>On submit, we create a row in <code>evaluations</code> and update the matching row in <code>candidate_requirements</code>.</p>
+        </div>
+        <div class="card">
+          <h4>Rubric (mock)</h4>
+          <p>Visual placeholder. Later we’ll build real rubrics per skill.</p>
+          <div class="needs" style="margin-top:10px;">
+            <span class="tag info">Scene safety / PPE</span>
+            <span class="tag">Primary assessment</span>
+            <span class="tag warn">Critical steps</span>
+            <span class="tag">Reassessment</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sideForm">
+        <div class="field">
+          <label>Candidate</label>
+          <select id="evalCandidate"></select>
+        </div>
+
+        <div class="field">
+          <label>Requirement</label>
+          <select id="evalRequirement"></select>
+        </div>
+
+        <div class="field">
+          <label>Result</label>
+          <select id="evalResult">
+            <option value="passed">Passed</option>
+            <option value="redo">Redo</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Critical Fail</label>
+          <select id="evalCritical">
+            <option value="false">No</option>
+            <option value="true">Yes — Critical Fail</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="evalNotes" placeholder="Remediation notes / strengths / follow-up."></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn primary" id="submitEvalBtn">Submit</button>
+          <button class="btn" id="markCredentialedBtn" title="Will only mark if all requirements passed">Mark Credentialed</button>
+        </div>
+
+        <div id="evalErr" class="err" style="display:none;"></div>
+        <div id="evalOk" class="ok" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<script>
+  /***********************************************************************
+   * ✅ SET THESE TWO VALUES (Supabase → Project Settings → API)
+   **********************************************************************/
+  const SUPABASE_URL = "https://xjaihdmbblieyzkltvmm.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqYWloZG1iYmxpZXl6a2x0dm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyOTY3MzcsImV4cCI6MjA4Njg3MjczN30.eR8C_ororBpLxSXfuLM8Q6fKvKQnCVRcZnNEH2pM4jA";
+  /**********************************************************************/
+
+  const $ = (id) => document.getElementById(id);
+  const show = (el) => el.style.display = "";
+  const hide = (el) => el.style.display = "none";
+  const setText = (id, text) => { const el = $(id); if (el) el.textContent = text; };
+
+  function keysMissing() {
+    return !SUPABASE_URL || !SUPABASE_ANON_KEY ||
+      SUPABASE_URL.includes("PASTE_") || SUPABASE_ANON_KEY.includes("PASTE_");
+  }
+
+  const loginView = $("loginView");
+  const appView = $("appView");
+
+  const pages = ["home","training","evaluations","inventory","settings"];
+  const navItems = Array.from(document.querySelectorAll("#nav .item"));
+
+  function switchPage(page){
+    navItems.forEach(i => i.classList.toggle("active", i.dataset.page === page));
+    pages.forEach(p => {
+      const el = document.getElementById("page-" + p);
+      if (el) el.style.display = (p === page) ? "" : "none";
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  navItems.forEach(item => item.addEventListener("click", () => switchPage(item.dataset.page)));
+
+  // Modal
+  const overlay = $("overlay");
+  $("closeEvalBtn").addEventListener("click", () => overlay.classList.remove("show"));
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.classList.remove("show"); });
+
+  // Supabase
+  let supabase = null;
+
+  // State
+  let currentUser = null;
+  let currentProfile = null;
+  let currentCandidate = null;
+  let isStaff = false;
+  let canInventory = false;
+  let cachedRequirements = [];
+  let cachedCandidates = [];
+
+  function computeAccess(profile){
+    const adminRole = (profile?.admin_role ?? "").toString().toLowerCase();
+    const isAdmin = adminRole === "admin" || adminRole === "fire_chief";
+    const isEmsInstr = !!profile?.is_ems_instructor;
+    const isFireInstr = !!profile?.is_fire_instructor;
+
+    const roleTxt = (profile?.role ?? profile?.Role ?? "").toString().toLowerCase();
+    const instrTxt = (profile?.instructor_status ?? profile?.Instructor_Status ?? "").toString().toLowerCase();
+
+    const fallbackInstr = instrTxt.includes("instructor");
+    const fallbackAdmin = roleTxt.includes("admin") || roleTxt.includes("chief");
+
+    const staff = isAdmin || isEmsInstr || isFireInstr || fallbackInstr || fallbackAdmin;
+    const inventoryOk = isAdmin || roleTxt.includes("officer");
+
+    return { staff, inventoryOk, isAdmin };
+  }
+
+  function gateNav(){
+    const evalItem = navItems.find(x => x.dataset.page === "evaluations");
+    const invItem = navItems.find(x => x.dataset.page === "inventory");
+
+    if (evalItem) evalItem.style.display = isStaff ? "" : "none";
+    if (invItem) invItem.style.display = canInventory ? "" : "none";
+    setText("trainingPill", isStaff ? "All" : "My");
+  }
+
+  $("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    $("loginErr").style.display = "none";
+    $("loginOk").style.display = "none";
+
+    if (keysMissing()) {
+      $("loginErr").style.display = "";
+      $("loginErr").textContent = "Missing keys: Set SUPABASE_URL and SUPABASE_ANON_KEY in the script at the bottom of this file.";
+      return;
+    }
+
+    const email = $("email").value.trim();
+    const password = $("password").value;
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      $("loginErr").style.display = "";
+      $("loginErr").textContent = error.message;
+      return;
+    }
+    $("loginOk").style.display = "";
+    $("loginOk").textContent = "Signed in. Loading portal…";
+    await refreshAll();
+  });
+
+  $("signUpBtn").addEventListener("click", async () => {
+    $("loginErr").style.display = "none";
+    $("loginOk").style.display = "none";
+
+    if (keysMissing()) {
+      $("loginErr").style.display = "";
+      $("loginErr").textContent = "Missing keys: Set SUPABASE_URL and SUPABASE_ANON_KEY in the script at the bottom of this file.";
+      return;
+    }
+
+    const email = $("email").value.trim();
+    const password = $("password").value;
+
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      $("loginErr").style.display = "";
+      $("loginErr").textContent = error.message;
+      return;
+    }
+    $("loginOk").style.display = "";
+    $("loginOk").textContent = "Account created. If email confirmation is enabled, check email. Otherwise, sign in now.";
+  });
+
+  $("logoutBtn").addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    currentUser = null;
+    currentProfile = null;
+    currentCandidate = null;
+    hide(appView);
+    show(loginView);
+  });
+
+  $("refreshBtn").addEventListener("click", refreshAll);
+  $("refreshTrainingBtn").addEventListener("click", loadTraining);
+  $("goTrainingBtn").addEventListener("click", () => switchPage("training"));
+  $("refreshEvalsBtn").addEventListener("click", loadQueue);
+
+  $("openEvalBtn").addEventListener("click", async () => {
+    $("evalErr").style.display = "none";
+    $("evalOk").style.display = "none";
+    overlay.classList.add("show");
+    await populateEvalModal();
+  });
+
+  $("submitEvalBtn").addEventListener("click", async () => {
+    $("evalErr").style.display = "none";
+    $("evalOk").style.display = "none";
+
+    const candidateId = $("evalCandidate").value;
+    const requirementId = $("evalRequirement").value;
+    const result = $("evalResult").value;
+    const criticalFail = $("evalCritical").value === "true";
+    const notes = $("evalNotes").value;
+
+    if (!candidateId || !requirementId) {
+      $("evalErr").style.display = "";
+      $("evalErr").textContent = "Choose a candidate and a requirement.";
+      return;
+    }
+
+    const { error: insErr } = await supabase
+      .from("evaluations")
+      .insert([{
+        candidate_id: candidateId,
+        requirement_id: requirementId,
+        evaluator_id: currentUser.id,
+        result,
+        critical_fail: criticalFail,
+        notes
+      }]);
+
+    if (insErr) {
+      $("evalErr").style.display = "";
+      $("evalErr").textContent = insErr.message;
+      return;
+    }
+
+    const { error: updErr } = await supabase
+      .from("candidate_requirements")
+      .update({ status: result, updated_at: new Date().toISOString() })
+      .eq("candidate_id", candidateId)
+      .eq("requirement_id", requirementId);
+
+    if (updErr) {
+      $("evalErr").style.display = "";
+      $("evalErr").textContent = "Eval saved, but could not update requirement status: " + updErr.message;
+      return;
+    }
+
+    $("evalOk").style.display = "";
+    $("evalOk").textContent = "Saved. Requirement updated to: " + result;
+    await refreshAll();
+  });
+
+  $("markCredentialedBtn").addEventListener("click", async () => {
+    $("evalErr").style.display = "none";
+    $("evalOk").style.display = "none";
+
+    const candidateId = $("evalCandidate").value;
+    if (!candidateId) {
+      $("evalErr").style.display = "";
+      $("evalErr").textContent = "Choose a candidate first.";
+      return;
+    }
+
+    const { data: rows, error } = await supabase
+      .from("candidate_requirements")
+      .select("status")
+      .eq("candidate_id", candidateId);
+
+    if (error) {
+      $("evalErr").style.display = "";
+      $("evalErr").textContent = error.message;
+      return;
+    }
+
+    const total = rows?.length ?? 0;
+    const passed = rows?.filter(r => r.status === "passed")?.length ?? 0;
+
+    if (total === 0 || passed !== total) {
+      $("evalErr").style.display = "";
+      $("evalErr").textContent = `Not eligible: ${passed}/${total} passed.`;
+      return;
+    }
+
+    const { error: upd } = await supabase
+      .from("candidates")
+      .update({ status: "credentialed" })
+      .eq("id", candidateId);
+
+    if (upd) {
+      $("evalErr").style.display = "";
+      $("evalErr").textContent = upd.message;
+      return;
+    }
+
+    $("evalOk").style.display = "";
+    $("evalOk").textContent = "Candidate marked as credentialed.";
+    await refreshAll();
+  });
+
+  async function populateEvalModal(){
+    const { data: cands, error: cErr } = await supabase
+      .from("candidates")
+      .select("id, full_name, station, status")
+      .order("created_at", { ascending: false });
+
+    if (cErr) {
+      $("evalErr").style.display = "";
+      $("evalErr").textContent = cErr.message;
+      return;
+    }
+
+    cachedCandidates = cands ?? [];
+    const candSel = $("evalCandidate");
+    candSel.innerHTML = "";
+    cachedCandidates.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = `${c.full_name} • ${c.station ?? ""} • ${c.status ?? ""}`;
+      candSel.appendChild(opt);
+    });
+
+    const { data: reqs, error: rErr } = await supabase
+      .from("requirements")
+      .select("id, name, track, category, is_critical")
+      .order("created_at", { ascending: false });
+
+    if (rErr) {
+      $("evalErr").style.display = "";
+      $("evalErr").textContent = rErr.message;
+      return;
+    }
+
+    cachedRequirements = reqs ?? [];
+    const reqSel = $("evalRequirement");
+    reqSel.innerHTML = "";
+    cachedRequirements.forEach(r => {
+      const opt = document.createElement("option");
+      opt.value = r.id;
+      opt.textContent = `${r.name} • ${r.track ?? ""}${r.is_critical ? " • CRITICAL" : ""}`;
+      reqSel.appendChild(opt);
+    });
+
+    if (currentCandidate?.id) candSel.value = currentCandidate.id;
+  }
+
+  async function refreshAll(){
+    const { data: s } = await supabase.auth.getSession();
+    currentUser = s?.session?.user ?? null;
+
+    if (!currentUser) {
+      hide(appView);
+      show(loginView);
+      return;
+    }
+
+    const { data: prof, error: pErr } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+    if (pErr) {
+      hide(appView);
+      show(loginView);
+      $("loginErr").style.display = "";
+      $("loginErr").textContent =
+        "Signed in, but no matching profiles row exists for this user ID. Create a profiles row with id = auth.users.id.";
+      return;
+    }
+
+    currentProfile = prof;
+
+    const acc = computeAccess(currentProfile);
+    isStaff = acc.staff;
+    canInventory = acc.inventoryOk;
+    gateNav();
+
+    const { data: cand } = await supabase
+      .from("candidates")
+      .select("*")
+      .eq("linked_user_id", currentUser.id)
+      .maybeSingle();
+
+    currentCandidate = cand ?? null;
+
+    setText("whoLine", `${currentProfile?.full_name ?? "User"} • ${String(currentProfile?.role ?? currentProfile?.Role ?? "—")}`);
+    setText("stationLine", String(currentProfile?.station ?? currentProfile?.Station ?? "Station —"));
+    setText("shiftLine", String(currentProfile?.shift ?? currentProfile?.Shift ?? "Shift —"));
+    setText("emsLine", `EMS: ${String(currentProfile?.ems_level ?? currentProfile?.EMS_Level ?? "—")}`);
+    setText("fireLine", `Fire: ${String(currentProfile?.fire_level ?? currentProfile?.Fire_Level ?? "—")}`);
+    setText("aoLine", `AO: ${String(currentProfile?.ao_level ?? "None")}`);
+    setText("staffLine", isStaff ? "Staff: Yes" : "Staff: No");
+
+    $("sessionDump").textContent = JSON.stringify({
+      user_id: currentUser.id,
+      email: currentUser.email,
+      staff: isStaff,
+      inventory: canInventory
+    }, null, 2);
+    $("profileDump").textContent = JSON.stringify(currentProfile, null, 2);
+
+    hide(loginView);
+    show(appView);
+
+    await loadHome();
+    await loadTraining();
+    if (isStaff) await loadQueue();
+    switchPage("home");
+  }
+
+  async function loadHome(){
+    if (!currentCandidate) {
+      setText("candidateName", isStaff ? "No linked candidate (staff account)" : "No linked candidate");
+      setText("candidateMeta", "Link candidates.linked_user_id to this user to enable recruit view.");
+      setText("progressLine", "—");
+      setText("progressSub", "—");
+      setText("whatsNextSub", isStaff ? "Staff view: open Evaluations." : "Recruit view: link your candidate.");
+      setText("whatsNextBadge", "Setup");
+      $("whatsNextBody").innerHTML = `
+        <div class="card">
+          <h4>Setup step</h4>
+          <p>Make sure the logged-in user has a <code>profiles</code> row, and the correct candidate has <code>linked_user_id</code> set to that same UUID.</p>
+        </div>
+      `;
+    } else {
+      setText("candidateName", currentCandidate.full_name);
+      setText("candidateMeta", `${currentCandidate.station ?? ""} • ${currentCandidate.status ?? ""}`);
+
+      const { data: rows, error } = await supabase
+        .from("candidate_requirements")
+        .select("status")
+        .eq("candidate_id", currentCandidate.id);
+
+      if (error) {
+        setText("progressLine", "Error");
+        setText("progressSub", error.message);
+      } else {
+        const total = rows?.length ?? 0;
+        const passed = rows?.filter(r => r.status === "passed")?.length ?? 0;
+        const redo = rows?.filter(r => r.status === "redo")?.length ?? 0;
+        const failed = rows?.filter(r => r.status === "failed")?.length ?? 0;
+
+        setText("progressLine", `${passed}/${total}`);
+        setText("progressSub", `Redo: ${redo} • Failed: ${failed}`);
+
+        const { data: nextRows } = await supabase
+          .from("candidate_requirements")
+          .select("status, requirements(name, track, category, is_critical)")
+          .eq("candidate_id", currentCandidate.id);
+
+        const pending = (nextRows ?? []).find(r => r.status === "pending") ||
+                        (nextRows ?? []).find(r => r.status === "redo");
+
+        if (pending?.requirements?.name) {
+          setText("whatsNextSub", "Recruit view: your next requirement");
+          setText("whatsNextBadge", pending.status === "redo" ? "Redo" : "Next");
+          $("whatsNextBody").innerHTML = `
+            <div class="card">
+              <h4>${escapeHtml(pending.requirements.name)} ${pending.requirements.is_critical ? "<span class='badge bad'>CRITICAL</span>" : ""}</h4>
+              <p>Track: ${escapeHtml(pending.requirements.track ?? "—")} • Category: ${escapeHtml(pending.requirements.category ?? "—")}</p>
+              <div class="needs" style="margin-top:10px;">
+                <span class="tag ${pending.status === "redo" ? "warn" : "info"}">${escapeHtml(pending.status.toUpperCase())}</span>
+                <span class="tag">Assigned: auto</span>
+              </div>
+            </div>
+          `;
+        } else {
+          setText("whatsNextSub", "All assigned requirements complete (or none assigned).");
+          setText("whatsNextBadge", "Done");
+          $("whatsNextBody").innerHTML = `
+            <div class="card">
+              <h4>Nothing pending</h4>
+              <p>If this candidate is complete, staff can mark as credentialed.</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    setText("accessLine", isStaff ? "Instructor / Admin" : "Recruit");
+
+    const qa = [];
+    qa.push(`<button class="btn primary" onclick="switchPage('training')">Open Training</button>`);
+    if (isStaff) qa.push(`<button class="btn" onclick="switchPage('evaluations')">Open Evaluations</button>`);
+    if (canInventory) qa.push(`<button class="btn" onclick="switchPage('inventory')">Open Inventory</button>`);
+    qa.push(`<div class="card" style="margin-top:12px;"><h4>Tip</h4><p>${isStaff ? "Staff accounts can view multiple candidates (RLS filtered)." : "Recruit accounts see only their linked candidate."}</p></div>`);
+    $("quickActions").innerHTML = qa.join("");
+  }
+
+  async function loadTraining(){
+    const wrap = $("trainingTableWrap");
+    wrap.innerHTML = `<div class="hint">Loading…</div>`;
+
+    if (!currentCandidate) {
+      $("trainingCount").textContent = "—";
+      wrap.innerHTML = `<div class="card"><h4>No linked candidate</h4><p>Link your user to a candidate to view progress.</p></div>`;
+      return;
+    }
+
+    const { data: rows, error } = await supabase
+      .from("candidate_requirements")
+      .select("status, updated_at, requirements(name, track, category, is_critical)")
+      .eq("candidate_id", currentCandidate.id);
+
+    if (error) {
+      wrap.innerHTML = `<div class="card"><h4>Error</h4><p>${escapeHtml(error.message)}</p></div>`;
+      return;
+    }
+
+    const list = rows ?? [];
+    $("trainingCount").textContent = `${list.length} total`;
+
+    wrap.innerHTML = `
+      <table class="table" aria-label="Requirements">
+        <thead>
+          <tr>
+            <th style="width:36%;">Requirement</th>
+            <th style="width:14%;">Track</th>
+            <th style="width:18%;">Category</th>
+            <th style="width:14%;">Status</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(r => {
+            const tagClass = r.status === "passed" ? "good" : (r.status === "redo" ? "warn" : (r.status === "failed" ? "bad" : ""));
+            const crit = r.requirements?.is_critical ? `<span class="badge bad">CRITICAL</span>` : "";
+            return `
+              <tr class="row">
+                <td><b>${escapeHtml(r.requirements?.name ?? "")}</b> ${crit}</td>
+                <td>${escapeHtml(r.requirements?.track ?? "")}</td>
+                <td>${escapeHtml(r.requirements?.category ?? "")}</td>
+                <td><span class="badge ${tagClass}">${escapeHtml(r.status ?? "")}</span></td>
+                <td style="color:var(--muted);font-size:12px;">${r.updated_at ? new Date(r.updated_at).toLocaleString() : "—"}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function loadQueue(){
+    const wrap = $("queueWrap");
+    wrap.innerHTML = `<div class="panelBody"><div class="hint">Loading…</div></div>`;
+
+    const { data: cands, error: cErr } = await supabase
+      .from("candidates")
+      .select("id, full_name, station, shift, status, created_at")
+      .order("created_at", { ascending: false });
+
+    if (cErr) {
+      wrap.innerHTML = `<div class="panelBody"><div class="card"><h4>Error</h4><p>${escapeHtml(cErr.message)}</p></div></div>`;
+      return;
+    }
+
+    const candidates = cands ?? [];
+    $("queueCount").textContent = `${candidates.length}`;
+
+    const candIds = candidates.map(c => c.id);
+    let reqRows = [];
+    if (candIds.length) {
+      const { data: rows } = await supabase
+        .from("candidate_requirements")
+        .select("candidate_id, status, requirements(name, is_critical, track)")
+        .in("candidate_id", candIds);
+      reqRows = rows ?? [];
+    }
+
+    function progressFor(id){
+      const mine = reqRows.filter(r => r.candidate_id === id);
+      const total = mine.length;
+      const passed = mine.filter(r => r.status === "passed").length;
+      const pct = total ? Math.round((passed/total)*100) : 0;
+
+      const needs = mine
+        .filter(r => r.status !== "passed")
+        .slice(0,3)
+        .map(r => {
+          const cls = r.status === "redo" ? "warn" : (r.status === "failed" ? "bad" : "info");
+          return `<span class="tag ${cls}">${escapeHtml(r.requirements?.name ?? "Need")} (${escapeHtml(r.status)})</span>`;
+        }).join("") || `<span class="tag good">No needs</span>`;
+
+      return { total, passed, pct, needs };
+    }
+
+    wrap.innerHTML = `
+      <table class="table" aria-label="Candidate Queue">
+        <thead>
+          <tr>
+            <th style="width:26%;">Candidate</th>
+            <th style="width:22%;">Progress</th>
+            <th>Still needs</th>
+            <th style="width:18%;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${candidates.map(c => {
+            const p = progressFor(c.id);
+            return `
+              <tr class="row">
+                <td>
+                  <b>${escapeHtml(c.full_name ?? "")}</b>
+                  <div style="color:var(--muted); font-size:12px;">${escapeHtml(c.station ?? "")}${c.shift ? " • " + escapeHtml(c.shift) : ""}</div>
+                </td>
+                <td>
+                  <div class="progressWrap">
+                    <div class="bar"><div class="fill" style="width:${p.pct}%"></div></div>
+                    <div class="pct">${p.passed}/${p.total}</div>
+                  </div>
+                </td>
+                <td><div class="needs">${p.needs}</div></td>
+                <td><button class="miniBtn" data-open-eval="${c.id}">Evaluate</button></td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+
+    wrap.querySelectorAll("[data-open-eval]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-open-eval");
+        overlay.classList.add("show");
+        await populateEvalModal();
+        $("evalCandidate").value = id;
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    return (s ?? "").toString()
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  async function init(){
+    // Create client (even with placeholders, so UI can show keysMissing message)
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    hide(appView);
+    show(loginView);
+
+    if (keysMissing()) {
+      $("loginErr").style.display = "";
+      $("loginErr").textContent = "Set SUPABASE_URL and SUPABASE_ANON_KEY in this file, then refresh.";
+      return;
+    }
+
+    const { data: s } = await supabase.auth.getSession();
+    currentUser = s?.session?.user ?? null;
+
+    if (currentUser) await refreshAll();
+
+    supabase.auth.onAuthStateChange(async () => {
+      await refreshAll();
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
