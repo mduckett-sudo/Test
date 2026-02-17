@@ -23,8 +23,6 @@
       --warn:#ffcc66;
       --bad:#ff5c7a;
       --info:#7aa7ff;
-
-      --mode: "fire"; /* cosmetic */
     }
 
     *{box-sizing:border-box}
@@ -40,7 +38,6 @@
       color:var(--text);
       overflow-x:hidden;
     }
-
     body.mode-ems{
       background:
         radial-gradient(1200px 800px at 15% 10%, rgba(43,107,255,.18), transparent 60%),
@@ -402,8 +399,8 @@
         <nav class="nav" id="nav">
           <div class="item active" data-page="home"><span>Dashboard</span><span class="pill">Home</span></div>
           <div class="item" data-page="training"><span>Training</span><span class="pill">My</span></div>
-          <div class="item" data-page="trainingManager" data-staff="instructor"><span>Training Manager</span><span class="pill">Staff</span></div>
-          <div class="item" data-page="personnel" data-staff="officer"><span>Personnel Manager</span><span class="pill">Officer</span></div>
+          <div class="item" data-page="trainingManager"><span>Training Manager</span><span class="pill">Staff</span></div>
+          <div class="item" data-page="personnel"><span>Personnel Manager</span><span class="pill">Officer</span></div>
           <div class="item" data-page="settings"><span>Settings</span></div>
         </nav>
 
@@ -413,7 +410,7 @@
             Instructors can toggle EMS/Fire training mode. EMS mode turns the background blue.
           </p>
           <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn small" id="toggleModeBtn">Toggle EMS / Fire</button>
+            <button class="btn small" id="toggleModeBtn" type="button">Toggle EMS / Fire</button>
             <span class="badge" id="modeBadge">Fire</span>
           </div>
         </div>
@@ -427,8 +424,8 @@
           </div>
 
           <div class="rightTools">
-            <button class="btn" id="refreshBtn">Refresh</button>
-            <button class="btn danger" id="logoutBtn">Log out</button>
+            <button class="btn" id="refreshBtn" type="button">Refresh</button>
+            <button class="btn danger" id="logoutBtn" type="button">Log out</button>
           </div>
         </div>
 
@@ -440,7 +437,7 @@
               <p>Clean, fast view. Training stays on the Training page.</p>
             </div>
             <div class="actions">
-              <button class="btn primary" id="goTrainingBtn">Open Training</button>
+              <button class="btn primary" id="goTrainingBtn" type="button">Open Training</button>
             </div>
           </div>
 
@@ -477,7 +474,7 @@
                   <h3>Training Tile</h3>
                   <div class="small">Click to see requirements, tasks, and evaluations.</div>
                 </div>
-                <button class="btn primary small" id="dashTrainingTile">Go</button>
+                <button class="btn primary small" id="dashTrainingTile" type="button">Go</button>
               </div>
               <div class="panelBody">
                 <div class="card">
@@ -510,7 +507,7 @@
               <p>Your requirements, progress, and status updates.</p>
             </div>
             <div class="actions">
-              <button class="btn" id="refreshTrainingBtn">Refresh</button>
+              <button class="btn" id="refreshTrainingBtn" type="button">Refresh</button>
             </div>
           </div>
 
@@ -531,12 +528,12 @@
           <div class="pageHead">
             <div>
               <h2>Training Manager</h2>
-              <p>Staff view. EMS/Fire mode changes the theme. Permissions enforced by your role.</p>
+              <p>Staff view. EMS/Fire mode changes the theme. Permissions enforced by your access.</p>
             </div>
             <div class="actions">
-              <button class="btn warn" id="toggleModeBtn2">Toggle EMS / Fire</button>
-              <button class="btn" id="refreshTMBtn">Refresh</button>
-              <button class="btn primary" id="openEvalBtn">Start Evaluation</button>
+              <button class="btn warn" id="toggleModeBtn2" type="button">Toggle EMS / Fire</button>
+              <button class="btn" id="refreshTMBtn" type="button">Refresh</button>
+              <button class="btn primary" id="openEvalBtn" type="button">Start Evaluation</button>
             </div>
           </div>
 
@@ -560,7 +557,7 @@
               <p>Officer/Admin can manage member assignments and levels.</p>
             </div>
             <div class="actions">
-              <button class="btn" id="refreshPMBtn">Refresh</button>
+              <button class="btn" id="refreshPMBtn" type="button">Refresh</button>
             </div>
           </div>
 
@@ -617,7 +614,7 @@
         <h3>Submit Evaluation</h3>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           <span class="badge">Writes to DB</span>
-          <button class="btn" id="closeEvalBtn">Close</button>
+          <button class="btn" id="closeEvalBtn" type="button">Close</button>
         </div>
       </div>
 
@@ -676,7 +673,7 @@
           </div>
 
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn primary" id="submitEvalBtn">Submit</button>
+            <button class="btn primary" id="submitEvalBtn" type="button">Submit</button>
           </div>
 
           <div id="evalErr" class="err" style="display:none;"></div>
@@ -693,7 +690,7 @@
         <h3>Edit Member</h3>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           <span class="badge">Updates profiles</span>
-          <button class="btn" id="closePMBtn">Close</button>
+          <button class="btn" id="closePMBtn" type="button">Close</button>
         </div>
       </div>
 
@@ -703,7 +700,7 @@
             <h4>Editing rules</h4>
             <p>
               Officer can edit station/levels/AO + EMS expiration.
-              Admin can also edit access level (role/admin_role).
+              Admin can also edit access level (admin_role + instructor flags).
             </p>
           </div>
           <div class="card">
@@ -752,16 +749,6 @@
             </div>
 
             <div class="field">
-              <label>Role (user_role enum)</label>
-              <select id="pmRole">
-                <option value="Firefighter">Firefighter</option>
-                <option value="Instructor">Instructor</option>
-                <option value="Officer">Officer</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-
-            <div class="field">
               <label>Admin Role (admin_role enum)</label>
               <select id="pmAdminRole">
                 <option value="None">None</option>
@@ -769,10 +756,26 @@
                 <option value="Fire Chief">Fire Chief</option>
               </select>
             </div>
+
+            <div class="field">
+              <label>EMS Instructor</label>
+              <select id="pmIsEmsInstr">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Fire Instructor</label>
+              <select id="pmIsFireInstr">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
           </div>
 
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn primary" id="savePMBtn">Save</button>
+            <button class="btn primary" id="savePMBtn" type="button">Save</button>
           </div>
 
           <div id="pmErr" class="err" style="display:none;"></div>
@@ -792,33 +795,35 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // ---------------- Helpers ----------------
 const $ = (id) => document.getElementById(id);
-const show = (el) => el.style.display = "";
-const hide = (el) => el.style.display = "none";
-const setText = (id, text) => { const el = $(id); if (el) el.textContent = text; };
-const esc = (s)=> (s??"").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-const lower = (s)=> (s??"").toString().toLowerCase().trim();
+const show = (el) => (el.style.display = "");
+const hide = (el) => (el.style.display = "none");
+const setText = (id, text) => { const el = $(id); if (el) el.textContent = text ?? ""; };
+const esc = (s)=> (s??"").toString()
+  .replaceAll("&","&amp;")
+  .replaceAll("<","&lt;")
+  .replaceAll(">","&gt;")
+  .replaceAll('"',"&quot;")
+  .replaceAll("'","&#039;");
 
 function keysMissing() {
   return !SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes("PASTE_");
 }
-
 function setLastError(msg){
   console.log("ERROR:", msg);
-  $("lastErrorDump").textContent = String(msg ?? "");
-}
-
-function normalizeEnum(value, allowed, fallback){
-  if (value == null) return fallback;
-  const s = String(value).trim();
-  if (allowed.includes(s)) return s;
-  // case-insensitive match
-  const hit = allowed.find(v => v.toLowerCase() === s.toLowerCase());
-  return hit ?? fallback;
+  const el = $("lastErrorDump");
+  if (el) el.textContent = String(msg ?? "");
 }
 
 // ---------------- Supabase REST (no CDN) ----------------
 const AUTH_URL = () => `${SUPABASE_URL}/auth/v1`;
 const REST_URL = () => `${SUPABASE_URL}/rest/v1`;
+
+let session = null;           // { access_token, refresh_token, user }
+let currentProfile = null;
+let currentCandidate = null;
+
+let access = { admin:false, officer:false, instructor:false, emsInstr:false, fireInstr:false };
+let instructorMode = "fire";  // fire | ems
 
 function baseHeaders(){
   return {
@@ -826,11 +831,10 @@ function baseHeaders(){
     "Content-Type": "application/json",
   };
 }
-
 function authHeaders(){
-  const access = session?.access_token;
-  return access
-    ? { ...baseHeaders(), "Authorization": `Bearer ${access}` }
+  const token = session?.access_token;
+  return token
+    ? { ...baseHeaders(), "Authorization": `Bearer ${token}` }
     : baseHeaders();
 }
 
@@ -839,6 +843,7 @@ async function fetchJson(url, options={}){
   const text = await res.text();
   let json = null;
   try { json = text ? JSON.parse(text) : null; } catch { json = null; }
+
   if (!res.ok) {
     const msg = json?.msg || json?.message || text || `HTTP ${res.status}`;
     throw new Error(msg);
@@ -854,7 +859,6 @@ async function signIn(email, password){
     body: JSON.stringify({ email, password })
   });
 }
-
 async function signUp(email, password){
   const url = `${AUTH_URL()}/signup`;
   return await fetchJson(url, {
@@ -863,7 +867,6 @@ async function signUp(email, password){
     body: JSON.stringify({ email, password })
   });
 }
-
 async function refreshToken(refresh_token){
   const url = `${AUTH_URL()}/token?grant_type=refresh_token`;
   return await fetchJson(url, {
@@ -872,27 +875,16 @@ async function refreshToken(refresh_token){
     body: JSON.stringify({ refresh_token })
   });
 }
-
-async function signOut(){
-  // Supabase signout endpoint exists, but simplest is local clear
+function signOut(){
   clearSession();
-}
-
-function qs(obj){
-  const params = new URLSearchParams();
-  Object.entries(obj).forEach(([k,v])=>{
-    if (v===undefined || v===null || v==="") return;
-    params.set(k, v);
-  });
-  return params.toString();
 }
 
 async function restSelect(table, select, filters={}, opts={}){
   const query = new URLSearchParams();
   query.set("select", select);
+
   Object.entries(filters).forEach(([k,v])=>{
     if (v===undefined || v===null || v==="") return;
-    // caller can pass raw postgrest filter like "eq.173"
     query.set(k, v);
   });
   if (opts.order) query.set("order", opts.order);
@@ -901,7 +893,6 @@ async function restSelect(table, select, filters={}, opts={}){
   const url = `${REST_URL()}/${table}?${query.toString()}`;
   return await fetchJson(url, { headers: authHeaders() });
 }
-
 async function restInsert(table, rows){
   const url = `${REST_URL()}/${table}`;
   return await fetchJson(url, {
@@ -910,7 +901,6 @@ async function restInsert(table, rows){
     body: JSON.stringify(rows)
   });
 }
-
 async function restPatch(table, patchObj, filters){
   const query = new URLSearchParams();
   Object.entries(filters||{}).forEach(([k,v])=> query.set(k, v));
@@ -922,14 +912,23 @@ async function restPatch(table, patchObj, filters){
   });
 }
 
-// ---------------- State ----------------
-let session = null;     // { access_token, refresh_token, user }
-let currentProfile = null;
-let currentCandidate = null;
+// ---------------- Access model (schema correct) ----------------
+function computeAccess(profile){
+  const adminRole = String(profile?.admin_role ?? "").trim();
 
-let access = { admin:false, officer:false, instructor:false, emsInstr:false, fireInstr:false };
-let instructorMode = "fire"; // fire | ems
+  const admin = (adminRole === "Admin" || adminRole === "Fire Chief");
+  const emsInstr = !!profile?.is_ems_instructor || admin;
+  const fireInstr = !!profile?.is_fire_instructor || admin;
+  const instructor = emsInstr || fireInstr;
 
+  // You do not currently have an "Officer" column.
+  // Treat Admin as Officer-level for now.
+  const officer = admin;
+
+  return { admin, officer, instructor, emsInstr, fireInstr };
+}
+
+// ---------------- UI State / Navigation ----------------
 const loginView = $("loginView");
 const appView = $("appView");
 
@@ -944,40 +943,11 @@ function switchPage(page){
   });
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
-navItems.forEach(item => item.addEventListener("click", () => {
-  const page = item.dataset.page;
-  switchPage(page);
-}));
-
-function computeAccess(profile){
-  const adminRole = String(profile?.admin_role ?? "").trim();
-
-  const admin =
-    adminRole === "Admin" ||
-    adminRole === "Fire Chief";
-
-  const emsInstr =
-    !!profile?.is_ems_instructor ||
-    admin;
-
-  const fireInstr =
-    !!profile?.is_fire_instructor ||
-    admin;
-
-  const instructor = emsInstr || fireInstr;
-
-  // You do not currently have an "Officer" column.
-  // For now, treat Admin as Officer-level.
-  const officer = admin;
-
-  return { admin, officer, instructor, emsInstr, fireInstr };
-}
+navItems.forEach(item => item.addEventListener("click", () => switchPage(item.dataset.page)));
 
 function gateNav(){
   const tm = navItems.find(x => x.dataset.page === "trainingManager");
   const pm = navItems.find(x => x.dataset.page === "personnel");
-
   if (tm) tm.style.display = access.instructor ? "" : "none";
   if (pm) pm.style.display = access.officer ? "" : "none";
 }
@@ -988,15 +958,6 @@ function applyMode(){
   setText("modeBadge", isEms ? "EMS" : "Fire");
 }
 
-$("toggleModeBtn").addEventListener("click", () => {
-  instructorMode = (instructorMode === "fire") ? "ems" : "fire";
-  applyMode();
-});
-$("toggleModeBtn2").addEventListener("click", () => {
-  instructorMode = (instructorMode === "fire") ? "ems" : "fire";
-  applyMode();
-});
-
 // ---------------- Session persistence ----------------
 const SESSION_KEY = "briaroaks_portal_session_v1";
 
@@ -1004,30 +965,35 @@ function saveSession(s){
   session = s;
   localStorage.setItem(SESSION_KEY, JSON.stringify(s));
 }
-
 function loadSession(){
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     session = raw ? JSON.parse(raw) : null;
-  } catch {
-    session = null;
-  }
+  } catch { session = null; }
   return session;
 }
-
 function clearSession(){
   session = null;
   localStorage.removeItem(SESSION_KEY);
 }
 
-$("clearSessionBtn").addEventListener("click", () => {
+// ---------------- Event wiring ----------------
+$("toggleModeBtn")?.addEventListener("click", () => {
+  instructorMode = (instructorMode === "fire") ? "ems" : "fire";
+  applyMode();
+});
+$("toggleModeBtn2")?.addEventListener("click", () => {
+  instructorMode = (instructorMode === "fire") ? "ems" : "fire";
+  applyMode();
+});
+
+$("clearSessionBtn")?.addEventListener("click", () => {
   clearSession();
   $("loginOk").style.display = "";
   $("loginOk").textContent = "Session cleared. You can sign in fresh now.";
 });
 
-// ---------------- UI actions ----------------
-$("loginForm").addEventListener("submit", async (e) => {
+$("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   $("loginErr").style.display = "none";
   $("loginOk").style.display = "none";
@@ -1044,7 +1010,6 @@ $("loginForm").addEventListener("submit", async (e) => {
 
   try{
     const s = await signIn(email, password);
-    // s: { access_token, refresh_token, user }
     saveSession(s);
     $("loginOk").style.display = "";
     $("loginOk").textContent = "Signed in. Loading portal…";
@@ -1056,7 +1021,7 @@ $("loginForm").addEventListener("submit", async (e) => {
   }
 });
 
-$("signUpBtn").addEventListener("click", async () => {
+$("signUpBtn")?.addEventListener("click", async () => {
   $("loginErr").style.display = "none";
   $("loginOk").style.display = "none";
   setLastError("");
@@ -1081,35 +1046,35 @@ $("signUpBtn").addEventListener("click", async () => {
   }
 });
 
-$("logoutBtn").addEventListener("click", async () => {
-  await signOut();
+$("logoutBtn")?.addEventListener("click", async () => {
+  signOut();
   currentProfile = null;
   currentCandidate = null;
   hide(appView);
   show(loginView);
 });
 
-$("refreshBtn").addEventListener("click", refreshAll);
-$("refreshTrainingBtn").addEventListener("click", loadTraining);
-$("refreshTMBtn").addEventListener("click", loadQueue);
-$("refreshPMBtn").addEventListener("click", loadPersonnel);
+$("refreshBtn")?.addEventListener("click", () => refreshAll());
+$("refreshTrainingBtn")?.addEventListener("click", () => loadTraining());
+$("refreshTMBtn")?.addEventListener("click", () => loadQueue());
+$("refreshPMBtn")?.addEventListener("click", () => loadPersonnel());
 
-$("goTrainingBtn").addEventListener("click", () => switchPage("training"));
-$("dashTrainingTile").addEventListener("click", () => switchPage("training"));
+$("goTrainingBtn")?.addEventListener("click", () => switchPage("training"));
+$("dashTrainingTile")?.addEventListener("click", () => switchPage("training"));
 
 // ---------------- Evaluation modal ----------------
 const overlayEval = $("overlayEval");
-$("closeEvalBtn").addEventListener("click", () => overlayEval.classList.remove("show"));
-overlayEval.addEventListener("click", (e) => { if (e.target === overlayEval) overlayEval.classList.remove("show"); });
+$("closeEvalBtn")?.addEventListener("click", () => overlayEval.classList.remove("show"));
+overlayEval?.addEventListener("click", (e) => { if (e.target === overlayEval) overlayEval.classList.remove("show"); });
 
-$("openEvalBtn").addEventListener("click", async () => {
+$("openEvalBtn")?.addEventListener("click", async () => {
   $("evalErr").style.display = "none";
   $("evalOk").style.display = "none";
   overlayEval.classList.add("show");
   await populateEvalModal();
 });
 
-$("submitEvalBtn").addEventListener("click", async () => {
+$("submitEvalBtn")?.addEventListener("click", async () => {
   $("evalErr").style.display = "none";
   $("evalOk").style.display = "none";
   setLastError("");
@@ -1127,17 +1092,15 @@ $("submitEvalBtn").addEventListener("click", async () => {
   }
 
   try{
-    // Insert evaluation row (evaluations.result is text in your schema)
     await restInsert("evaluations", [{
       candidate_id: candidateId,
       requirement_id: requirementId,
       evaluator_id: session.user.id,
-      result,                    // store same label as req_status
+      result,
       critical_fail: criticalFail,
       notes
     }]);
 
-    // Update candidate_requirements.status (req_status enum)
     await restPatch("candidate_requirements",
       { status: result, updated_at: new Date().toISOString() },
       { candidate_id: `eq.${candidateId}`, requirement_id: `eq.${requirementId}` }
@@ -1165,7 +1128,6 @@ async function populateEvalModal(){
       candSel.appendChild(opt);
     });
 
-    // requirements table: id,name,category,is_critical,created_at (NO track in your schema)
     const reqs = await restSelect("requirements", "id,name,category,is_critical,created_at", {}, { order:"created_at.desc" });
     const reqSel = $("evalRequirement");
     reqSel.innerHTML = "";
@@ -1186,15 +1148,16 @@ async function populateEvalModal(){
 
 // ---------------- Personnel modal ----------------
 const overlayPM = $("overlayPM");
-$("closePMBtn").addEventListener("click", () => overlayPM.classList.remove("show"));
-overlayPM.addEventListener("click", (e) => { if (e.target === overlayPM) overlayPM.classList.remove("show"); });
+$("closePMBtn")?.addEventListener("click", () => overlayPM.classList.remove("show"));
+overlayPM?.addEventListener("click", (e) => { if (e.target === overlayPM) overlayPM.classList.remove("show"); });
 
-const EMS_LEVELS = ["None","ECA","EMT-B","Paramedic"];
-const AO_LEVELS  = ["None","AO-EMS","AO-1","AO-2"];
+const EMS_LEVELS  = ["None","ECA","EMT-B","Paramedic"];
+const AO_LEVELS   = ["None","AO-EMS","AO-1","AO-2"];
 const FIRE_LEVELS = ["None","Level 5","Level 4","Level 3","Level 2","Level 1","Lieutenant","Captain","Deputy Chief","Assistant Chief","Fire Chief"];
 
 function fillSelect(id, values){
   const sel = $(id);
+  if (!sel) return;
   sel.innerHTML = "";
   values.forEach(v=>{
     const opt = document.createElement("option");
@@ -1203,7 +1166,6 @@ function fillSelect(id, values){
     sel.appendChild(opt);
   });
 }
-
 fillSelect("pmEms", EMS_LEVELS);
 fillSelect("pmAO", AO_LEVELS);
 fillSelect("pmFire", FIRE_LEVELS);
@@ -1216,7 +1178,7 @@ async function openPersonnelModal(member){
   $("pmOk").style.display = "none";
   setLastError("");
 
-  $("pmSelected").textContent = `${member.full_name ?? "—"} (${member.email ?? "—"})`;
+  $("pmSelected").textContent = `${member.full_name ?? "—"}`;
   $("pmIdTag").textContent = `ID: ${member.id}`;
 
   $("pmStation").value = String(member.station ?? "173");
@@ -1224,21 +1186,20 @@ async function openPersonnelModal(member){
   $("pmFire").value = String(member.fire_level ?? "None");
   $("pmAO").value = String(member.ao_level ?? "None");
 
-  // Optional column - safe
   const exp = member.ems_expiration ? String(member.ems_expiration).slice(0,10) : "";
   $("pmEmsExp").value = exp;
 
-  // Admin-only block
   $("adminOnlyBlock").style.display = access.admin ? "" : "none";
   if (access.admin){
-    $("pmRole").value = String(member.role ?? "Firefighter");
     $("pmAdminRole").value = String(member.admin_role ?? "None");
+    $("pmIsEmsInstr").value = String(!!member.is_ems_instructor);
+    $("pmIsFireInstr").value = String(!!member.is_fire_instructor);
   }
 
   overlayPM.classList.add("show");
 }
 
-$("savePMBtn").addEventListener("click", async () => {
+$("savePMBtn")?.addEventListener("click", async () => {
   $("pmErr").style.display = "none";
   $("pmOk").style.display = "none";
   setLastError("");
@@ -1249,22 +1210,21 @@ $("savePMBtn").addEventListener("click", async () => {
     return;
   }
 
-  // Build patch with enum-correct values
   const patch = {
-    station: $("pmStation").value,           // 173/273
-    ems_level: $("pmEms").value,             // None/ECA/EMT-B/Paramedic
-    fire_level: $("pmFire").value,           // enum
-    ao_level: $("pmAO").value,               // None/AO-EMS/AO-1/AO-2
+    station: $("pmStation").value,
+    ems_level: $("pmEms").value,
+    fire_level: $("pmFire").value,
+    ao_level: $("pmAO").value,
   };
 
-  // Optional: ems_expiration
+  // Optional: ems_expiration (if column exists)
   const exp = $("pmEmsExp").value;
-  if (exp) patch.ems_expiration = exp;
-  else patch.ems_expiration = null;
+  patch.ems_expiration = exp ? exp : null;
 
   if (access.admin){
-    patch.role = $("pmRole").value;          // Firefighter/Instructor/Officer/Admin
     patch.admin_role = $("pmAdminRole").value; // None/Admin/Fire Chief
+    patch.is_ems_instructor = ($("pmIsEmsInstr").value === "true");
+    patch.is_fire_instructor = ($("pmIsFireInstr").value === "true");
   }
 
   try{
@@ -1284,6 +1244,7 @@ $("savePMBtn").addEventListener("click", async () => {
 async function refreshAll(){
   try{
     setLastError("");
+
     if (!session?.access_token){
       hide(appView);
       show(loginView);
@@ -1312,14 +1273,22 @@ async function refreshAll(){
 
     // Sidebar lines
     const title =
-    access.admin ? "Admin" :
-    access.instructor ? "Instructor" :
-    "Firefighter";
+      access.admin ? "Admin" :
+      access.instructor ? "Instructor" :
+      "Firefighter";
+
+    setText("whoLine", `${currentProfile.full_name ?? "User"} • ${title}`);
     setText("stationLine", `Station ${String(currentProfile.station ?? "—")}`);
     setText("emsLine", `EMS: ${String(currentProfile.ems_level ?? "—")}`);
     setText("fireLine", `Fire: ${String(currentProfile.fire_level ?? "—")}`);
     setText("aoLine", `AO: ${String(currentProfile.ao_level ?? "None")}`);
-    setText("accessLine", access.admin ? "Access: Admin" : access.officer ? "Access: Officer" : access.instructor ? "Access: Instructor" : "Access: Firefighter");
+    setText(
+      "accessLine",
+      access.admin ? "Access: Admin" :
+      access.officer ? "Access: Officer" :
+      access.instructor ? "Access: Instructor" :
+      "Access: Firefighter"
+    );
 
     // Dashboard
     setText("dashName", currentProfile.full_name ?? "—");
@@ -1327,15 +1296,15 @@ async function refreshAll(){
     setText("dashLevels", `Fire: ${String(currentProfile.fire_level ?? "—")} • EMS: ${String(currentProfile.ems_level ?? "—")}`);
     setText("dashAO", `AO: ${String(currentProfile.ao_level ?? "None")}`);
 
-    // EMS expiration countdown (optional)
     updateEmsCountdown(currentProfile);
 
-    // Debug
+    // Debug (remove old role reference)
     $("sessionDump").textContent = JSON.stringify({
       user_id: session.user.id,
       email: session.user.email,
-      role: currentProfile.role,
       admin_role: currentProfile.admin_role,
+      is_ems_instructor: currentProfile.is_ems_instructor,
+      is_fire_instructor: currentProfile.is_fire_instructor,
       access
     }, null, 2);
     $("profileDump").textContent = JSON.stringify(currentProfile, null, 2);
@@ -1395,7 +1364,6 @@ function updateEmsCountdown(profile){
     return;
   }
 
-  // Rough breakdown: years / months / days (approx months=30d)
   const years = Math.floor(diffDays / 365);
   const remAfterYears = diffDays - years*365;
   const months = Math.floor(remAfterYears / 30);
@@ -1414,8 +1382,16 @@ async function loadMembers(){
   const wrap = $("membersWrap");
   wrap.innerHTML = `<div class="hint">Loading…</div>`;
   try{
-    const members = await restSelect("profiles", "id,full_name,station,ems_level,fire_level,ao_level,role", {}, { order:"full_name.asc" });
+    // NOTE: profiles does NOT have "role" in your schema output. Remove it.
+    const members = await restSelect("profiles", "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor", {}, { order:"full_name.asc" });
     $("membersCount").textContent = `${(members||[]).length}`;
+
+    function labelFor(m){
+      const a = String(m.admin_role ?? "None");
+      if (a === "Admin" || a === "Fire Chief") return a;
+      if (m.is_ems_instructor || m.is_fire_instructor) return "Instructor";
+      return "Member";
+    }
 
     wrap.innerHTML = `
       <table class="table" aria-label="Department Members">
@@ -1431,7 +1407,10 @@ async function loadMembers(){
         <tbody>
           ${(members||[]).map(m => `
             <tr class="row">
-              <td><b>${esc(m.full_name ?? "")}</b><div style="color:var(--muted);font-size:12px;">${esc(m.role ?? "")}</div></td>
+              <td>
+                <b>${esc(m.full_name ?? "")}</b>
+                <div style="color:var(--muted);font-size:12px;">${esc(labelFor(m))}</div>
+              </td>
               <td>Station ${esc(m.station ?? "")}</td>
               <td>${esc(m.ems_level ?? "")}</td>
               <td>${esc(m.fire_level ?? "")}</td>
@@ -1461,7 +1440,6 @@ async function loadTraining(){
       return;
     }
 
-    // candidate_requirements join requirements (NO track column)
     const rows = await restSelect(
       "candidate_requirements",
       "status,updated_at,requirements(name,category,is_critical)",
@@ -1519,7 +1497,6 @@ async function loadQueue(){
     const candIds = candidates.map(c => c.id);
     let reqRows = [];
     if (candIds.length){
-      // PostgREST "in" filter
       const ids = `(${candIds.join(",")})`;
       reqRows = await restSelect(
         "candidate_requirements",
@@ -1572,7 +1549,7 @@ async function loadQueue(){
                   </div>
                 </td>
                 <td><div class="needs">${p.needs}</div></td>
-                <td><button class="miniBtn" data-open-eval="${c.id}">Evaluate</button></td>
+                <td><button class="miniBtn" data-open-eval="${c.id}" type="button">Evaluate</button></td>
               </tr>
             `;
           }).join("")}
@@ -1599,16 +1576,23 @@ async function loadPersonnel(){
   const wrap = $("pmWrap");
   wrap.innerHTML = `<div class="hint">Loading…</div>`;
   try{
-    // Include optional ems_expiration; safe if exists, but if it doesn't, PostgREST will error.
-    // To avoid crashes if you haven't created ems_expiration yet, we try it, and fall back to a safe select.
+    // Include optional ems_expiration if it exists
     let members = null;
     try{
-      members = await restSelect("profiles", "id,full_name,station,ems_level,fire_level,ao_level,role,admin_role,ems_expiration", {}, { order:"full_name.asc" });
+      members = await restSelect("profiles", "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor,ems_expiration", {}, { order:"full_name.asc" });
     }catch(_){
-      members = await restSelect("profiles", "id,full_name,station,ems_level,fire_level,ao_level,role,admin_role", {}, { order:"full_name.asc" });
+      members = await restSelect("profiles", "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor", {}, { order:"full_name.asc" });
     }
 
     $("pmCount").textContent = `${(members||[]).length}`;
+
+    function accessLabel(m){
+      const ar = String(m.admin_role ?? "None");
+      const instr = (m.is_ems_instructor || m.is_fire_instructor);
+      if (ar !== "None") return ar;
+      if (instr) return "Instructor";
+      return "Member";
+    }
 
     wrap.innerHTML = `
       <table class="table" aria-label="Personnel">
@@ -1631,8 +1615,8 @@ async function loadPersonnel(){
               <td>${esc(m.ems_level ?? "")}</td>
               <td>${esc(m.fire_level ?? "")}</td>
               <td>${esc(m.ao_level ?? "")}</td>
-              <td>${esc(m.role ?? "")}${m.admin_role && m.admin_role !== "None" ? " • " + esc(m.admin_role) : ""}</td>
-              <td><button class="miniBtn" data-edit="${esc(m.id)}">Edit</button></td>
+              <td>${esc(accessLabel(m))}</td>
+              <td><button class="miniBtn" data-edit="${esc(m.id)}" type="button">Edit</button></td>
             </tr>
           `).join("")}
         </tbody>
@@ -1666,6 +1650,7 @@ async function init(){
 
   loadSession();
 
+  // If session exists, try to refresh & load
   if (session?.refresh_token && !session?.access_token){
     try{
       const s2 = await refreshToken(session.refresh_token);
@@ -1673,11 +1658,8 @@ async function init(){
     }catch(_){}
   }
 
-  // If we have a session, try loading portal (refresh token if needed)
   if (session?.access_token){
-    try{
-      await refreshAll();
-    }catch(_){}
+    try{ await refreshAll(); }catch(_){}
   }
 }
 
@@ -1685,8 +1667,3 @@ init();
 </script>
 </body>
 </html>
-
-
-
-
-
