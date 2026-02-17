@@ -4,10 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Briaroaks Department Portal</title>
+
   <style>
     :root{
       --bg:#07070a;
-      --panel:rgba(255,255,255,.06);
+
+      /* panels */
+      --panel:rgba(255,255,255,.05);
       --panel2:rgba(0,0,0,.22);
       --stroke:rgba(255,255,255,.12);
       --text:rgba(255,255,255,.92);
@@ -15,6 +18,7 @@
       --shadow:0 18px 48px rgba(0,0,0,.55);
       --radius:18px; --radius2:14px;
 
+      /* theme accents */
       --red:#ff2b2b;
       --blue:#2b6bff;
 
@@ -29,17 +33,19 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      /* ✅ Default: light grey → dark grey → black */
+
+      /* ✅ Default (same style as before, but GREY/BLACK instead of red) */
       background:
-        radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,.16), transparent 60%),
-        radial-gradient(900px 600px at 80% 25%, rgba(255,255,255,.08), transparent 55%),
-        radial-gradient(900px 600px at 70% 90%, rgba(255,255,255,.05), transparent 60%),
-        linear-gradient(180deg, #cfcfd2 0%, #3b3b42 45%, #07070a 100%);
+        radial-gradient(1200px 800px at 15% 10%, rgba(255,255,255,.14), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.08), transparent 55%),
+        radial-gradient(900px 600px at 75% 90%, rgba(255,255,255,.06), transparent 60%),
+        var(--bg);
+
       color:var(--text);
       overflow-x:hidden;
     }
 
-    /* ✅ Training Manager overrides ONLY (fire / ems) */
+    /* ✅ Training Manager overrides ONLY */
     body.mode-training-fire{
       background:
         radial-gradient(1200px 800px at 15% 10%, rgba(255,43,43,.18), transparent 60%),
@@ -59,32 +65,34 @@
     a{color:inherit}
 
     .shell{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+
     .sidebar{
       position:sticky; top:0; height:100vh;
       padding:22px;
       border-right:1px solid var(--stroke);
-      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       backdrop-filter: blur(10px);
     }
 
     .brand{
-      display:flex; gap:12px; align-items:center;
+      display:flex; gap:12px; align-items:flex-start;
       padding:12px; border-radius:16px;
-      background:rgba(255,255,255,.06);
+      background:rgba(255,255,255,.05);
       border:1px solid var(--stroke);
       box-shadow:0 10px 30px rgba(0,0,0,.18);
     }
+
     .logoWrap{
       width:48px;height:48px;border-radius:14px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.16);
       display:grid;place-items:center;
       overflow:hidden;
       flex:0 0 auto;
     }
     .logoWrap img{width:40px;height:40px;object-fit:contain;display:block}
 
-    .userBox{min-width:0}
+    .userBox{min-width:0;flex:1}
     .userName{
       margin:0;
       font-size:14px;
@@ -109,25 +117,24 @@
       font-size:12px; padding:4px 10px; border-radius:999px;
       border:1px solid var(--stroke);
       color:var(--muted);
-      background:rgba(255,255,255,.04);
+      background:rgba(255,255,255,.03);
       white-space:nowrap;
+      position:relative;
     }
     .badge.fireInstr{
       border-color:rgba(255,43,43,.45);
-      background:rgba(255,43,43,.14);
+      background:rgba(255,43,43,.12);
       color:rgba(255,255,255,.92);
     }
     .badge.emsInstr{
       border-color:rgba(43,107,255,.45);
-      background:rgba(43,107,255,.14);
+      background:rgba(43,107,255,.12);
       color:rgba(255,255,255,.92);
     }
-    /* ✅ Admin: grey background + glowing rainbow border */
     .badge.adminGlow{
-      background:rgba(255,255,255,.08);
+      background:rgba(255,255,255,.06);
       color:rgba(255,255,255,.92);
       border:1px solid transparent;
-      position:relative;
       box-shadow:0 0 18px rgba(255,255,255,.10);
     }
     .badge.adminGlow::before{
@@ -136,19 +143,17 @@
       inset:-2px;
       border-radius:999px;
       padding:2px;
-      background:conic-gradient(
-        #ff2b2b, #ffcc66, #2ee59d, #2b6bff, #b56cff, #ff2b2b
-      );
+      background:conic-gradient(#ff2b2b, #ffcc66, #2ee59d, #2b6bff, #b56cff, #ff2b2b);
       -webkit-mask:
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
       -webkit-mask-composite:xor;
       mask-composite:exclude;
-      filter:blur(.2px);
       opacity:.95;
       pointer-events:none;
     }
 
+    /* ✅ Nav (professional icons via inline SVG) */
     .nav{margin-top:16px; display:flex; flex-direction:column; gap:8px}
     .nav .item{
       display:flex; align-items:center; gap:10px;
@@ -157,26 +162,35 @@
       color:var(--muted);
       cursor:pointer; user-select:none;
     }
-    .nav .item:hover{background:rgba(255,255,255,.06); color:var(--text)}
+    .nav .item:hover{background:rgba(255,255,255,.05); color:var(--text)}
     .nav .item.active{
       background:rgba(255,255,255,.10);
       border-color:rgba(255,255,255,.18);
       color:var(--text);
     }
     .ico{
-      width:22px; height:22px;
-      display:grid; place-items:center;
-      border-radius:10px;
+      width:28px; height:28px;
+      border-radius:12px;
       background:rgba(0,0,0,.18);
       border:1px solid rgba(255,255,255,.12);
+      display:grid; place-items:center;
       flex:0 0 auto;
-      font-size:14px;
     }
+    .ico svg{
+      width:16px;height:16px;
+      stroke:rgba(255,255,255,.86);
+      fill:none;
+      stroke-width:2;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      opacity:.95;
+    }
+
     .pill{
       margin-left:auto;
       font-size:12px; padding:3px 9px; border-radius:999px;
       border:1px solid var(--stroke);
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.04);
       color:var(--muted);
     }
 
@@ -184,7 +198,7 @@
     .topbar{
       display:flex; gap:12px; align-items:center; justify-content:space-between;
       padding:14px; border-radius:var(--radius);
-      background:rgba(255,255,255,.07);
+      background:rgba(255,255,255,.05);
       border:1px solid var(--stroke);
       box-shadow:var(--shadow);
       flex-wrap:wrap;
@@ -203,12 +217,12 @@
     .btn{
       padding:10px 12px; border-radius:14px;
       border:1px solid var(--stroke);
-      background:rgba(255,255,255,.06);
+      background:rgba(255,255,255,.045);
       color:var(--text); cursor:pointer; user-select:none;
       display:inline-flex; gap:10px; align-items:center;
       transition:transform .06s ease, background .12s ease, border-color .12s ease;
     }
-    .btn:hover{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.20)}
+    .btn:hover{background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.18)}
     .btn:active{transform:translateY(1px)}
     .btn.primary{border-color:rgba(255,255,255,.22); background:rgba(255,255,255,.10)}
     .btn.danger{border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.12)}
@@ -224,20 +238,22 @@
     .pageHead p{margin:6px 0 0 0; font-size:13px; color:var(--muted)}
     .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
 
-    .stats{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin:14px 0 12px}
+    /* ✅ Home tiles */
+    .stats{display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:12px; margin:14px 0 12px}
     .stat{
       padding:14px; border-radius:var(--radius);
-      background:rgba(255,255,255,.07);
+      background:rgba(255,255,255,.05);
       border:1px solid var(--stroke);
       box-shadow:0 14px 38px rgba(0,0,0,.24);
       min-height:92px;
     }
     .stat .k{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:10px}
     .stat .v{margin-top:10px; font-size:18px; font-weight:900; letter-spacing:.2px}
+    .stat .sub{margin-top:8px; color:var(--muted); font-size:12px}
 
     .panel{
       border-radius:var(--radius);
-      background:rgba(255,255,255,.07);
+      background:rgba(255,255,255,.05);
       border:1px solid var(--stroke);
       box-shadow:0 18px 48px rgba(0,0,0,.24);
       overflow:hidden;
@@ -246,7 +262,7 @@
       padding:14px;
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       border-bottom:1px solid rgba(255,255,255,.10);
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       flex-wrap:wrap;
     }
     .panelHead h3{margin:0; font-size:13px; letter-spacing:.25px}
@@ -277,16 +293,16 @@
     .miniBtn{
       padding:7px 10px; border-radius:12px;
       border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
+      background:rgba(255,255,255,.04);
       cursor:pointer; color:var(--text); font-size:12px;
     }
-    .miniBtn:hover{background:rgba(255,255,255,.09)}
+    .miniBtn:hover{background:rgba(255,255,255,.07)}
 
     .needs{display:flex; flex-wrap:wrap; gap:6px}
     .tag{
       font-size:12px; padding:4px 8px; border-radius:999px;
       border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.04);
       color:var(--muted);
       white-space:nowrap;
     }
@@ -296,7 +312,7 @@
     .tag.info{border-color:rgba(122,167,255,.30); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
 
     .progressWrap{display:flex; gap:10px; align-items:center; min-width:170px}
-    .bar{flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,.12); overflow:hidden; border:1px solid rgba(255,255,255,.12)}
+    .bar{flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.10)}
     .fill{height:100%; border-radius:999px; background:linear-gradient(90deg, rgba(255,255,255,.85), rgba(255,255,255,.35)); width:0%}
     .pct{font-size:12px; color:var(--muted); white-space:nowrap}
 
@@ -306,8 +322,8 @@
       width:min(560px, 100%);
       padding:18px;
       border-radius:22px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
       box-shadow:0 30px 90px rgba(0,0,0,.45);
       backdrop-filter: blur(14px);
     }
@@ -349,6 +365,9 @@
     .sideForm{padding:16px; display:flex; flex-direction:column; gap:12px}
     textarea{min-height:120px; resize:vertical}
 
+    @media (max-width: 1100px){
+      .stats{grid-template-columns:repeat(3, minmax(0,1fr))}
+    }
     @media (max-width: 980px){
       .shell{grid-template-columns:1fr}
       .sidebar{position:relative; height:auto}
@@ -420,7 +439,6 @@
   <section id="appView" style="display:none;">
     <div class="shell">
       <aside class="sidebar">
-        <!-- ✅ New user header -->
         <div class="brand">
           <div class="logoWrap" aria-hidden="true">
             <img src="./logo.png" alt="Briaroaks logo" onerror="this.style.display='none'">
@@ -432,25 +450,47 @@
           </div>
         </div>
 
-        <!-- ✅ Tabs under user header -->
         <nav class="nav" id="nav">
           <div class="item active" data-page="home">
-            <span class="ico">🏠</span><span>Dashboard Home</span><span class="pill">Home</span>
+            <span class="ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1.8 1.8 0 0 1-1.8 2H4.8A1.8 1.8 0 0 1 3 20z"/><path d="M9 22V12h6v10"/></svg>
+            </span>
+            <span>Dashboard Home</span><span class="pill">Home</span>
           </div>
+
           <div class="item" data-page="training">
-            <span class="ico">✅</span><span>My Training</span><span class="pill">My</span>
+            <span class="ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l2 2 4-4"/><path d="M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0"/></svg>
+            </span>
+            <span>My Training</span><span class="pill">My</span>
           </div>
+
           <div class="item" data-page="deptPersonnel">
-            <span class="ico">👥</span><span>Department Personnel</span>
+            <span class="ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8"/><path d="M22 21v-2a3.5 3.5 0 0 0-3-3.45"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <span>Department Personnel</span>
           </div>
+
           <div class="item" data-page="trainingManager">
-            <span class="ico">🧪</span><span>Training Manager</span><span class="pill">Staff</span>
+            <span class="ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12v6H6z"/><path d="M8 8v14h8V8"/><path d="M10 12h4"/><path d="M10 16h4"/></svg>
+            </span>
+            <span>Training Manager</span><span class="pill">Staff</span>
           </div>
+
           <div class="item" data-page="personnelManager">
-            <span class="ico">🧑‍💼</span><span>Personnel Manager</span><span class="pill">Officer</span>
+            <span class="ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1v4"/><path d="M12 19v4"/><path d="M4.2 4.2l2.8 2.8"/><path d="M17 17l2.8 2.8"/><path d="M1 12h4"/><path d="M19 12h4"/><path d="M4.2 19.8 7 17"/><path d="M17 7l2.8-2.8"/><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8"/></svg>
+            </span>
+            <span>Personnel Manager</span><span class="pill">Officer</span>
           </div>
+
           <div class="item" data-page="settings">
-            <span class="ico">⚙️</span><span>Settings</span>
+            <span class="ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/><path d="M19.4 15a7.9 7.9 0 0 0 .1-2l2-1.5-2-3.5-2.4.6a7.6 7.6 0 0 0-1.7-1L15 4.2H9L8.6 7.6a7.6 7.6 0 0 0-1.7 1L4.5 8l-2 3.5L4.5 13a7.9 7.9 0 0 0 .1 2l-2 1.5 2 3.5 2.4-.6a7.6 7.6 0 0 0 1.7 1L9 23.8h6l.4-3.4a7.6 7.6 0 0 0 1.7-1l2.4.6 2-3.5z"/></svg>
+            </span>
+            <span>Settings</span>
           </div>
         </nav>
       </aside>
@@ -472,36 +512,49 @@
           <div class="pageHead">
             <div>
               <h2>Dashboard Home</h2>
-              <p>Quick snapshot: Weather • Fire rank • EMS level • EMS expiration.</p>
+              <p>Quick snapshot: Weather • Fire • EMS • AO • Station • Expiration.</p>
             </div>
             <div class="actions">
               <button class="btn primary" id="goTrainingBtn" type="button">Open My Training</button>
             </div>
           </div>
 
+          <!-- ✅ Requested tiles -->
           <div class="stats">
             <div class="stat">
               <div class="k"><span>Weather</span><span class="badge" id="weatherZip">76028</span></div>
               <div class="v" id="dashWeather">Loading…</div>
-              <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashWeatherSub">Using Open-Meteo (no API key).</div>
+              <div class="sub" id="dashWeatherSub">Using Open-Meteo (no API key).</div>
             </div>
 
             <div class="stat">
               <div class="k"><span>Fire Rank</span><span class="badge info">Profile</span></div>
               <div class="v" id="dashFireRank">—</div>
-              <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashStation">Station —</div>
+              <div class="sub" id="dashFireSub">Current rank</div>
             </div>
 
             <div class="stat">
               <div class="k"><span>EMS Level</span><span class="badge info">Profile</span></div>
               <div class="v" id="dashEmsLevel">—</div>
-              <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashAO">AO —</div>
+              <div class="sub" id="dashEmsSub">Current level</div>
+            </div>
+
+            <div class="stat">
+              <div class="k"><span>AO Level</span><span class="badge info">Profile</span></div>
+              <div class="v" id="dashAOLevel">—</div>
+              <div class="sub" id="dashAOSub">Current AO</div>
+            </div>
+
+            <div class="stat">
+              <div class="k"><span>Station Assignment</span><span class="badge info">Profile</span></div>
+              <div class="v" id="dashStation">—</div>
+              <div class="sub" id="dashStationSub">Assigned station</div>
             </div>
 
             <div class="stat">
               <div class="k"><span>EMS Expiration</span><span class="badge warn">Countdown</span></div>
               <div class="v" id="dashEmsExpiry">Not set</div>
-              <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashEmsExpirySub">Ask an officer/admin to add it.</div>
+              <div class="sub" id="dashEmsExpirySub">Ask an officer/admin to add it.</div>
             </div>
           </div>
 
@@ -551,7 +604,7 @@
           <div class="pageHead">
             <div>
               <h2>Department Personnel</h2>
-              <p>Roster: station, EMS, Fire, AO, and access badges.</p>
+              <p>Roster: station, EMS, Fire, AO, and access.</p>
             </div>
             <div class="actions">
               <button class="btn" id="refreshDeptBtn" type="button">Refresh</button>
@@ -602,7 +655,7 @@
           <div class="pageHead">
             <div>
               <h2>Personnel Manager</h2>
-              <p>Officer/Admin can update station/levels/AO/expiration. Admin can update instructor flags + admin role.</p>
+              <p>Officer/Admin can update station/levels/AO/expiration. Admin can update admin role + instructor flags.</p>
             </div>
             <div class="actions">
               <button class="btn" id="refreshPMBtn" type="button">Refresh</button>
@@ -650,7 +703,6 @@
             </div>
           </div>
         </section>
-
       </main>
     </div>
   </section>
@@ -847,11 +899,8 @@ const show = (el) => (el.style.display = "");
 const hide = (el) => (el.style.display = "none");
 const setText = (id, text) => { const el = $(id); if (el) el.textContent = text ?? ""; };
 const esc = (s)=> (s??"").toString()
-  .replaceAll("&","&amp;")
-  .replaceAll("<","&lt;")
-  .replaceAll(">","&gt;")
-  .replaceAll('"',"&quot;")
-  .replaceAll("'","&#039;");
+  .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+  .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 
 function keysMissing() {
   return !SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes("PASTE_");
@@ -874,18 +923,14 @@ let access = { admin:false, officer:false, instructor:false, emsInstr:false, fir
 
 // Training Manager theme mode ONLY
 let tmMode = "fire"; // fire | ems
+let currentPage = "home";
 
 function baseHeaders(){
-  return {
-    "apikey": SUPABASE_ANON_KEY,
-    "Content-Type": "application/json",
-  };
+  return { "apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json" };
 }
 function authHeaders(){
   const token = session?.access_token;
-  return token
-    ? { ...baseHeaders(), "Authorization": `Bearer ${token}` }
-    : baseHeaders();
+  return token ? { ...baseHeaders(), "Authorization": `Bearer ${token}` } : baseHeaders();
 }
 
 async function fetchJson(url, options={}){
@@ -893,7 +938,6 @@ async function fetchJson(url, options={}){
   const text = await res.text();
   let json = null;
   try { json = text ? JSON.parse(text) : null; } catch { json = null; }
-
   if (!res.ok) {
     const msg = json?.msg || json?.message || text || `HTTP ${res.status}`;
     throw new Error(msg);
@@ -925,14 +969,11 @@ async function refreshToken(refresh_token){
     body: JSON.stringify({ refresh_token })
   });
 }
-function signOut(){
-  clearSession();
-}
+function signOut(){ clearSession(); }
 
 async function restSelect(table, select, filters={}, opts={}){
   const query = new URLSearchParams();
   query.set("select", select);
-
   Object.entries(filters).forEach(([k,v])=>{
     if (v===undefined || v===null || v==="") return;
     query.set(k, v);
@@ -966,38 +1007,28 @@ async function restPatch(table, patchObj, filters){
 function computeAccess(profile){
   const adminRole = String(profile?.admin_role ?? "").trim();
   const admin = (adminRole === "Admin" || adminRole === "Fire Chief");
-
   const emsInstr = !!profile?.is_ems_instructor || admin;
   const fireInstr = !!profile?.is_fire_instructor || admin;
-
-  // "Instructor" means either flag
   const instructor = emsInstr || fireInstr;
 
-  // You do not currently have an Officer field.
-  // Treat Admin as Officer-level for now (matches your current behavior).
+  // No officer column currently — keep your existing behavior
   const officer = admin;
 
   return { admin, officer, instructor, emsInstr, fireInstr };
 }
 
-// ---------------- Navigation + page switching ----------------
+// ---------------- Pages ----------------
 const loginView = $("loginView");
 const appView = $("appView");
-
-// NOTE: page ids correspond to section ids: page-<name>
 const pages = ["home","training","deptPersonnel","trainingManager","personnelManager","settings"];
 const navItems = Array.from(document.querySelectorAll("#nav .item"));
 
-let currentPage = "home";
-
 function applyTrainingThemeIfNeeded(){
-  // Only apply fire/ems theme inside Training Manager
   document.body.classList.remove("mode-training-fire", "mode-training-ems");
   if (currentPage === "trainingManager"){
     document.body.classList.add(tmMode === "ems" ? "mode-training-ems" : "mode-training-fire");
   }
 }
-
 function switchPage(page){
   currentPage = page;
   navItems.forEach(i => i.classList.toggle("active", i.dataset.page === page));
@@ -1008,59 +1039,45 @@ function switchPage(page){
   applyTrainingThemeIfNeeded();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
 navItems.forEach(item => item.addEventListener("click", () => switchPage(item.dataset.page)));
 
 function gateNav(){
   const tm = navItems.find(x => x.dataset.page === "trainingManager");
   const pm = navItems.find(x => x.dataset.page === "personnelManager");
 
-  // Requested:
-  // Training Manager if Instructor OR Officer OR Admin
-  // Personnel Manager if Officer OR Admin
   if (tm) tm.style.display = (access.instructor || access.officer || access.admin) ? "" : "none";
   if (pm) pm.style.display = (access.officer || access.admin) ? "" : "none";
 }
 
-// ---------------- Sidebar header population ----------------
+// ---------------- Sidebar header ----------------
 function renderSidebarHeader(profile){
   setText("sbName", profile?.full_name ?? "—");
+  // Example: "Paramedic - Level 3"
   setText("sbLevels", `${String(profile?.ems_level ?? "—")} - ${String(profile?.fire_level ?? "—")}`);
 
   const badges = [];
   if (access.fireInstr) badges.push(`<span class="badge fireInstr">Fire Instructor</span>`);
   if (access.emsInstr)  badges.push(`<span class="badge emsInstr">EMS Instructor</span>`);
   if (access.admin)     badges.push(`<span class="badge adminGlow">Admin</span>`);
-
   $("sbBadges").innerHTML = badges.join("");
 }
 
 // ---------------- Session persistence ----------------
 const SESSION_KEY = "briaroaks_portal_session_v1";
-function saveSession(s){
-  session = s;
-  localStorage.setItem(SESSION_KEY, JSON.stringify(s));
-}
+function saveSession(s){ session = s; localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
 function loadSession(){
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    session = raw ? JSON.parse(raw) : null;
-  } catch { session = null; }
+  try { const raw = localStorage.getItem(SESSION_KEY); session = raw ? JSON.parse(raw) : null; }
+  catch { session = null; }
   return session;
 }
-function clearSession(){
-  session = null;
-  localStorage.removeItem(SESSION_KEY);
-}
+function clearSession(){ session = null; localStorage.removeItem(SESSION_KEY); }
 
-// ---------------- Weather (zip 76028) ----------------
-// Uses Open-Meteo (no key): zip -> lat/lon -> current weather
+// ---------------- Weather (ZIP 76028 via Open-Meteo, no key) ----------------
 async function loadWeatherForZip(zip="76028"){
   try{
     setText("dashWeather", "Loading…");
     setText("dashWeatherSub", "Using Open-Meteo (no API key).");
 
-    // 1) Geocode by postal code (US)
     const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(zip)}&count=1&language=en&format=json`;
     const geo = await fetchJson(geoUrl, { method:"GET" });
     const hit = geo?.results?.[0];
@@ -1068,9 +1085,8 @@ async function loadWeatherForZip(zip="76028"){
 
     const lat = hit.latitude;
     const lon = hit.longitude;
-    const place = [hit.name, hit.admin1, hit.country_code].filter(Boolean).join(", ");
+    const place = [hit.name, hit.admin1].filter(Boolean).join(", ");
 
-    // 2) Current weather
     const wxUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph`;
     const wx = await fetchJson(wxUrl, { method:"GET" });
     const c = wx?.current;
@@ -1088,37 +1104,15 @@ async function loadWeatherForZip(zip="76028"){
     setLastError(err.message);
   }
 }
-
 function weatherCodeToText(code){
   const map = {
-    0:"Clear",
-    1:"Mainly clear",
-    2:"Partly cloudy",
-    3:"Overcast",
-    45:"Fog",
-    48:"Depositing rime fog",
-    51:"Light drizzle",
-    53:"Drizzle",
-    55:"Dense drizzle",
-    56:"Freezing drizzle",
-    57:"Freezing drizzle",
-    61:"Light rain",
-    63:"Rain",
-    65:"Heavy rain",
-    66:"Freezing rain",
-    67:"Freezing rain",
-    71:"Light snow",
-    73:"Snow",
-    75:"Heavy snow",
-    77:"Snow grains",
-    80:"Rain showers",
-    81:"Rain showers",
-    82:"Violent rain showers",
-    85:"Snow showers",
-    86:"Heavy snow showers",
-    95:"Thunderstorm",
-    96:"Thunderstorm + hail",
-    99:"Thunderstorm + heavy hail"
+    0:"Clear",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",
+    45:"Fog",48:"Rime fog",
+    51:"Light drizzle",53:"Drizzle",55:"Dense drizzle",
+    61:"Light rain",63:"Rain",65:"Heavy rain",
+    71:"Light snow",73:"Snow",75:"Heavy snow",
+    80:"Rain showers",81:"Rain showers",82:"Heavy showers",
+    95:"Thunderstorm",96:"T-storm + hail",99:"T-storm + heavy hail"
   };
   return map[code] ?? `Code ${code}`;
 }
@@ -1380,17 +1374,14 @@ async function refreshAll(){
     setLastError("");
 
     if (!session?.access_token){
-      hide(appView);
-      show(loginView);
-      return;
+      hide(appView); show(loginView); return;
     }
 
     const prof = await restSelect("profiles", "*", { id: `eq.${session.user.id}` }, {});
     currentProfile = (prof && prof[0]) ? prof[0] : null;
 
     if (!currentProfile){
-      hide(appView);
-      show(loginView);
+      hide(appView); show(loginView);
       $("loginErr").style.display = "";
       $("loginErr").textContent =
         "Signed in, but no matching profiles row exists for this user ID. Create a profiles row with id = auth.users.id.";
@@ -1401,15 +1392,15 @@ async function refreshAll(){
     gateNav();
     renderSidebarHeader(currentProfile);
 
+    // Candidate (optional)
     const cand = await restSelect("candidates", "*", { linked_user_id: `eq.${session.user.id}` }, {});
     currentCandidate = (cand && cand[0]) ? cand[0] : null;
 
-    // Dashboard blocks
+    // ✅ Home tiles
     setText("dashFireRank", String(currentProfile.fire_level ?? "—"));
     setText("dashEmsLevel", String(currentProfile.ems_level ?? "—"));
+    setText("dashAOLevel", String(currentProfile.ao_level ?? "None"));
     setText("dashStation", `Station ${String(currentProfile.station ?? "—")}`);
-    setText("dashAO", `AO: ${String(currentProfile.ao_level ?? "None")}`);
-
     updateEmsCountdown(currentProfile);
 
     // Debug
@@ -1423,10 +1414,7 @@ async function refreshAll(){
     }, null, 2);
     $("profileDump").textContent = JSON.stringify(currentProfile, null, 2);
 
-    hide(loginView);
-    show(appView);
-
-    // Default to home
+    hide(loginView); show(appView);
     switchPage("home");
 
     // Loads
@@ -1437,7 +1425,7 @@ async function refreshAll(){
     if (access.officer || access.admin) await loadPersonnel();
 
   }catch(err){
-    // If token expired, try refresh once
+    // refresh once if needed
     try{
       if (session?.refresh_token){
         const s2 = await refreshToken(session.refresh_token);
@@ -1448,8 +1436,7 @@ async function refreshAll(){
     }catch(_){}
 
     setLastError(err.message);
-    hide(appView);
-    show(loginView);
+    hide(appView); show(loginView);
     $("loginErr").style.display = "";
     $("loginErr").textContent = "Error loading portal:\n" + err.message;
   }
