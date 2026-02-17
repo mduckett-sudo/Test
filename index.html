@@ -951,18 +951,19 @@ navItems.forEach(item => item.addEventListener("click", () => {
 }));
 
 function computeAccess(profile){
-  // These match your enums exactly:
+  // Enums are Title Case in your DB:
   // user_role: Firefighter, Instructor, Officer, Admin
   // admin_role: None, Admin, Fire Chief
-  const role = lower(profile?.role);
-  const adminRole = lower(profile?.admin_role);
 
-  const isAdminRole = adminRole === "Admin" || adminRole === "Fire Chief";
-  const isAdmin = role === "Admin" || isAdminRole;
-  const isOfficer = isAdmin || role === "Officer";
-  const isInstructor = isOfficer || role === "Instructor";
+  const role = String(profile?.role ?? "").trim();
+  const adminRole = String(profile?.admin_role ?? "").trim();
 
-  // In your design: officers can do EMS + Fire instructor access automatically
+  const isAdminRole = (adminRole === "Admin" || adminRole === "Fire Chief");
+  const isAdmin = (role === "Admin") || isAdminRole;
+  const isOfficer = isAdmin || (role === "Officer");
+  const isInstructor = isOfficer || (role === "Instructor");
+
+  // In your design: officers can do EMS + Fire instructor actions automatically
   const emsInstr = isInstructor;
   const fireInstr = isInstructor;
 
@@ -1677,5 +1678,6 @@ init();
 </script>
 </body>
 </html>
+
 
 
