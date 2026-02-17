@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Department Portal (Static HTML + Supabase)</title>
+  <title>Department Portal (No CDN) • Supabase via fetch()</title>
   <style>
     :root{
       --bg:#0b1220;
@@ -17,8 +17,6 @@
       --warn:#ffcc66;
       --bad:#ff5c7a;
       --info:#7aa7ff;
-
-      --card:rgba(255,255,255,.05);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -34,50 +32,65 @@
       overflow-x:hidden;
     }
     button,input,select,textarea{font:inherit;color:inherit}
-    .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
-    .sidebar{
-      position:sticky; top:0; height:100vh;
-      padding:22px;
-      border-right:1px solid var(--stroke);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      backdrop-filter: blur(10px);
+    .center{min-height:100vh; display:grid; place-items:center; padding:22px}
+    .card{
+      width:min(560px, 100%);
+      padding:18px;
+      border-radius:22px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 30px 90px rgba(0,0,0,.45);
+      backdrop-filter: blur(14px);
     }
-    .brand{
-      display:flex; gap:12px; align-items:center;
-      padding:12px; border-radius:16px;
-      background:rgba(255,255,255,.05);
-      border:1px solid var(--stroke);
-      box-shadow:0 10px 30px rgba(0,0,0,.18);
-    }
+    .row{display:flex;gap:12px;align-items:center}
     .logo{
       width:44px;height:44px;border-radius:14px;
       background:
         radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 55%),
         linear-gradient(135deg, rgba(122,167,255,.85), rgba(46,229,157,.85));
-      display:grid;place-items:center;
       border:1px solid rgba(255,255,255,.18);
     }
-    .brand h1{margin:0;font-size:14px;letter-spacing:.3px;line-height:1.2}
-    .brand .sub{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
-    .sideCard{
-      margin-top:14px; padding:14px;
-      border-radius:var(--radius);
-      background:rgba(255,255,255,.045);
-      border:1px solid var(--stroke);
+    .hint{font-size:12px; color:var(--muted); line-height:1.45}
+    .field{display:flex; flex-direction:column; gap:6px; margin-top:10px}
+    .field label{font-size:12px; color:var(--muted)}
+    .field input,.field select,.field textarea{
+      width:100%; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      padding:10px; outline:none; font-size:13px;
     }
-    .sideCard h3{margin:0 0 10px 0;font-size:13px;letter-spacing:.2px}
-    .metaRow{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:12px;flex-wrap:wrap}
+    .btn{
+      padding:10px 12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.045);
+      cursor:pointer;
+      display:inline-flex; gap:10px; align-items:center;
+    }
+    .btn.primary{border-color:rgba(46,229,157,.32); background:rgba(46,229,157,.12)}
+    .btn.danger{border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.12)}
+    .err{margin-top:10px; color:rgba(255,92,122,.95); font-size:12px}
+    .ok{margin-top:10px; color:rgba(46,229,157,.95); font-size:12px}
     .badge{
       font-size:12px; padding:3px 8px; border-radius:999px;
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
       color:var(--muted);
-      background:rgba(255,255,255,.03);
       white-space:nowrap;
     }
     .badge.good{border-color:rgba(46,229,157,.35); background:rgba(46,229,157,.10); color:rgba(46,229,157,.95)}
+    .badge.info{border-color:rgba(122,167,255,.35); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
     .badge.warn{border-color:rgba(255,204,102,.35); background:rgba(255,204,102,.10); color:rgba(255,204,102,.95)}
     .badge.bad{border-color:rgba(255,92,122,.35); background:rgba(255,92,122,.10); color:rgba(255,92,122,.95)}
-    .badge.info{border-color:rgba(122,167,255,.35); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
+
+    /* App */
+    .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    .sidebar{
+      position:sticky; top:0; height:100vh;
+      padding:22px;
+      border-right:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      backdrop-filter: blur(10px);
+    }
     .nav{margin-top:14px; display:flex; flex-direction:column; gap:8px}
     .nav .item{
       display:flex; align-items:center; gap:10px;
@@ -93,65 +106,24 @@
     }
     .pill{
       margin-left:auto; font-size:12px; padding:3px 9px; border-radius:999px;
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.04);
       color:var(--muted);
     }
     .main{padding:22px 26px 36px}
     .topbar{
       display:flex; gap:12px; align-items:center; justify-content:space-between;
-      padding:14px; border-radius:var(--radius);
+      padding:14px; border-radius:18px;
       background:rgba(255,255,255,.05);
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.12);
       box-shadow:var(--shadow);
       flex-wrap:wrap;
     }
-    .search{
-      flex:1; min-width:220px;
-      display:flex; gap:10px; align-items:center;
-      padding:10px 12px; border-radius:14px;
-      background:rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.10);
-    }
-    .search input{width:100%; border:0; outline:0; background:transparent; font-size:14px}
-    .search input::placeholder{color:rgba(255,255,255,.42)}
-    .rightTools{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .btn{
-      padding:10px 12px; border-radius:14px;
-      border:1px solid var(--stroke);
-      background:rgba(255,255,255,.045);
-      color:var(--text); cursor:pointer; user-select:none;
-      display:inline-flex; gap:10px; align-items:center;
-      transition:transform .06s ease, background .12s ease, border-color .12s ease;
-    }
-    .btn:hover{background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.18)}
-    .btn:active{transform:translateY(1px)}
-    .btn.primary{border-color:rgba(46,229,157,.32); background:rgba(46,229,157,.12)}
-    .btn.primary:hover{background:rgba(46,229,157,.16); border-color:rgba(46,229,157,.42)}
-    .btn.danger{border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.12)}
-    .pageHead{
-      margin:18px 4px 14px;
-      display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
-      flex-wrap:wrap;
-    }
-    .pageHead h2{margin:0; font-size:18px; letter-spacing:.2px}
-    .pageHead p{margin:6px 0 0 0; font-size:13px; color:var(--muted)}
-    .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
-    .stats{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin:14px 0 12px}
-    .stat{
-      padding:14px; border-radius:var(--radius);
-      background:rgba(255,255,255,.05);
-      border:1px solid var(--stroke);
-      box-shadow:0 14px 38px rgba(0,0,0,.24);
-      min-height:92px;
-    }
-    .stat .k{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:10px}
-    .stat .v{margin-top:10px; font-size:22px; font-weight:700; letter-spacing:.2px}
-    .grid{display:grid; grid-template-columns:1.35fr .65fr; gap:12px; margin-top:12px}
     .panel{
-      border-radius:var(--radius);
+      margin-top:14px;
+      border-radius:18px;
       background:rgba(255,255,255,.05);
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.12);
       box-shadow:0 18px 48px rgba(0,0,0,.24);
       overflow:hidden;
     }
@@ -162,376 +134,154 @@
       background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       flex-wrap:wrap;
     }
-    .panelHead h3{margin:0; font-size:13px; letter-spacing:.25px}
-    .panelHead .small{font-size:12px; color:var(--muted)}
     .panelBody{padding:14px}
-    .card{
-      padding:12px; border-radius:var(--radius2);
-      background:rgba(0,0,0,.16);
-      border:1px solid rgba(255,255,255,.10);
-      margin-bottom:10px;
-    }
-    .card h4{margin:0; font-size:13px; letter-spacing:.2px}
-    .card p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
-    .table{width:100%; border-collapse:collapse}
-    .table th,.table td{
-      text-align:left; padding:12px 14px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      font-size:13px; vertical-align:top;
-    }
-    .table th{
-      font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.25px;
-      background:rgba(0,0,0,.12);
-    }
-    .row:hover td{background:rgba(255,255,255,.04)}
-    .miniBtn{
-      padding:7px 10px; border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);
-      cursor:pointer; color:var(--text); font-size:12px;
-    }
-    .miniBtn:hover{background:rgba(255,255,255,.07)}
-    .needs{display:flex; flex-wrap:wrap; gap:6px}
-    .tag{
-      font-size:12px; padding:4px 8px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);
-      color:var(--muted);
-      white-space:nowrap;
-    }
-    .tag.good{border-color:rgba(46,229,157,.30); background:rgba(46,229,157,.10); color:rgba(46,229,157,.95)}
-    .tag.warn{border-color:rgba(255,204,102,.28); background:rgba(255,204,102,.10); color:rgba(255,204,102,.95)}
-    .tag.bad{border-color:rgba(255,92,122,.30); background:rgba(255,92,122,.10); color:rgba(255,92,122,.95)}
-    .tag.info{border-color:rgba(122,167,255,.30); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
-    .progressWrap{display:flex; gap:10px; align-items:center; min-width:170px}
-    .bar{flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.10)}
-    .fill{height:100%; border-radius:999px; background:linear-gradient(90deg, rgba(122,167,255,.95), rgba(46,229,157,.95)); width:0%}
-    .pct{font-size:12px; color:var(--muted); white-space:nowrap}
-
-    /* Login */
-    .center{min-height:100vh; display:grid; place-items:center; padding:22px}
-    .loginCard{
-      width:min(520px, 100%);
-      padding:18px;
-      border-radius:22px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow:0 30px 90px rgba(0,0,0,.45);
-      backdrop-filter: blur(14px);
-    }
-    .field{display:flex; flex-direction:column; gap:6px; margin-top:10px}
-    .field label{font-size:12px; color:var(--muted)}
-    .field input,.field select,.field textarea{
-      width:100%; border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      padding:10px; outline:none; font-size:13px;
-    }
-    .hint{font-size:12px; color:var(--muted); line-height:1.45}
-    .err{margin-top:10px; color:rgba(255,92,122,.95); font-size:12px}
-    .ok{margin-top:10px; color:rgba(46,229,157,.95); font-size:12px}
-
-    /* Modal */
-    .overlay{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; padding:18px; z-index:50}
-    .overlay.show{display:flex}
-    .modal{
-      width:min(920px, 100%);
-      border-radius:22px;
-      background:rgba(15,22,38,.78);
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow:0 30px 90px rgba(0,0,0,.6);
-      backdrop-filter: blur(16px);
-      overflow:hidden;
-    }
-    .modalHead{
-      display:flex; justify-content:space-between; gap:10px;
-      padding:14px 16px;
-      border-bottom:1px solid rgba(255,255,255,.12);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .modalHead h3{margin:0; font-size:14px}
-    .modalBody{display:grid; grid-template-columns:1fr 340px; min-height:380px}
-    .rubric{padding:16px; border-right:1px solid rgba(255,255,255,.10)}
-    .sideForm{padding:16px; display:flex; flex-direction:column; gap:12px}
-    textarea{min-height:120px; resize:vertical}
-
-    @media (max-width: 980px){
-      .shell{grid-template-columns:1fr}
-      .sidebar{position:relative; height:auto}
-      .grid{grid-template-columns:1fr}
-      .stats{grid-template-columns:repeat(2, minmax(0,1fr))}
-      .modalBody{grid-template-columns:1fr}
-      .rubric{border-right:0; border-bottom:1px solid rgba(255,255,255,.10)}
-    }
-    @media (max-width: 520px){
-      .stats{grid-template-columns:1fr}
-      .search{width:100%}
-      .rightTools{width:100%; justify-content:space-between}
-    }
+    pre{white-space:pre-wrap; margin:0; font-size:12px; color:rgba(255,255,255,.78)}
+    @media (max-width: 980px){ .shell{grid-template-columns:1fr} .sidebar{position:relative;height:auto} }
   </style>
 </head>
 
 <body>
-
-<div id="debugBanner" style="position:fixed;top:12px;left:12px;z-index:9999;
+<!-- Small status banner -->
+<div id="status" style="position:fixed;top:12px;left:12px;z-index:9999;
 padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.18);
 background:rgba(0,0,0,.35);color:white;font:12px system-ui;backdrop-filter:blur(8px);">
-Loading…
+No-CDN build • ready
 </div>
 
-
-<section id="loginView" class="center" >
-    <noscript>
-      <div style="max-width:520px;margin:12px auto 0 auto;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,204,102,.35);background:rgba(255,204,102,.10);color:rgba(255,204,102,.95);font-size:12px;line-height:1.45;">
-        JavaScript is disabled or blocked. This portal requires JavaScript. If you previewed the file in iOS Files “Quick Look”, open it in Safari or deploy it to Vercel/Netlify.
-      </div>
-    </noscript>
-    
-  <div class="loginCard">
-    <div style="display:flex;gap:12px;align-items:center;">
+<section id="loginView" class="center">
+  <div class="card">
+    <div class="row">
       <div class="logo" aria-hidden="true"></div>
       <div>
         <div style="font-weight:800; letter-spacing:.2px;">Department Portal</div>
-        <div class="hint">Static HTML + Supabase (Auth + Database + RLS)</div>
+        <div class="hint">No external JS CDN • Supabase via <code>fetch()</code></div>
+      </div>
+      <span class="badge info" style="margin-left:auto;">Works on restrictive networks</span>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="panelHead">
+        <div>
+          <div style="font-weight:800;">Sign in</div>
+          <div class="hint">Uses Supabase Auth REST endpoints (GoTrue) + PostgREST.</div>
+        </div>
+        <span class="badge" id="keyBadge">Keys: set</span>
+      </div>
+      <div class="panelBody">
+        <form id="loginForm">
+          <div class="field">
+            <label>Email</label>
+            <input id="email" type="email" placeholder="you@department.org" required />
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input id="password" type="password" placeholder="••••••••" required />
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+            <button class="btn primary" type="submit">Sign in</button>
+            <button class="btn" type="button" id="signUpBtn">Create account</button>
+          </div>
+
+          <div id="loginErr" class="err" style="display:none;"></div>
+          <div id="loginOk" class="ok" style="display:none;"></div>
+
+          <div class="hint" style="margin-top:10px;">
+            If “Create account” says email confirmation required, you can disable it in Supabase Auth settings (or confirm emails).
+          </div>
+        </form>
       </div>
     </div>
 
-    <div class="card" style="margin-top:14px;">
-      <h4>Sign in</h4>
-      <p>Open this file in a text editor and set <b>SUPABASE_URL</b> and <b>SUPABASE_ANON_KEY</b> in the script at the bottom.</p>
+    <div class="panel">
+      <div class="panelHead">
+        <div style="font-weight:700;">Troubleshooting</div>
+        <span class="badge warn">Read me</span>
+      </div>
+      <div class="panelBody">
+        <div class="hint">
+          This version avoids loading <b>supabase-js</b> from a CDN (your network was blocking it).
+          If login still fails, the error message will show exactly why (bad password, email not confirmed, missing profile row, or RLS).
+        </div>
+      </div>
     </div>
 
-    <form id="loginForm">
-      <div class="field">
-        <label>Email</label>
-        <input id="email" type="email" placeholder="you@department.org" required />
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input id="password" type="password" placeholder="••••••••" required />
-      </div>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-        <button class="btn primary" type="submit">Sign in</button>
-        <button class="btn" type="button" id="signUpBtn">Create account</button>
-      </div>
-
-      <div id="loginErr" class="err" style="display:none;"></div>
-      <div id="loginOk" class="ok" style="display:none;"></div>
-      <div class="hint" style="margin-top:10px;">
-        Tip: You can also create users in Supabase → Authentication → Users.
-      </div>
-    </form>
   </div>
 </section>
 
 <section id="appView" style="display:none;">
   <div class="shell">
     <aside class="sidebar">
-      <div class="brand">
+      <div class="row" style="padding:12px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);">
         <div class="logo" aria-hidden="true"></div>
         <div>
-          <h1>Department Portal <span class="sub">Single login • Role-based access</span></h1>
+          <div style="font-weight:800; font-size:14px;">Department Portal</div>
+          <div class="hint">Role-based access (RLS)</div>
         </div>
       </div>
 
-      <div class="sideCard">
-        <h3>Active Profile</h3>
-        <div class="metaRow">
+      <div style="margin-top:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);">
+        <div style="font-weight:700;font-size:13px;">Active Profile</div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
           <span class="badge info" id="whoLine">Loading…</span>
-        </div>
-        <div class="metaRow" style="margin-top:10px;">
           <span class="badge" id="stationLine">Station</span>
           <span class="badge" id="shiftLine">Shift</span>
-        </div>
-        <div class="metaRow" style="margin-top:10px;">
-          <span class="badge" id="emsLine">EMS</span>
-          <span class="badge" id="fireLine">Fire</span>
-          <span class="badge" id="aoLine">AO</span>
-        </div>
-        <div class="metaRow" style="margin-top:10px;">
-          <span class="badge" id="staffLine">Access</span>
         </div>
       </div>
 
       <nav class="nav" id="nav">
-        <div class="item active" data-page="home"><span>Home</span><span class="pill">Widgets</span></div>
-        <div class="item" data-page="training"><span>Training</span><span class="pill" id="trainingPill">My</span></div>
-        <div class="item" data-page="evaluations" data-staff="true"><span>Evaluations</span><span class="pill">Staff</span></div>
-        <div class="item" data-page="inventory" data-staff="officer"><span>Inventory</span><span class="pill">Later</span></div>
-        <div class="item" data-page="settings"><span>Settings</span></div>
+        <div class="item active" data-page="home"><span>Home</span><span class="pill">Me</span></div>
+        <div class="item" data-page="debug"><span>Debug</span><span class="pill">JSON</span></div>
       </nav>
 
-      <div class="sideCard">
-        <h3>Notes</h3>
-        <p class="hint" style="margin:0;">
-          UI gating is cosmetic; your Supabase RLS policies are the real security.
-        </p>
+      <div style="margin-top:14px;">
+        <button class="btn danger" id="logoutBtn">Log out</button>
       </div>
     </aside>
 
     <main class="main">
       <div class="topbar">
-        <div class="search" role="search">
-          <span style="opacity:.8;">🔎</span>
-          <input placeholder="Search (visual only for now) …" />
+        <div>
+          <div style="font-weight:800;">Welcome</div>
+          <div class="hint" id="welcomeLine">Loading…</div>
         </div>
-
-        <div class="rightTools">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn" id="refreshBtn">Refresh</button>
-          <button class="btn danger" id="logoutBtn">Log out</button>
         </div>
       </div>
 
       <section id="page-home">
-        <div class="pageHead">
-          <div>
-            <h2>Home Dashboard</h2>
-            <p>Personalized data based on your access level.</p>
+        <div class="panel">
+          <div class="panelHead">
+            <div style="font-weight:800;">Quick status</div>
+            <span class="badge" id="accessBadge">—</span>
           </div>
-          <div class="actions">
-            <button class="btn primary" id="goTrainingBtn">Go to Training</button>
-          </div>
-        </div>
-
-        <div class="stats">
-          <div class="stat">
-            <div class="k"><span>Weather</span><span class="badge">Mock</span></div>
-            <div class="v" style="font-size:18px; font-weight:800;">62°F • Clear</div>
-            <div style="margin-top:8px; color:var(--muted); font-size:12px;">(Later we can pull real weather by station.)</div>
-          </div>
-          <div class="stat">
-            <div class="k"><span>My Candidate</span><span class="badge info">RLS</span></div>
-            <div class="v" style="font-size:18px; font-weight:800;" id="candidateName">—</div>
-            <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="candidateMeta">—</div>
-          </div>
-          <div class="stat">
-            <div class="k"><span>Progress</span><span class="badge">Training</span></div>
-            <div class="v" id="progressLine">—</div>
-            <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="progressSub">—</div>
-          </div>
-          <div class="stat">
-            <div class="k"><span>Access</span><span class="badge">Policy</span></div>
-            <div class="v" style="font-size:18px; font-weight:800;" id="accessLine">—</div>
-            <div style="margin-top:8px; color:var(--muted); font-size:12px;">RLS decides what each person can see.</div>
-          </div>
-        </div>
-
-        <div class="grid">
-          <div class="panel">
-            <div class="panelHead">
-              <div>
-                <h3>What’s Next</h3>
-                <div class="small" id="whatsNextSub">Loading…</div>
-              </div>
-              <span class="badge" id="whatsNextBadge">—</span>
-            </div>
-            <div class="panelBody" id="whatsNextBody"></div>
-          </div>
-
-          <div class="panel">
-            <div class="panelHead">
-              <div>
-                <h3>Quick Actions</h3>
-                <div class="small">Based on your access</div>
-              </div>
-              <span class="badge">Live</span>
-            </div>
-            <div class="panelBody" id="quickActions"></div>
+          <div class="panelBody" id="homeBody">
+            <div class="hint">Loading…</div>
           </div>
         </div>
       </section>
 
-      <section id="page-training" style="display:none;">
-        <div class="pageHead">
-          <div>
-            <h2>Training</h2>
-            <p id="trainingSub">Your requirements and progress.</p>
-          </div>
-          <div class="actions" id="trainingActions">
-            <button class="btn" id="refreshTrainingBtn">Refresh</button>
-          </div>
-        </div>
-
+      <section id="page-debug" style="display:none;">
         <div class="panel">
           <div class="panelHead">
-            <div>
-              <h3>Requirements</h3>
-              <div class="small">From <code>candidate_requirements</code> joined to <code>requirements</code>.</div>
-            </div>
-            <span class="badge" id="trainingCount">—</span>
-          </div>
-          <div class="panelBody" id="trainingTableWrap"></div>
-        </div>
-      </section>
-
-      <section id="page-evaluations" style="display:none;">
-        <div class="pageHead">
-          <div>
-            <h2>Evaluations</h2>
-            <p>Staff view: pick a candidate and submit an evaluation.</p>
-          </div>
-          <div class="actions">
-            <button class="btn" id="refreshEvalsBtn">Refresh</button>
-            <button class="btn primary" id="openEvalBtn">Start Evaluation</button>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panelHead">
-            <div>
-              <h3>Candidate Queue</h3>
-              <div class="small">Shows what your account is allowed to see (RLS).</div>
-            </div>
-            <span class="badge" id="queueCount">—</span>
-          </div>
-          <div id="queueWrap"></div>
-        </div>
-      </section>
-
-      <section id="page-inventory" style="display:none;">
-        <div class="pageHead">
-          <div>
-            <h2>Inventory</h2>
-            <p>Placeholder. We’ll add this module later.</p>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panelHead">
-            <h3>Coming soon</h3>
-            <span class="badge">Module</span>
+            <div style="font-weight:800;">Session + Profile</div>
+            <span class="badge">Debug</span>
           </div>
           <div class="panelBody">
-            <div class="card">
-              <h4>Future features</h4>
-              <p>Low stock • Expirations • Check-out logs • Station transfers</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="page-settings" style="display:none;">
-        <div class="pageHead">
-          <div>
-            <h2>Settings</h2>
-            <p>Basic account info and debugging.</p>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panelHead">
-            <h3>Debug</h3>
-            <span class="badge">Useful</span>
-          </div>
-          <div class="panelBody">
-            <div class="card">
-              <h4>Session</h4>
-              <pre id="sessionDump" style="white-space:pre-wrap;margin:0;color:rgba(255,255,255,.78);font-size:12px;"></pre>
-            </div>
-            <div class="card">
-              <h4>Profile (raw)</h4>
-              <pre id="profileDump" style="white-space:pre-wrap;margin:0;color:rgba(255,255,255,.78);font-size:12px;"></pre>
+            <div style="display:grid;gap:10px;">
+              <div class="panel" style="margin:0;">
+                <div class="panelHead"><div style="font-weight:700;">Session</div></div>
+                <div class="panelBody"><pre id="sessionDump"></pre></div>
+              </div>
+              <div class="panel" style="margin:0;">
+                <div class="panelHead"><div style="font-weight:700;">Profile</div></div>
+                <div class="panelBody"><pre id="profileDump"></pre></div>
+              </div>
+              <div class="panel" style="margin:0;">
+                <div class="panelHead"><div style="font-weight:700;">Candidate (linked)</div></div>
+                <div class="panelBody"><pre id="candidateDump"></pre></div>
+              </div>
             </div>
           </div>
         </div>
@@ -541,112 +291,6 @@ Loading…
   </div>
 </section>
 
-<div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Evaluation Modal">
-  <div class="modal">
-    <div class="modalHead">
-      <h3>Submit Evaluation</h3>
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <span class="badge">Writes to DB</span>
-        <button class="btn" id="closeEvalBtn">Close</button>
-      </div>
-    </div>
-
-    <div class="modalBody">
-      <div class="rubric">
-        <div class="card">
-          <h4>How this works</h4>
-          <p>On submit, we create a row in <code>evaluations</code> and update the matching row in <code>candidate_requirements</code>.</p>
-        </div>
-        <div class="card">
-          <h4>Rubric (mock)</h4>
-          <p>Visual placeholder. Later we’ll build real rubrics per skill.</p>
-          <div class="needs" style="margin-top:10px;">
-            <span class="tag info">Scene safety / PPE</span>
-            <span class="tag">Primary assessment</span>
-            <span class="tag warn">Critical steps</span>
-            <span class="tag">Reassessment</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="sideForm">
-        <div class="field">
-          <label>Candidate</label>
-          <select id="evalCandidate"></select>
-        </div>
-
-        <div class="field">
-          <label>Requirement</label>
-          <select id="evalRequirement"></select>
-        </div>
-
-        <div class="field">
-          <label>Result</label>
-          <select id="evalResult">
-            <option value="passed">Passed</option>
-            <option value="redo">Redo</option>
-            <option value="failed">Failed</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Critical Fail</label>
-          <select id="evalCritical">
-            <option value="false">No</option>
-            <option value="true">Yes — Critical Fail</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Notes</label>
-          <textarea id="evalNotes" placeholder="Remediation notes / strengths / follow-up."></textarea>
-        </div>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button class="btn primary" id="submitEvalBtn">Submit</button>
-          <button class="btn" id="markCredentialedBtn" title="Will only mark if all requirements passed">Mark Credentialed</button>
-        </div>
-
-        <div id="evalErr" class="err" style="display:none;"></div>
-        <div id="evalOk" class="ok" style="display:none;"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<script>
-  // Load Supabase library with CDN fallback (jsDelivr → unpkg)
-  window.__supabaseLoaded = false;
-  function loadScript(src){
-    return new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = src;
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error("Failed to load " + src));
-      document.head.appendChild(s);
-    });
-  }
-  (async () => {
-    const banner = document.getElementById("debugBanner");
-    try{
-      banner.textContent = "Loading Supabase…";
-      await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js");
-      window.__supabaseLoaded = true;
-      banner.textContent = "Supabase loaded (jsDelivr)";
-    }catch(e1){
-      try{
-        banner.textContent = "jsDelivr blocked. Trying unpkg…";
-        await loadScript("https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js");
-        window.__supabaseLoaded = true;
-        banner.textContent = "Supabase loaded (unpkg)";
-      }catch(e2){
-        banner.textContent = "Supabase FAILED to load. Network/content blocker.";
-        console.error(e1, e2);
-      }
-    }
-  })();
-</script>
 <script>
   /***********************************************************************
    * ✅ SET THESE TWO VALUES (Supabase → Project Settings → API)
@@ -659,18 +303,88 @@ Loading…
   const show = (el) => el.style.display = "";
   const hide = (el) => el.style.display = "none";
   const setText = (id, text) => { const el = $(id); if (el) el.textContent = text; };
+  const status = (msg) => { const el = $("status"); if (el) el.textContent = msg; };
 
-  function keysMissing() {
+  function keysMissing(){
     return !SUPABASE_URL || !SUPABASE_ANON_KEY ||
       SUPABASE_URL.includes("PASTE_") || SUPABASE_ANON_KEY.includes("PASTE_");
   }
 
-  const loginView = $("loginView");
-  const appView = $("appView");
+  // Simple token storage
+  const TOKEN_KEY = "dept_portal_tokens_v1";
 
-  const pages = ["home","training","evaluations","inventory","settings"];
+  function saveTokens(t){ localStorage.setItem(TOKEN_KEY, JSON.stringify(t)); }
+  function loadTokens(){ try{ return JSON.parse(localStorage.getItem(TOKEN_KEY) || "null"); }catch{ return null; } }
+  function clearTokens(){ localStorage.removeItem(TOKEN_KEY); }
+
+  function authHeaders(accessToken){
+    return {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": "Bearer " + accessToken
+    };
+  }
+
+  async function authSignIn(email, password){
+    const url = `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json?.error_description || json?.msg || json?.message || "Sign-in failed");
+    return json; // includes access_token, refresh_token, user, etc.
+  }
+
+  async function authSignUp(email, password){
+    const url = `${SUPABASE_URL}/auth/v1/signup`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json?.error_description || json?.msg || json?.message || "Sign-up failed");
+    return json;
+  }
+
+  async function authGetUser(accessToken){
+    const url = `${SUPABASE_URL}/auth/v1/user`;
+    const res = await fetch(url, { headers: authHeaders(accessToken) });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json?.error_description || json?.msg || json?.message || "Could not fetch user");
+    return json;
+  }
+
+  async function restGet(path, accessToken){
+    const url = `${SUPABASE_URL}/rest/v1/${path}`;
+    const res = await fetch(url, { headers: { ...authHeaders(accessToken), "Accept":"application/json" } });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json?.message || "REST GET failed");
+    return json;
+  }
+
+  async function restPatch(path, accessToken, body){
+    const url = `${SUPABASE_URL}/rest/v1/${path}`;
+    const res = await fetch(url, {
+      method:"PATCH",
+      headers: { ...authHeaders(accessToken), "Content-Type":"application/json", "Prefer":"return=representation" },
+      body: JSON.stringify(body)
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json?.message || "REST PATCH failed");
+    return json;
+  }
+
+  // UI: nav pages
+  const pages = ["home","debug"];
   const navItems = Array.from(document.querySelectorAll("#nav .item"));
-
   function switchPage(page){
     navItems.forEach(i => i.classList.toggle("active", i.dataset.page === page));
     pages.forEach(p => {
@@ -681,599 +395,148 @@ Loading…
   }
   navItems.forEach(item => item.addEventListener("click", () => switchPage(item.dataset.page)));
 
-  // Modal
-  const overlay = $("overlay");
-  $("closeEvalBtn").addEventListener("click", () => overlay.classList.remove("show"));
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.classList.remove("show"); });
-
-  // Supabase
-  let supabase = null;
-
   // State
-  let currentUser = null;
-  let currentProfile = null;
-  let currentCandidate = null;
-  let isStaff = false;
-  let canInventory = false;
-  let cachedRequirements = [];
-  let cachedCandidates = [];
+  let tokens = null;
+  let user = null;
+  let profile = null;
+  let candidate = null;
 
-  function computeAccess(profile){
-    const adminRole = (profile?.admin_role ?? "").toString().toLowerCase();
-    const isAdmin = adminRole === "admin" || adminRole === "fire_chief";
-    const isEmsInstr = !!profile?.is_ems_instructor;
-    const isFireInstr = !!profile?.is_fire_instructor;
+  function showErr(msg){ $("loginErr").style.display=""; $("loginErr").textContent = msg; }
+  function showOk(msg){ $("loginOk").style.display=""; $("loginOk").textContent = msg; }
 
-    const roleTxt = (profile?.role ?? profile?.Role ?? "").toString().toLowerCase();
-    const instrTxt = (profile?.instructor_status ?? profile?.Instructor_Status ?? "").toString().toLowerCase();
+  async function refreshAll(){
+    $("loginErr").style.display="none";
+    $("loginOk").style.display="none";
 
-    const fallbackInstr = instrTxt.includes("instructor");
-    const fallbackAdmin = roleTxt.includes("admin") || roleTxt.includes("chief");
+    tokens = loadTokens();
+    if (!tokens?.access_token){
+      hide($("appView")); show($("loginView"));
+      status("Signed out");
+      return;
+    }
 
-    const staff = isAdmin || isEmsInstr || isFireInstr || fallbackInstr || fallbackAdmin;
-    const inventoryOk = isAdmin || roleTxt.includes("officer");
+    status("Fetching user…");
+    user = await authGetUser(tokens.access_token);
 
-    return { staff, inventoryOk, isAdmin };
-  }
+    status("Loading profile…");
+    // profiles row must exist, id = auth.users.id
+    const profs = await restGet(`profiles?select=*&id=eq.${encodeURIComponent(user.id)}&limit=1`, tokens.access_token);
+    profile = Array.isArray(profs) ? profs[0] : null;
 
-  function gateNav(){
-    const evalItem = navItems.find(x => x.dataset.page === "evaluations");
-    const invItem = navItems.find(x => x.dataset.page === "inventory");
+    if (!profile){
+      clearTokens();
+      hide($("appView")); show($("loginView"));
+      showErr("Signed in, but no matching profiles row exists for this user ID. Create profiles row with id = auth.users.id.");
+      status("Profile missing");
+      return;
+    }
 
-    if (evalItem) evalItem.style.display = isStaff ? "" : "none";
-    if (invItem) invItem.style.display = canInventory ? "" : "none";
-    setText("trainingPill", isStaff ? "All" : "My");
+    status("Loading linked candidate…");
+    const cands = await restGet(`candidates?select=*&linked_user_id=eq.${encodeURIComponent(user.id)}&limit=1`, tokens.access_token);
+    candidate = Array.isArray(cands) ? cands[0] : null;
+
+    // Paint UI
+    setText("whoLine", `${profile.full_name ?? "User"} • ${profile.role ?? "—"}`);
+    setText("stationLine", String(profile.station ?? "Station —"));
+    setText("shiftLine", String(profile.shift ?? "Shift —"));
+    setText("welcomeLine", `${profile.full_name ?? "User"} (${profile.role ?? "—"})`);
+    setText("accessBadge", candidate ? "Linked candidate: Yes" : "Linked candidate: No");
+
+    $("sessionDump").textContent = JSON.stringify({ user_id:user.id, email:user.email }, null, 2);
+    $("profileDump").textContent = JSON.stringify(profile, null, 2);
+    $("candidateDump").textContent = JSON.stringify(candidate, null, 2);
+
+    $("homeBody").innerHTML = `
+      <div class="hint" style="margin-bottom:10px;">
+        This “no-CDN” build proves your network can talk to Supabase without loading external libraries.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge info">Auth OK</span>
+        <span class="badge ${profile ? "good":"bad"}">Profile ${profile ? "OK":"Missing"}</span>
+        <span class="badge ${candidate ? "good":"warn"}">Candidate ${candidate ? "Linked":"Not linked"}</span>
+      </div>
+      <div class="hint" style="margin-top:12px;">
+        Next step: once this works, we swap your full portal UI over to this same fetch()-based client.
+      </div>
+    `;
+
+    hide($("loginView")); show($("appView"));
+    switchPage("home");
+    status("Ready");
   }
 
   $("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    $("loginErr").style.display = "none";
-    $("loginOk").style.display = "none";
+    $("loginErr").style.display="none";
+    $("loginOk").style.display="none";
 
-    if (keysMissing()) {
-      $("loginErr").style.display = "";
-      $("loginErr").textContent = "Missing keys: Set SUPABASE_URL and SUPABASE_ANON_KEY in the script at the bottom of this file.";
-      return;
+    if (keysMissing()){
+      $("keyBadge").textContent = "Keys: MISSING";
+      $("keyBadge").className = "badge bad";
+      return showErr("Set SUPABASE_URL and SUPABASE_ANON_KEY in this file.");
     }
 
     const email = $("email").value.trim();
     const password = $("password").value;
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      $("loginErr").style.display = "";
-      $("loginErr").textContent = error.message;
-      return;
+    try{
+      status("Signing in…");
+      const t = await authSignIn(email, password);
+      saveTokens({ access_token:t.access_token, refresh_token:t.refresh_token, token_type:t.token_type, expires_in:t.expires_in });
+      showOk("Signed in. Loading portal…");
+      await refreshAll();
+    }catch(err){
+      status("Sign-in error");
+      showErr(err.message || String(err));
     }
-    $("loginOk").style.display = "";
-    $("loginOk").textContent = "Signed in. Loading portal…";
-    await refreshAll();
   });
 
   $("signUpBtn").addEventListener("click", async () => {
-    $("loginErr").style.display = "none";
-    $("loginOk").style.display = "none";
+    $("loginErr").style.display="none";
+    $("loginOk").style.display="none";
 
-    if (keysMissing()) {
-      $("loginErr").style.display = "";
-      $("loginErr").textContent = "Missing keys: Set SUPABASE_URL and SUPABASE_ANON_KEY in the script at the bottom of this file.";
-      return;
+    if (keysMissing()){
+      $("keyBadge").textContent = "Keys: MISSING";
+      $("keyBadge").className = "badge bad";
+      return showErr("Set SUPABASE_URL and SUPABASE_ANON_KEY in this file.");
     }
 
     const email = $("email").value.trim();
     const password = $("password").value;
 
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      $("loginErr").style.display = "";
-      $("loginErr").textContent = error.message;
-      return;
+    try{
+      status("Creating account…");
+      await authSignUp(email, password);
+      showOk("Account created. If confirmation is enabled, check email. Otherwise, sign in now.");
+      status("Ready");
+    }catch(err){
+      status("Sign-up error");
+      showErr(err.message || String(err));
     }
-    $("loginOk").style.display = "";
-    $("loginOk").textContent = "Account created. If email confirmation is enabled, check email. Otherwise, sign in now.";
   });
 
   $("logoutBtn").addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    currentUser = null;
-    currentProfile = null;
-    currentCandidate = null;
-    hide(appView);
-    show(loginView);
-  });
-
-  $("refreshBtn").addEventListener("click", refreshAll);
-  $("refreshTrainingBtn").addEventListener("click", loadTraining);
-  $("goTrainingBtn").addEventListener("click", () => switchPage("training"));
-  $("refreshEvalsBtn").addEventListener("click", loadQueue);
-
-  $("openEvalBtn").addEventListener("click", async () => {
-    $("evalErr").style.display = "none";
-    $("evalOk").style.display = "none";
-    overlay.classList.add("show");
-    await populateEvalModal();
-  });
-
-  $("submitEvalBtn").addEventListener("click", async () => {
-    $("evalErr").style.display = "none";
-    $("evalOk").style.display = "none";
-
-    const candidateId = $("evalCandidate").value;
-    const requirementId = $("evalRequirement").value;
-    const result = $("evalResult").value;
-    const criticalFail = $("evalCritical").value === "true";
-    const notes = $("evalNotes").value;
-
-    if (!candidateId || !requirementId) {
-      $("evalErr").style.display = "";
-      $("evalErr").textContent = "Choose a candidate and a requirement.";
-      return;
-    }
-
-    const { error: insErr } = await supabase
-      .from("evaluations")
-      .insert([{
-        candidate_id: candidateId,
-        requirement_id: requirementId,
-        evaluator_id: currentUser.id,
-        result,
-        critical_fail: criticalFail,
-        notes
-      }]);
-
-    if (insErr) {
-      $("evalErr").style.display = "";
-      $("evalErr").textContent = insErr.message;
-      return;
-    }
-
-    const { error: updErr } = await supabase
-      .from("candidate_requirements")
-      .update({ status: result, updated_at: new Date().toISOString() })
-      .eq("candidate_id", candidateId)
-      .eq("requirement_id", requirementId);
-
-    if (updErr) {
-      $("evalErr").style.display = "";
-      $("evalErr").textContent = "Eval saved, but could not update requirement status: " + updErr.message;
-      return;
-    }
-
-    $("evalOk").style.display = "";
-    $("evalOk").textContent = "Saved. Requirement updated to: " + result;
+    clearTokens();
     await refreshAll();
   });
 
-  $("markCredentialedBtn").addEventListener("click", async () => {
-    $("evalErr").style.display = "none";
-    $("evalOk").style.display = "none";
-
-    const candidateId = $("evalCandidate").value;
-    if (!candidateId) {
-      $("evalErr").style.display = "";
-      $("evalErr").textContent = "Choose a candidate first.";
-      return;
-    }
-
-    const { data: rows, error } = await supabase
-      .from("candidate_requirements")
-      .select("status")
-      .eq("candidate_id", candidateId);
-
-    if (error) {
-      $("evalErr").style.display = "";
-      $("evalErr").textContent = error.message;
-      return;
-    }
-
-    const total = rows?.length ?? 0;
-    const passed = rows?.filter(r => r.status === "passed")?.length ?? 0;
-
-    if (total === 0 || passed !== total) {
-      $("evalErr").style.display = "";
-      $("evalErr").textContent = `Not eligible: ${passed}/${total} passed.`;
-      return;
-    }
-
-    const { error: upd } = await supabase
-      .from("candidates")
-      .update({ status: "credentialed" })
-      .eq("id", candidateId);
-
-    if (upd) {
-      $("evalErr").style.display = "";
-      $("evalErr").textContent = upd.message;
-      return;
-    }
-
-    $("evalOk").style.display = "";
-    $("evalOk").textContent = "Candidate marked as credentialed.";
-    await refreshAll();
+  $("refreshBtn").addEventListener("click", async () => {
+    try{ await refreshAll(); }catch(e){ showErr(e.message || String(e)); }
   });
 
-  async function populateEvalModal(){
-    const { data: cands, error: cErr } = await supabase
-      .from("candidates")
-      .select("id, full_name, station, status")
-      .order("created_at", { ascending: false });
-
-    if (cErr) {
-      $("evalErr").style.display = "";
-      $("evalErr").textContent = cErr.message;
-      return;
-    }
-
-    cachedCandidates = cands ?? [];
-    const candSel = $("evalCandidate");
-    candSel.innerHTML = "";
-    cachedCandidates.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c.id;
-      opt.textContent = `${c.full_name} • ${c.station ?? ""} • ${c.status ?? ""}`;
-      candSel.appendChild(opt);
-    });
-
-    const { data: reqs, error: rErr } = await supabase
-      .from("requirements")
-      .select("id, name, track, category, is_critical")
-      .order("created_at", { ascending: false });
-
-    if (rErr) {
-      $("evalErr").style.display = "";
-      $("evalErr").textContent = rErr.message;
-      return;
-    }
-
-    cachedRequirements = reqs ?? [];
-    const reqSel = $("evalRequirement");
-    reqSel.innerHTML = "";
-    cachedRequirements.forEach(r => {
-      const opt = document.createElement("option");
-      opt.value = r.id;
-      opt.textContent = `${r.name} • ${r.track ?? ""}${r.is_critical ? " • CRITICAL" : ""}`;
-      reqSel.appendChild(opt);
-    });
-
-    if (currentCandidate?.id) candSel.value = currentCandidate.id;
+  // Init
+  if (keysMissing()){
+    $("keyBadge").textContent = "Keys: MISSING";
+    $("keyBadge").className = "badge bad";
+    status("Keys missing");
+  } else {
+    $("keyBadge").textContent = "Keys: set";
+    status("Keys set");
   }
 
-  async function refreshAll(){
-    const { data: s } = await supabase.auth.getSession();
-    currentUser = s?.session?.user ?? null;
-
-    if (!currentUser) {
-      hide(appView);
-      show(loginView);
-      return;
-    }
-
-    const { data: prof, error: pErr } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", currentUser.id)
-      .maybeSingle();
-
-    if (pErr) {
-      hide(appView);
-      show(loginView);
-      $("loginErr").style.display = "";
-      $("loginErr").textContent =
-        "Signed in, but no matching profiles row exists for this user ID. Create a profiles row with id = auth.users.id.";
-      return;
-    }
-
-    currentProfile = prof;
-
-    const acc = computeAccess(currentProfile);
-    isStaff = acc.staff;
-    canInventory = acc.inventoryOk;
-    gateNav();
-
-    const { data: cand } = await supabase
-      .from("candidates")
-      .select("*")
-      .eq("linked_user_id", currentUser.id)
-      .maybeSingle();
-
-    currentCandidate = cand ?? null;
-
-    setText("whoLine", `${currentProfile?.full_name ?? "User"} • ${String(currentProfile?.role ?? currentProfile?.Role ?? "—")}`);
-    setText("stationLine", String(currentProfile?.station ?? currentProfile?.Station ?? "Station —"));
-    setText("shiftLine", String(currentProfile?.shift ?? currentProfile?.Shift ?? "Shift —"));
-    setText("emsLine", `EMS: ${String(currentProfile?.ems_level ?? currentProfile?.EMS_Level ?? "—")}`);
-    setText("fireLine", `Fire: ${String(currentProfile?.fire_level ?? currentProfile?.Fire_Level ?? "—")}`);
-    setText("aoLine", `AO: ${String(currentProfile?.ao_level ?? "None")}`);
-    setText("staffLine", isStaff ? "Staff: Yes" : "Staff: No");
-
-    $("sessionDump").textContent = JSON.stringify({
-      user_id: currentUser.id,
-      email: currentUser.email,
-      staff: isStaff,
-      inventory: canInventory
-    }, null, 2);
-    $("profileDump").textContent = JSON.stringify(currentProfile, null, 2);
-
-    hide(loginView);
-    show(appView);
-
-    await loadHome();
-    await loadTraining();
-    if (isStaff) await loadQueue();
-    switchPage("home");
-  }
-
-  async function loadHome(){
-    if (!currentCandidate) {
-      setText("candidateName", isStaff ? "No linked candidate (staff account)" : "No linked candidate");
-      setText("candidateMeta", "Link candidates.linked_user_id to this user to enable recruit view.");
-      setText("progressLine", "—");
-      setText("progressSub", "—");
-      setText("whatsNextSub", isStaff ? "Staff view: open Evaluations." : "Recruit view: link your candidate.");
-      setText("whatsNextBadge", "Setup");
-      $("whatsNextBody").innerHTML = `
-        <div class="card">
-          <h4>Setup step</h4>
-          <p>Make sure the logged-in user has a <code>profiles</code> row, and the correct candidate has <code>linked_user_id</code> set to that same UUID.</p>
-        </div>
-      `;
-    } else {
-      setText("candidateName", currentCandidate.full_name);
-      setText("candidateMeta", `${currentCandidate.station ?? ""} • ${currentCandidate.status ?? ""}`);
-
-      const { data: rows, error } = await supabase
-        .from("candidate_requirements")
-        .select("status")
-        .eq("candidate_id", currentCandidate.id);
-
-      if (error) {
-        setText("progressLine", "Error");
-        setText("progressSub", error.message);
-      } else {
-        const total = rows?.length ?? 0;
-        const passed = rows?.filter(r => r.status === "passed")?.length ?? 0;
-        const redo = rows?.filter(r => r.status === "redo")?.length ?? 0;
-        const failed = rows?.filter(r => r.status === "failed")?.length ?? 0;
-
-        setText("progressLine", `${passed}/${total}`);
-        setText("progressSub", `Redo: ${redo} • Failed: ${failed}`);
-
-        const { data: nextRows } = await supabase
-          .from("candidate_requirements")
-          .select("status, requirements(name, track, category, is_critical)")
-          .eq("candidate_id", currentCandidate.id);
-
-        const pending = (nextRows ?? []).find(r => r.status === "pending") ||
-                        (nextRows ?? []).find(r => r.status === "redo");
-
-        if (pending?.requirements?.name) {
-          setText("whatsNextSub", "Recruit view: your next requirement");
-          setText("whatsNextBadge", pending.status === "redo" ? "Redo" : "Next");
-          $("whatsNextBody").innerHTML = `
-            <div class="card">
-              <h4>${escapeHtml(pending.requirements.name)} ${pending.requirements.is_critical ? "<span class='badge bad'>CRITICAL</span>" : ""}</h4>
-              <p>Track: ${escapeHtml(pending.requirements.track ?? "—")} • Category: ${escapeHtml(pending.requirements.category ?? "—")}</p>
-              <div class="needs" style="margin-top:10px;">
-                <span class="tag ${pending.status === "redo" ? "warn" : "info"}">${escapeHtml(pending.status.toUpperCase())}</span>
-                <span class="tag">Assigned: auto</span>
-              </div>
-            </div>
-          `;
-        } else {
-          setText("whatsNextSub", "All assigned requirements complete (or none assigned).");
-          setText("whatsNextBadge", "Done");
-          $("whatsNextBody").innerHTML = `
-            <div class="card">
-              <h4>Nothing pending</h4>
-              <p>If this candidate is complete, staff can mark as credentialed.</p>
-            </div>
-          `;
-        }
-      }
-    }
-
-    setText("accessLine", isStaff ? "Instructor / Admin" : "Recruit");
-
-    const qa = [];
-    qa.push(`<button class="btn primary" onclick="switchPage('training')">Open Training</button>`);
-    if (isStaff) qa.push(`<button class="btn" onclick="switchPage('evaluations')">Open Evaluations</button>`);
-    if (canInventory) qa.push(`<button class="btn" onclick="switchPage('inventory')">Open Inventory</button>`);
-    qa.push(`<div class="card" style="margin-top:12px;"><h4>Tip</h4><p>${isStaff ? "Staff accounts can view multiple candidates (RLS filtered)." : "Recruit accounts see only their linked candidate."}</p></div>`);
-    $("quickActions").innerHTML = qa.join("");
-  }
-
-  async function loadTraining(){
-    const wrap = $("trainingTableWrap");
-    wrap.innerHTML = `<div class="hint">Loading…</div>`;
-
-    if (!currentCandidate) {
-      $("trainingCount").textContent = "—";
-      wrap.innerHTML = `<div class="card"><h4>No linked candidate</h4><p>Link your user to a candidate to view progress.</p></div>`;
-      return;
-    }
-
-    const { data: rows, error } = await supabase
-      .from("candidate_requirements")
-      .select("status, updated_at, requirements(name, track, category, is_critical)")
-      .eq("candidate_id", currentCandidate.id);
-
-    if (error) {
-      wrap.innerHTML = `<div class="card"><h4>Error</h4><p>${escapeHtml(error.message)}</p></div>`;
-      return;
-    }
-
-    const list = rows ?? [];
-    $("trainingCount").textContent = `${list.length} total`;
-
-    wrap.innerHTML = `
-      <table class="table" aria-label="Requirements">
-        <thead>
-          <tr>
-            <th style="width:36%;">Requirement</th>
-            <th style="width:14%;">Track</th>
-            <th style="width:18%;">Category</th>
-            <th style="width:14%;">Status</th>
-            <th>Updated</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${list.map(r => {
-            const tagClass = r.status === "passed" ? "good" : (r.status === "redo" ? "warn" : (r.status === "failed" ? "bad" : ""));
-            const crit = r.requirements?.is_critical ? `<span class="badge bad">CRITICAL</span>` : "";
-            return `
-              <tr class="row">
-                <td><b>${escapeHtml(r.requirements?.name ?? "")}</b> ${crit}</td>
-                <td>${escapeHtml(r.requirements?.track ?? "")}</td>
-                <td>${escapeHtml(r.requirements?.category ?? "")}</td>
-                <td><span class="badge ${tagClass}">${escapeHtml(r.status ?? "")}</span></td>
-                <td style="color:var(--muted);font-size:12px;">${r.updated_at ? new Date(r.updated_at).toLocaleString() : "—"}</td>
-              </tr>
-            `;
-          }).join("")}
-        </tbody>
-      </table>
-    `;
-  }
-
-  async function loadQueue(){
-    const wrap = $("queueWrap");
-    wrap.innerHTML = `<div class="panelBody"><div class="hint">Loading…</div></div>`;
-
-    const { data: cands, error: cErr } = await supabase
-      .from("candidates")
-      .select("id, full_name, station, shift, status, created_at")
-      .order("created_at", { ascending: false });
-
-    if (cErr) {
-      wrap.innerHTML = `<div class="panelBody"><div class="card"><h4>Error</h4><p>${escapeHtml(cErr.message)}</p></div></div>`;
-      return;
-    }
-
-    const candidates = cands ?? [];
-    $("queueCount").textContent = `${candidates.length}`;
-
-    const candIds = candidates.map(c => c.id);
-    let reqRows = [];
-    if (candIds.length) {
-      const { data: rows } = await supabase
-        .from("candidate_requirements")
-        .select("candidate_id, status, requirements(name, is_critical, track)")
-        .in("candidate_id", candIds);
-      reqRows = rows ?? [];
-    }
-
-    function progressFor(id){
-      const mine = reqRows.filter(r => r.candidate_id === id);
-      const total = mine.length;
-      const passed = mine.filter(r => r.status === "passed").length;
-      const pct = total ? Math.round((passed/total)*100) : 0;
-
-      const needs = mine
-        .filter(r => r.status !== "passed")
-        .slice(0,3)
-        .map(r => {
-          const cls = r.status === "redo" ? "warn" : (r.status === "failed" ? "bad" : "info");
-          return `<span class="tag ${cls}">${escapeHtml(r.requirements?.name ?? "Need")} (${escapeHtml(r.status)})</span>`;
-        }).join("") || `<span class="tag good">No needs</span>`;
-
-      return { total, passed, pct, needs };
-    }
-
-    wrap.innerHTML = `
-      <table class="table" aria-label="Candidate Queue">
-        <thead>
-          <tr>
-            <th style="width:26%;">Candidate</th>
-            <th style="width:22%;">Progress</th>
-            <th>Still needs</th>
-            <th style="width:18%;">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${candidates.map(c => {
-            const p = progressFor(c.id);
-            return `
-              <tr class="row">
-                <td>
-                  <b>${escapeHtml(c.full_name ?? "")}</b>
-                  <div style="color:var(--muted); font-size:12px;">${escapeHtml(c.station ?? "")}${c.shift ? " • " + escapeHtml(c.shift) : ""}</div>
-                </td>
-                <td>
-                  <div class="progressWrap">
-                    <div class="bar"><div class="fill" style="width:${p.pct}%"></div></div>
-                    <div class="pct">${p.passed}/${p.total}</div>
-                  </div>
-                </td>
-                <td><div class="needs">${p.needs}</div></td>
-                <td><button class="miniBtn" data-open-eval="${c.id}">Evaluate</button></td>
-              </tr>
-            `;
-          }).join("")}
-        </tbody>
-      </table>
-    `;
-
-    wrap.querySelectorAll("[data-open-eval]").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = btn.getAttribute("data-open-eval");
-        overlay.classList.add("show");
-        await populateEvalModal();
-        $("evalCandidate").value = id;
-      });
-    });
-  }
-
-  function escapeHtml(s){
-    return (s ?? "").toString()
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  async function init(){
-    // Create client (even with placeholders, so UI can show keysMissing message)
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    hide(appView);
-    show(loginView);
-
-    if (keysMissing()) {
-      $("loginErr").style.display = "";
-      $("loginErr").textContent = "Set SUPABASE_URL and SUPABASE_ANON_KEY in this file, then refresh.";
-      return;
-    }
-
-    const { data: s } = await supabase.auth.getSession();
-    currentUser = s?.session?.user ?? null;
-
-    if (currentUser) await refreshAll();
-
-    supabase.auth.onAuthStateChange(async () => {
-      await refreshAll();
-    });
-  }
-
-  // Wait for Supabase library to load before initializing.
-  (async () => {
-    for (let i=0; i<200; i++){
-      if (window.supabase && window.supabase.createClient) break;
-      await new Promise(r => setTimeout(r, 50));
-    }
-    const banner = document.getElementById("debugBanner");
-    if (!(window.supabase && window.supabase.createClient)) {
-      if (banner) banner.textContent = "Supabase not available. Can't start app.";
-      const err = document.getElementById("loginErr");
-      if (err){
-        err.style.display = "";
-        err.textContent = "Supabase library could not load. Try disabling content blockers or switching networks.";
-      }
-      return;
-    }
-    if (banner) banner.textContent = "Starting app…";
-    init();
-    if (banner) banner.textContent = "Ready (enter email/password)";
-  })();
+  // Auto resume session if tokens exist
+  refreshAll().catch(e => showErr(e.message || String(e)));
 </script>
+
 </body>
 </html>
