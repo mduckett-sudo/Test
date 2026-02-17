@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Briaroaks Department Portal</title>
-
   <style>
     :root{
-      --bg:#07070a;
+      --bg:#0a0a0c;
       --stroke:rgba(255,255,255,.12);
       --text:rgba(255,255,255,.92);
       --muted:rgba(255,255,255,.62);
@@ -21,91 +20,94 @@
       --warn:#ffcc66;
       --bad:#ff5c7a;
       --info:#7aa7ff;
-
-      --panel:rgba(255,255,255,.05);
-      --panel2:rgba(0,0,0,.22);
     }
 
     *{box-sizing:border-box}
-    html, body { min-height: 100%; }
-
+    html,body{min-height:100%}
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color:var(--text);
+      background: var(--bg);
       overflow-x:hidden;
-      background: transparent; /* background is on ::before for iOS scroll correctness */
-      min-height: 100%;
     }
 
-    /* Full-page background layer (fixes iPad Safari scroll/background issues) */
-    body::before{
-      content:"";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-
-      /* Default site background: light grey -> dark -> black + subtle glow */
+    /* ✅ iOS-safe fixed background layer (solves scroll/background issues) */
+    .bgLayer{
+      position:fixed;
+      inset:0;
+      z-index:-1;
       background:
-        radial-gradient(1200px 800px at 15% 10%, rgba(255,255,255,.12), transparent 60%),
-        radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.07), transparent 55%),
-        radial-gradient(900px 600px at 75% 90%, rgba(255,255,255,.05), transparent 60%),
-        linear-gradient(180deg, #cfcfd4 0%, #2a2a2f 45%, #07070a 100%);
+        radial-gradient(1200px 800px at 15% 10%, rgba(255,255,255,.10), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.06), transparent 55%),
+        radial-gradient(900px 600px at 75% 90%, rgba(0,0,0,.22), transparent 60%),
+        linear-gradient(180deg, rgba(210,210,210,.10) 0%, rgba(20,20,24,.20) 40%, rgba(0,0,0,.65) 100%),
+        var(--bg);
+      transform: translateZ(0);
     }
 
-    /* Training Manager mode backgrounds (only when body has these classes) */
-    body.mode-fire::before{
+    /* Theme overrides (only used inside Training Manager) */
+    body.theme-fire .bgLayer{
       background:
         radial-gradient(1200px 800px at 15% 10%, rgba(255,43,43,.18), transparent 60%),
         radial-gradient(900px 600px at 80% 20%, rgba(255,43,43,.10), transparent 55%),
         radial-gradient(900px 600px at 75% 90%, rgba(255,43,43,.08), transparent 60%),
-        linear-gradient(180deg, #cfcfd4 0%, #2a2a2f 45%, #07070a 100%);
+        linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(20,20,24,.16) 35%, rgba(0,0,0,.68) 100%),
+        var(--bg);
     }
-    body.mode-ems::before{
+    body.theme-ems .bgLayer{
       background:
         radial-gradient(1200px 800px at 15% 10%, rgba(43,107,255,.18), transparent 60%),
         radial-gradient(900px 600px at 80% 20%, rgba(43,107,255,.10), transparent 55%),
         radial-gradient(900px 600px at 75% 90%, rgba(43,107,255,.08), transparent 60%),
-        linear-gradient(180deg, #cfcfd4 0%, #2a2a2f 45%, #07070a 100%);
+        linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(20,20,24,.16) 35%, rgba(0,0,0,.68) 100%),
+        var(--bg);
     }
 
     button,input,select,textarea{font:inherit;color:inherit}
     a{color:inherit}
 
+    /* Layout */
     .shell{
       display:grid;
       grid-template-columns:300px 1fr;
-      min-height: 100dvh; /* iOS-friendly */
+      min-height:100vh;
+      min-height:100dvh; /* ✅ iOS dynamic toolbar safe */
     }
 
     .sidebar{
       position:sticky;
       top:0;
-      padding:22px;
+      align-self:start;
+      height:100vh;
+      height:100dvh; /* ✅ */
+      max-height:100vh;
+      max-height:100dvh;
+      overflow:auto;
+      padding:18px;
       border-right:1px solid var(--stroke);
       background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       backdrop-filter: blur(10px);
-      height:auto;
-      max-height:100dvh;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
     }
 
+    .main{
+      padding:18px 22px 36px;
+      min-width:0;
+    }
+
+    /* User card */
     .userCard{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
       padding:14px;
-      border-radius:22px;
-      background:rgba(255,255,255,.055);
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
       border:1px solid rgba(255,255,255,.14);
-      box-shadow:0 18px 48px rgba(0,0,0,.22);
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
     }
-
-    .userTop{
-      display:flex; gap:12px; align-items:center;
-    }
-
     .logoWrap{
-      width:48px;height:48px;border-radius:14px;
+      width:46px;height:46px;border-radius:14px;
       background:rgba(255,255,255,.06);
       border:1px solid rgba(255,255,255,.16);
       display:grid;place-items:center;
@@ -114,174 +116,176 @@
     }
     .logoWrap img{width:40px;height:40px;object-fit:contain;display:block}
 
+    .userMeta{min-width:0}
     .userName{
-      font-weight:900; letter-spacing:.2px; font-size:15px; line-height:1.15;
-      margin:0;
+      font-weight:900;
+      letter-spacing:.2px;
+      font-size:15px;
+      line-height:1.1;
+      margin:1px 0 6px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .userSub{
-      margin-top:4px;
       font-size:12px;
       color:var(--muted);
+      margin:0;
       line-height:1.25;
     }
 
-    .chips{
-      margin-top:12px;
+    .badges{
       display:flex;
-      gap:8px;
       flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
     }
 
-    .chip{
+    .badge{
       font-size:12px;
-      padding:6px 10px;
+      padding:4px 10px;
       border-radius:999px;
       border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.18);
-      color:rgba(255,255,255,.86);
+      background:rgba(255,255,255,.04);
+      color:rgba(255,255,255,.78);
       white-space:nowrap;
     }
-    .chip.fireInstr{
+    .badge.fire{
       border-color:rgba(255,43,43,.35);
-      background:rgba(255,43,43,.14);
-      color:rgba(255,210,210,.95);
+      background:rgba(255,43,43,.12);
+      color:rgba(255,190,190,.98);
     }
-    .chip.emsInstr{
+    .badge.ems{
       border-color:rgba(43,107,255,.35);
-      background:rgba(43,107,255,.14);
-      color:rgba(210,225,255,.95);
+      background:rgba(43,107,255,.12);
+      color:rgba(190,210,255,.98);
     }
 
-    /* Grey fill + rainbow glowing border */
-    .chip.admin{
-      position:relative;
-      background:rgba(255,255,255,.10);
-      color:rgba(255,255,255,.92);
+    /* Admin badge: grey fill + rainbow glowing border */
+    .badge.admin{
+      background:rgba(120,120,120,.20);
+      color:rgba(255,255,255,.88);
       border:1px solid transparent;
-      box-shadow: 0 0 18px rgba(255,255,255,.06);
+      position:relative;
     }
-    .chip.admin::before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      border-radius:999px;
-      background: conic-gradient(
-        from 180deg,
-        #ff2b2b, #ffcc66, #2ee59d, #2b6bff, #b86bff, #ff2b2b
-      );
-      filter: blur(6px);
-      opacity:.55;
-      z-index:-2;
-    }
-    .chip.admin::after{
+    .badge.admin::before{
       content:"";
       position:absolute;
       inset:-1px;
       border-radius:999px;
-      background: conic-gradient(
-        from 180deg,
-        #ff2b2b, #ffcc66, #2ee59d, #2b6bff, #b86bff, #ff2b2b
-      );
-      z-index:-1;
-    }
-    .chip.admin{
-      background-clip: padding-box;
+      padding:1px;
+      background:linear-gradient(90deg, #ff2b2b, #ffcc66, #2ee59d, #2b6bff, #b06cff, #ff2b2b);
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;
+              mask-composite:exclude;
+      filter: drop-shadow(0 0 10px rgba(180,180,255,.28));
+      pointer-events:none;
     }
 
+    /* Nav */
     .nav{
       margin-top:14px;
       display:flex;
       flex-direction:column;
       gap:8px;
     }
-
     .nav .item{
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:10px;
       padding:10px 12px;
-      border-radius:16px;
+      border-radius:14px;
       border:1px solid transparent;
-      color:rgba(255,255,255,.72);
+      color:rgba(255,255,255,.68);
       cursor:pointer;
       user-select:none;
-      transition:background .12s ease, border-color .12s ease, color .12s ease;
     }
-
     .nav .item:hover{
-      background:rgba(255,255,255,.06);
+      background:rgba(255,255,255,.05);
       color:var(--text);
     }
-
     .nav .item.active{
-      background:rgba(255,255,255,.09);
+      background:rgba(255,255,255,.10);
       border-color:rgba(255,255,255,.14);
       color:var(--text);
     }
-
-    .nav .icon{
-      width:18px;height:18px;
-      display:grid; place-items:center;
-      opacity:.92;
-      flex:0 0 auto;
-    }
-
-    .pill{
+    .nav .pill{
       margin-left:auto;
       font-size:12px;
       padding:3px 9px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.04);
-      color:rgba(255,255,255,.62);
+      color:rgba(255,255,255,.65);
+    }
+    .ico{
+      width:18px;height:18px; flex:0 0 auto;
+      opacity:.92;
     }
 
-    .main{padding:22px 26px 36px}
-
+    /* Topbar */
     .topbar{
-      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
       padding:14px;
       border-radius:var(--radius);
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.12);
       box-shadow:var(--shadow);
       flex-wrap:wrap;
     }
-
     .search{
-      flex:1; min-width:220px;
-      display:flex; gap:10px; align-items:center;
-      padding:10px 12px; border-radius:16px;
+      flex:1;
+      min-width:220px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      padding:10px 12px;
+      border-radius:14px;
       background:rgba(0,0,0,.22);
       border:1px solid rgba(255,255,255,.10);
     }
-    .search input{
-      width:100%;
-      border:0; outline:0; background:transparent;
-      font-size:14px;
-    }
+    .search input{width:100%; border:0; outline:0; background:transparent; font-size:14px}
     .search input::placeholder{color:rgba(255,255,255,.42)}
     .rightTools{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
 
     .btn{
-      padding:10px 12px; border-radius:16px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.05);
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.045);
       color:var(--text);
-      cursor:pointer; user-select:none;
-      display:inline-flex; gap:10px; align-items:center;
+      cursor:pointer;
+      user-select:none;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
       transition:transform .06s ease, background .12s ease, border-color .12s ease;
     }
-    .btn:hover{background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.18)}
+    .btn:hover{background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.18)}
     .btn:active{transform:translateY(1px)}
-    .btn.primary{border-color:rgba(255,255,255,.20); background:rgba(255,255,255,.09)}
-    .btn.danger{border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.12)}
-    .btn.small{padding:8px 10px; border-radius:14px; font-size:12px}
-    .btn.warn{border-color:rgba(255,204,102,.34); background:rgba(255,204,102,.10)}
+    .btn.primary{
+      border-color:rgba(255,255,255,.18);
+      background:rgba(255,255,255,.08);
+    }
+    .btn.danger{
+      border-color:rgba(255,92,122,.34);
+      background:rgba(255,92,122,.12);
+    }
+    .btn.small{padding:8px 10px; border-radius:12px; font-size:12px}
+    .btn.ghost{background:transparent}
 
+    /* Pages + panels */
     .pageHead{
       margin:18px 4px 14px;
-      display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
       flex-wrap:wrap;
     }
     .pageHead h2{margin:0; font-size:18px; letter-spacing:.2px}
@@ -294,60 +298,57 @@
       gap:12px;
       margin:14px 0 12px;
     }
-
     .stat{
       padding:14px;
       border-radius:var(--radius);
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow:0 14px 38px rgba(0,0,0,.18);
-      min-height:104px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 14px 38px rgba(0,0,0,.22);
+      min-height:102px;
       overflow:hidden;
     }
     .stat .k{
       font-size:12px;
-      color:rgba(255,255,255,.68);
+      color:rgba(255,255,255,.62);
       display:flex;
       justify-content:space-between;
       gap:10px;
       align-items:center;
     }
-    .stat .k .badgeMini{
+    .stat .k .pillMini{
       font-size:12px;
-      padding:4px 10px;
+      padding:3px 9px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.18);
-      color:rgba(255,255,255,.66);
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:rgba(255,255,255,.62);
       white-space:nowrap;
     }
-    .stat .v{
-      margin-top:10px;
-      font-size:18px;
-      font-weight:900;
-      letter-spacing:.2px;
-      line-height:1.15;
-    }
+    .stat .v{margin-top:10px; font-size:18px; font-weight:900; letter-spacing:.2px}
     .stat .sub{
       margin-top:8px;
-      color:var(--muted);
+      color:rgba(255,255,255,.58);
       font-size:12px;
       line-height:1.35;
+      white-space:pre-line;
     }
 
     .panel{
       border-radius:var(--radius);
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow:0 18px 48px rgba(0,0,0,.18);
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 18px 48px rgba(0,0,0,.22);
       overflow:hidden;
       margin-top:12px;
     }
     .panelHead{
       padding:14px;
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      border-bottom:1px solid rgba(255,255,255,.12);
-      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       flex-wrap:wrap;
     }
     .panelHead h3{margin:0; font-size:13px; letter-spacing:.25px}
@@ -366,52 +367,29 @@
 
     .table{width:100%; border-collapse:collapse}
     .table th,.table td{
-      text-align:left;
-      padding:12px 14px;
-      border-bottom:1px solid rgba(255,255,255,.10);
-      font-size:13px;
-      vertical-align:top;
+      text-align:left; padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      font-size:13px; vertical-align:top;
     }
     .table th{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:600;
-      letter-spacing:.25px;
+      font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.25px;
       background:rgba(0,0,0,.12);
     }
     .row:hover td{background:rgba(255,255,255,.04)}
 
     .miniBtn{
       padding:7px 10px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.05);
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
       cursor:pointer;
       color:var(--text);
       font-size:12px;
     }
-    .miniBtn:hover{background:rgba(255,255,255,.08)}
-
-    .needs{display:flex; flex-wrap:wrap; gap:6px}
-    .tag{
-      font-size:12px; padding:4px 8px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);
-      color:var(--muted);
-      white-space:nowrap;
-    }
-    .tag.good{border-color:rgba(46,229,157,.30); background:rgba(46,229,157,.10); color:rgba(46,229,157,.95)}
-    .tag.warn{border-color:rgba(255,204,102,.28); background:rgba(255,204,102,.10); color:rgba(255,204,102,.95)}
-    .tag.bad{border-color:rgba(255,92,122,.30); background:rgba(255,92,122,.10); color:rgba(255,92,122,.95)}
-    .tag.info{border-color:rgba(122,167,255,.30); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
-
-    .progressWrap{display:flex; gap:10px; align-items:center; min-width:170px}
-    .bar{flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.10)}
-    .fill{height:100%; border-radius:999px; background:linear-gradient(90deg, rgba(255,255,255,.90), rgba(255,255,255,.45)); width:0%}
-    .pct{font-size:12px; color:var(--muted); white-space:nowrap}
+    .miniBtn:hover{background:rgba(255,255,255,.07)}
 
     /* Login */
-    .center{min-height:100dvh; display:grid; place-items:center; padding:22px}
+    .center{min-height:100vh; min-height:100dvh; display:grid; place-items:center; padding:22px}
     .loginCard{
       width:min(560px, 100%);
       padding:18px;
@@ -425,7 +403,7 @@
     .field label{font-size:12px; color:var(--muted)}
     .field input,.field select,.field textarea{
       width:100%;
-      border-radius:16px;
+      border-radius:14px;
       border:1px solid rgba(255,255,255,.12);
       background:rgba(0,0,0,.18);
       padding:10px;
@@ -462,12 +440,40 @@
     .sideForm{padding:16px; display:flex; flex-direction:column; gap:12px}
     textarea{min-height:120px; resize:vertical}
 
-    @media (max-width: 1120px){
+    /* Training Manager toggle */
+    .segWrap{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+    }
+    .seg{
+      display:flex;
+      gap:6px;
+      padding:6px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.18);
+    }
+    .seg button{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid transparent;
+      background:transparent;
+      cursor:pointer;
+      color:rgba(255,255,255,.72);
+      font-size:12px;
+    }
+    .seg button.active{
+      background:rgba(255,255,255,.10);
+      border-color:rgba(255,255,255,.16);
+      color:rgba(255,255,255,.92);
+    }
+    .segHint{font-size:12px; color:var(--muted)}
+
+    @media (max-width: 1100px){
       .stats{grid-template-columns:repeat(3, minmax(0,1fr))}
     }
     @media (max-width: 980px){
       .shell{grid-template-columns:1fr}
-      .sidebar{position:relative; max-height:none}
+      .sidebar{position:relative; height:auto; max-height:none}
       .modalBody{grid-template-columns:1fr}
       .rubric{border-right:0; border-bottom:1px solid rgba(255,255,255,.10)}
     }
@@ -479,11 +485,13 @@
   </style>
 </head>
 
-<body>
+<body class="theme-default">
+  <div class="bgLayer" aria-hidden="true"></div>
+
   <!-- LOGIN -->
   <section id="loginView" class="center">
     <noscript>
-      <div style="max-width:560px;margin:12px auto 0 auto;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,204,102,.35);background:rgba(255,204,102,.10);color:rgba(255,204,102,.95);font-size:12px;line-height:1.45;">
+      <div style="max-width:560px;margin:12px auto 0 auto;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,204,102,.35);background:rgba(255,204,102,.10);color:rgba(255,204,102,.95);font-size:12px;line-height:1.45;">
         JavaScript is disabled or blocked. This portal requires JavaScript.
       </div>
     </noscript>
@@ -497,7 +505,7 @@
           <div style="font-weight:900; letter-spacing:.2px; font-size:16px;">Briaroaks Department Portal</div>
           <div class="hint">No external JS CDN • Supabase via fetch()</div>
         </div>
-        <span class="chip" style="margin-left:auto;">iPad-friendly</span>
+        <span class="badge" style="margin-left:auto;">iPad-friendly</span>
       </div>
 
       <div class="card" style="margin-top:14px;">
@@ -518,7 +526,7 @@
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
           <button class="btn primary" type="submit">Sign in</button>
           <button class="btn" type="button" id="signUpBtn">Create account</button>
-          <button class="btn" type="button" id="clearSessionBtn" title="Clears local session storage">Clear session</button>
+          <button class="btn ghost" type="button" id="clearSessionBtn" title="Clears local session storage">Clear session</button>
         </div>
 
         <div id="loginErr" class="err" style="display:none;"></div>
@@ -535,97 +543,47 @@
   <section id="appView" style="display:none;">
     <div class="shell">
       <aside class="sidebar">
-        <!-- User header (replaces “Briaroaks Portal” + removes Active Profile block) -->
+        <!-- User card -->
         <div class="userCard">
-          <div class="userTop">
-            <div class="logoWrap" aria-hidden="true">
-              <img src="./logo.png" alt="Briaroaks logo" onerror="this.style.display='none'">
-            </div>
-            <div style="min-width:0;">
-              <h1 class="userName" id="sbName">Loading…</h1>
-              <div class="userSub" id="sbSub">—</div>
-            </div>
+          <div class="logoWrap" aria-hidden="true">
+            <img src="./logo.png" alt="Briaroaks logo" onerror="this.style.display='none'">
           </div>
-          <div class="chips" id="sbChips"></div>
+          <div class="userMeta">
+            <div class="userName" id="sideName">Loading…</div>
+            <p class="userSub" id="sideSub">—</p>
+            <div class="badges" id="sideBadges"></div>
+          </div>
         </div>
 
-        <!-- Nav tabs under user -->
-        <nav class="nav" id="nav" aria-label="Primary navigation">
+        <!-- Nav -->
+        <nav class="nav" id="nav">
           <div class="item active" data-page="home">
-            <span class="icon" aria-hidden="true">
-              <!-- Home icon -->
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M5.5 10.5V21h13V10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M9.5 21v-6h5v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span>Dashboard Home</span>
-            <span class="pill">Home</span>
+            <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <span>Dashboard Home</span><span class="pill">Home</span>
           </div>
 
           <div class="item" data-page="training">
-            <span class="icon" aria-hidden="true">
-              <!-- Clipboard/Check icon -->
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M9 5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M8 4h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                <path d="M8.5 12.5l2 2 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span>My Training</span>
-            <span class="pill">My</span>
+            <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M7 4h10a2 2 0 0 1 2 2v14H7a2 2 0 0 0-2 2V6a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 18h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>My Training</span><span class="pill">My</span>
           </div>
 
-          <div class="item" data-page="personnelPublic">
-            <span class="icon" aria-hidden="true">
-              <!-- Users icon -->
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M8 12a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M2.5 21c.6-3.4 3.2-5 5.5-5s4.9 1.6 5.5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M12 21c.4-2.7 2.4-4.5 4.5-4.5S20.6 18.3 21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              </svg>
-            </span>
+          <div class="item" data-page="department">
+            <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0Z" stroke="currentColor" stroke-width="1.6"/><path d="M4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span>Department Personnel</span>
           </div>
 
           <div class="item" data-page="trainingManager" data-staff="instructor">
-            <span class="icon" aria-hidden="true">
-              <!-- Shield/Star icon -->
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M12 2l8 4v7c0 5-3.4 9.4-8 9.9C7.4 22.4 4 18 4 13V6l8-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                <path d="M12 7.5l1.2 2.6 2.8.4-2 1.9.5 2.8-2.5-1.4-2.5 1.4.5-2.8-2-1.9 2.8-.4L12 7.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span>Training Manager</span>
-            <span class="pill">Staff</span>
+            <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h10M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16 11.5 20 9v6l-4-2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <span>Training Manager</span><span class="pill">Staff</span>
           </div>
 
-          <div class="item" data-page="personnelManager" data-staff="officer">
-            <span class="icon" aria-hidden="true">
-              <!-- Sliders icon -->
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M4 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M18 7h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M4 17h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M10 17h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M14 7a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M6 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" stroke="currentColor" stroke-width="1.8"/>
-              </svg>
-            </span>
-            <span>Personnel Manager</span>
-            <span class="pill">Officer</span>
+          <div class="item" data-page="personnel" data-staff="admin">
+            <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.6 9.4 8 10 4.4-.6 8-5 8-10V6l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 12.5 11 14l3.5-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Personnel Manager</span><span class="pill">Admin</span>
           </div>
 
           <div class="item" data-page="settings">
-            <span class="icon" aria-hidden="true">
-              <!-- Gear icon -->
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M19.4 15a8.5 8.5 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.6 7.6 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.6 7.6 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a8.5 8.5 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7a7.6 7.6 0 0 0 1.7 1l.3 2.4h4.4l.3-2.4a7.6 7.6 0 0 0 1.7-1l2.3.7 2-3.4-2-1.2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-              </svg>
-            </span>
+            <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 15a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.6a7.3 7.3 0 0 0-1.7-1l-.3-2.3H10.8l-.3 2.3a7.3 7.3 0 0 0-1.7 1L6.5 8.4l-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.6a7.3 7.3 0 0 0 1.7 1l.3 2.3h4.4l.3-2.3a7.3 7.3 0 0 0 1.7-1l2.3.6 2-3.4-2-1.2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
             <span>Settings</span>
           </div>
         </nav>
@@ -634,13 +592,7 @@
       <main class="main">
         <div class="topbar">
           <div class="search" role="search">
-            <span style="opacity:.8;">
-              <!-- Search icon -->
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-                <path d="M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15Z" stroke="currentColor" stroke-width="1.8"/>
-                <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-              </svg>
-            </span>
+            <svg class="ico" style="width:16px;height:16px;opacity:.75" viewBox="0 0 24 24" fill="none"><path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="1.6"/><path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <input placeholder="Search (visual only) …" />
           </div>
 
@@ -664,37 +616,37 @@
 
           <div class="stats">
             <div class="stat">
-              <div class="k"><span>Weather</span><span class="badgeMini">76028</span></div>
-              <div class="v" id="dashWeather">—</div>
-              <div class="sub" id="dashWeatherSub">Loading weather…</div>
+              <div class="k"><span>Weather</span><span class="pillMini">76028</span></div>
+              <div class="v" id="dashWeather">Loading…</div>
+              <div class="sub" id="dashWeatherSub">—</div>
             </div>
 
             <div class="stat">
-              <div class="k"><span>Fire Rank</span><span class="badgeMini">Profile</span></div>
+              <div class="k"><span>Fire Rank</span><span class="pillMini">Profile</span></div>
               <div class="v" id="dashFireRank">—</div>
               <div class="sub">Current rank</div>
             </div>
 
             <div class="stat">
-              <div class="k"><span>EMS Level</span><span class="badgeMini">Profile</span></div>
+              <div class="k"><span>EMS Level</span><span class="pillMini">Profile</span></div>
               <div class="v" id="dashEmsLevel">—</div>
               <div class="sub">Current level</div>
             </div>
 
             <div class="stat">
-              <div class="k"><span>AO Level</span><span class="badgeMini">Profile</span></div>
+              <div class="k"><span>AO Level</span><span class="pillMini">Profile</span></div>
               <div class="v" id="dashAO">—</div>
               <div class="sub">Current AO</div>
             </div>
 
             <div class="stat">
-              <div class="k"><span>Station Assignment</span><span class="badgeMini">Profile</span></div>
+              <div class="k"><span>Station Assignment</span><span class="pillMini">Profile</span></div>
               <div class="v" id="dashStation">—</div>
               <div class="sub">Assigned station</div>
             </div>
 
             <div class="stat">
-              <div class="k"><span>EMS Expiration</span><span class="badgeMini">Countdown</span></div>
+              <div class="k"><span>EMS Expiration</span><span class="pillMini">Countdown</span></div>
               <div class="v" id="dashEmsExpiry">—</div>
               <div class="sub" id="dashEmsExpirySub">—</div>
             </div>
@@ -735,22 +687,22 @@
                 <h3>Requirements</h3>
                 <div class="small">From <code>candidate_requirements</code> joined to <code>requirements</code>.</div>
               </div>
-              <span class="pill" id="trainingCount">—</span>
+              <span class="badge" id="trainingCount">—</span>
             </div>
             <div class="panelBody" id="trainingTableWrap"></div>
           </div>
         </section>
 
-        <!-- DEPARTMENT PERSONNEL (everyone can view) -->
-        <section id="page-personnelPublic" style="display:none;">
+        <!-- DEPARTMENT PERSONNEL (all can see) -->
+        <section id="page-department" style="display:none;">
           <div class="pageHead">
             <div>
               <h2>Department Personnel</h2>
-              <p>All members • EMS/Fire/AO levels and station assignment.</p>
+              <p>All members: name • station • EMS • Fire • AO.</p>
             </div>
             <div class="actions">
-              <button class="btn" id="refreshPublicPersonnelBtn">Refresh</button>
-              <span class="pill" id="publicMembersCount">—</span>
+              <button class="btn" id="refreshDeptBtn">Refresh</button>
+              <span class="badge" id="deptCount">—</span>
             </div>
           </div>
 
@@ -758,25 +710,26 @@
             <div class="panelHead">
               <div>
                 <h3>Members</h3>
-                <div class="small">Read-only view for all roles.</div>
+                <div class="small">Read-only directory.</div>
               </div>
             </div>
-            <div class="panelBody" id="membersWrap">
-              <div class="hint">Loading…</div>
-            </div>
+            <div class="panelBody" id="deptWrap"></div>
           </div>
         </section>
 
-        <!-- TRAINING MANAGER (staff) -->
+        <!-- TRAINING MANAGER -->
         <section id="page-trainingManager" style="display:none;">
           <div class="pageHead">
             <div>
               <h2>Training Manager</h2>
-              <p>Staff view. Choose Fire or EMS training mode while you’re here.</p>
+              <p>Staff view. Choose Fire or EMS training for this page.</p>
             </div>
-            <div class="actions">
-              <button class="btn small" id="tmFireBtn">Fire Training</button>
-              <button class="btn small" id="tmEmsBtn">EMS Training</button>
+            <div class="actions segWrap">
+              <div class="seg" aria-label="Training track toggle">
+                <button id="tmFireBtn" type="button" class="active">Fire Training</button>
+                <button id="tmEmsBtn" type="button">EMS Training</button>
+              </div>
+              <span class="segHint" id="tmModeHint">Theme: Fire</span>
               <button class="btn" id="refreshTMBtn">Refresh</button>
               <button class="btn primary" id="openEvalBtn">Start Evaluation</button>
             </div>
@@ -788,22 +741,22 @@
                 <h3>Candidate Queue</h3>
                 <div class="small">Shows candidates your account is allowed to see (RLS).</div>
               </div>
-              <span class="pill" id="queueCount">—</span>
+              <span class="badge" id="queueCount">—</span>
             </div>
             <div id="queueWrap"></div>
           </div>
         </section>
 
-        <!-- PERSONNEL MANAGER (officer/admin) -->
-        <section id="page-personnelManager" style="display:none;">
+        <!-- PERSONNEL MANAGER (admin only) -->
+        <section id="page-personnel" style="display:none;">
           <div class="pageHead">
             <div>
               <h2>Personnel Manager</h2>
-              <p>Officer/Admin can manage member assignments and levels.</p>
+              <p>Admin can manage member assignments and instructor flags.</p>
             </div>
             <div class="actions">
               <button class="btn" id="refreshPMBtn">Refresh</button>
-              <span class="pill" id="pmCount">—</span>
+              <span class="badge" id="pmCount">—</span>
             </div>
           </div>
 
@@ -811,7 +764,7 @@
             <div class="panelHead">
               <div>
                 <h3>Members</h3>
-                <div class="small">Edit station, levels, AO, EMS expiration, and instructor flags.</div>
+                <div class="small">Edit station, levels, AO, EMS expiration, instructor flags, admin_role.</div>
               </div>
             </div>
             <div class="panelBody" id="pmWrap"></div>
@@ -829,7 +782,7 @@
           <div class="panel">
             <div class="panelHead">
               <h3>Debug</h3>
-              <span class="pill">Useful</span>
+              <span class="badge">Useful</span>
             </div>
             <div class="panelBody">
               <div class="card">
@@ -858,7 +811,7 @@
       <div class="modalHead">
         <h3>Submit Evaluation</h3>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <span class="pill">Writes to DB</span>
+          <span class="badge">Writes to DB</span>
           <button class="btn" id="closeEvalBtn">Close</button>
         </div>
       </div>
@@ -875,12 +828,6 @@
           <div class="card">
             <h4>Rubric (placeholder)</h4>
             <p>Later we can build real rubrics per skill station.</p>
-            <div class="needs" style="margin-top:10px;">
-              <span class="tag info">Scene safety / PPE</span>
-              <span class="tag">Primary assessment</span>
-              <span class="tag warn">Critical steps</span>
-              <span class="tag">Reassessment</span>
-            </div>
           </div>
         </div>
 
@@ -934,7 +881,7 @@
       <div class="modalHead">
         <h3>Edit Member</h3>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-          <span class="pill">Updates profiles</span>
+          <span class="badge">Updates profiles</span>
           <button class="btn" id="closePMBtn">Close</button>
         </div>
       </div>
@@ -943,17 +890,13 @@
         <div class="rubric">
           <div class="card">
             <h4>Editing rules</h4>
-            <p>
-              Officer/Admin can edit station, levels, AO, EMS expiration.
-              Officer/Admin can also toggle Fire/EMS instructor flags.
-              Admin is controlled by <code>admin_role</code>.
-            </p>
+            <p>Admin can edit station/levels/AO + EMS expiration + instructor flags + admin_role.</p>
           </div>
           <div class="card">
             <h4>Selected member</h4>
             <p id="pmSelected">—</p>
-            <div class="needs" style="margin-top:10px;">
-              <span class="tag info" id="pmIdTag">ID: —</span>
+            <div style="margin-top:10px;">
+              <span class="badge" id="pmIdTag">ID: —</span>
             </div>
           </div>
         </div>
@@ -973,7 +916,7 @@
           </div>
 
           <div class="field">
-            <label>Fire Rank (fire_level enum)</label>
+            <label>Fire Level (fire_level enum)</label>
             <select id="pmFire"></select>
           </div>
 
@@ -989,8 +932,8 @@
           </div>
 
           <div class="card">
-            <h4>Instructor Flags</h4>
-            <p>Controls staff access (RLS uses these).</p>
+            <h4>Access</h4>
+            <p>Instructor flags control Training Manager access. Admin role controls admin access.</p>
           </div>
 
           <div class="field">
@@ -1009,14 +952,13 @@
             </select>
           </div>
 
-          <div class="field" id="adminRoleBlock" style="display:none;">
+          <div class="field">
             <label>Admin Role (admin_role enum)</label>
             <select id="pmAdminRole">
               <option value="None">None</option>
               <option value="Admin">Admin</option>
               <option value="Fire Chief">Fire Chief</option>
             </select>
-            <div class="hint">Only Admin can change admin_role.</div>
           </div>
 
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -1056,6 +998,11 @@ function setLastError(msg){
   $("lastErrorDump").textContent = String(msg ?? "");
 }
 
+function setTheme(theme){ // "default" | "fire" | "ems"
+  document.body.classList.remove("theme-default","theme-fire","theme-ems");
+  document.body.classList.add("theme-" + theme);
+}
+
 // ---------------- Supabase REST (no CDN) ----------------
 const AUTH_URL = () => `${SUPABASE_URL}/auth/v1`;
 const REST_URL = () => `${SUPABASE_URL}/rest/v1`;
@@ -1066,6 +1013,7 @@ function baseHeaders(){
     "Content-Type": "application/json",
   };
 }
+
 function authHeaders(){
   const access = session?.access_token;
   return access
@@ -1093,6 +1041,7 @@ async function signIn(email, password){
     body: JSON.stringify({ email, password })
   });
 }
+
 async function signUp(email, password){
   const url = `${AUTH_URL()}/signup`;
   return await fetchJson(url, {
@@ -1101,6 +1050,7 @@ async function signUp(email, password){
     body: JSON.stringify({ email, password })
   });
 }
+
 async function refreshToken(refresh_token){
   const url = `${AUTH_URL()}/token?grant_type=refresh_token`;
   return await fetchJson(url, {
@@ -1109,6 +1059,7 @@ async function refreshToken(refresh_token){
     body: JSON.stringify({ refresh_token })
   });
 }
+
 async function signOut(){
   clearSession();
 }
@@ -1152,41 +1103,32 @@ let session = null;     // { access_token, refresh_token, user }
 let currentProfile = null;
 let currentCandidate = null;
 
-let access = { admin:false, officer:false, instructor:false, emsInstr:false, fireInstr:false };
-let trainingMode = "fire"; // fire|ems (only used in Training Manager)
+let access = { admin:false, instructor:false, emsInstr:false, fireInstr:false };
+let trainingMode = "fire"; // fire | ems (only for Training Manager page)
 
+// ---------------- Pages ----------------
 const loginView = $("loginView");
 const appView = $("appView");
 
-const pages = ["home","training","personnelPublic","trainingManager","personnelManager","settings"];
+const pages = ["home","training","department","trainingManager","personnel","settings"];
 const navItems = Array.from(document.querySelectorAll("#nav .item"));
 
-function setTrainingMode(mode){
-  trainingMode = (mode === "ems") ? "ems" : "fire";
-  // Only apply mode classes when we're IN the training manager page
-  if (currentPage === "trainingManager"){
-    document.body.classList.toggle("mode-fire", trainingMode === "fire");
-    document.body.classList.toggle("mode-ems", trainingMode === "ems");
-  }
-}
-
-let currentPage = "home";
-
 function switchPage(page){
-  currentPage = page;
-
-  // Remove training gradients unless we're on Training Manager
-  if (page !== "trainingManager"){
-    document.body.classList.remove("mode-fire", "mode-ems");
-  } else {
-    setTrainingMode(trainingMode);
-  }
-
   navItems.forEach(i => i.classList.toggle("active", i.dataset.page === page));
   pages.forEach(p => {
     const el = document.getElementById("page-" + p);
     if (el) el.style.display = (p === page) ? "" : "none";
   });
+
+  // ✅ Theme behavior:
+  // - Default theme everywhere
+  // - Training Manager theme depends on mode (fire/ems)
+  if (page === "trainingManager"){
+    setTheme(trainingMode === "ems" ? "ems" : "fire");
+  } else {
+    setTheme("default");
+  }
+
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -1195,30 +1137,45 @@ navItems.forEach(item => item.addEventListener("click", () => {
   switchPage(page);
 }));
 
-// Access logic based on your actual profiles columns:
-// - admin_role enum: None | Admin | Fire Chief
-// - is_ems_instructor boolean
-// - is_fire_instructor boolean
 function computeAccess(profile){
-  const adminRole = String(profile?.admin_role ?? "None").trim();
+  const adminRole = String(profile?.admin_role ?? "").trim();
   const admin = (adminRole === "Admin" || adminRole === "Fire Chief");
 
   const fireInstr = !!profile?.is_fire_instructor || admin;
   const emsInstr  = !!profile?.is_ems_instructor  || admin;
-
   const instructor = fireInstr || emsInstr;
-  const officer = admin; // you said you don't currently have an Officer column; treat Admin as officer-level for now
 
-  return { admin, officer, instructor, emsInstr, fireInstr };
+  return { admin, instructor, emsInstr, fireInstr };
 }
 
 function gateNav(){
   const tm = navItems.find(x => x.dataset.page === "trainingManager");
-  const pm = navItems.find(x => x.dataset.page === "personnelManager");
+  const pm = navItems.find(x => x.dataset.page === "personnel");
 
-  if (tm) tm.style.display = (access.instructor || access.officer || access.admin) ? "" : "none";
-  if (pm) pm.style.display = access.officer ? "" : "none";
+  if (tm) tm.style.display = access.instructor ? "" : "none";
+  if (pm) pm.style.display = access.admin ? "" : "none";
 }
+
+// ---------------- Training Manager mode toggle ----------------
+const tmFireBtn = $("tmFireBtn");
+const tmEmsBtn = $("tmEmsBtn");
+const tmModeHint = $("tmModeHint");
+
+function setTrainingMode(mode){
+  trainingMode = mode === "ems" ? "ems" : "fire";
+  tmFireBtn.classList.toggle("active", trainingMode === "fire");
+  tmEmsBtn.classList.toggle("active", trainingMode === "ems");
+  tmModeHint.textContent = "Theme: " + (trainingMode === "ems" ? "EMS" : "Fire");
+
+  // Only apply theme if we are currently on trainingManager page
+  const isOnTM = document.getElementById("page-trainingManager").style.display !== "none";
+  if (isOnTM){
+    setTheme(trainingMode === "ems" ? "ems" : "fire");
+  }
+}
+
+tmFireBtn.addEventListener("click", () => setTrainingMode("fire"));
+tmEmsBtn.addEventListener("click", () => setTrainingMode("ems"));
 
 // ---------------- Session persistence ----------------
 const SESSION_KEY = "briaroaks_portal_session_v2";
@@ -1227,6 +1184,7 @@ function saveSession(s){
   session = s;
   localStorage.setItem(SESSION_KEY, JSON.stringify(s));
 }
+
 function loadSession(){
   try {
     const raw = localStorage.getItem(SESSION_KEY);
@@ -1236,6 +1194,7 @@ function loadSession(){
   }
   return session;
 }
+
 function clearSession(){
   session = null;
   localStorage.removeItem(SESSION_KEY);
@@ -1246,59 +1205,6 @@ $("clearSessionBtn").addEventListener("click", () => {
   $("loginOk").style.display = "";
   $("loginOk").textContent = "Session cleared. You can sign in fresh now.";
 });
-
-// ---------------- Weather (Zip 76028) ----------------
-// Uses Open-Meteo (no key) + their geocoding endpoint.
-async function loadWeather76028(){
-  try{
-    setText("dashWeather", "—");
-    setText("dashWeatherSub", "Loading weather…");
-
-    // 76028 -> Burleson, TX (but we fetch via geocoding to be accurate)
-    const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=76028&count=1&language=en&format=json`;
-    const geo = await fetchJson(geoUrl, { method:"GET" });
-    const hit = geo?.results?.[0];
-    if (!hit){
-      setText("dashWeather", "Unavailable");
-      setText("dashWeatherSub", "Weather lookup failed.");
-      return;
-    }
-
-    const lat = hit.latitude;
-    const lon = hit.longitude;
-    const place = `${hit.name ?? "76028"}, ${hit.admin1 ?? ""}`.replace(", ,", ", ").trim();
-
-    const wxUrl = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
-    const wx = await fetchJson(wxUrl, { method:"GET" });
-
-    const t = wx?.current?.temperature_2m;
-    const w = wx?.current?.weather_code;
-    const wind = wx?.current?.wind_speed_10m;
-
-    const desc = weatherCodeToText(w);
-    setText("dashWeather", `${Math.round(t)}°F • ${desc}`);
-    setText("dashWeatherSub", `${place} • Wind ${Math.round(wind)} mph`);
-  }catch(err){
-    setText("dashWeather", "Unavailable");
-    setText("dashWeatherSub", "Weather error.");
-    setLastError("Weather error: " + err.message);
-  }
-}
-
-// Minimal WMO mapping
-function weatherCodeToText(code){
-  const c = Number(code);
-  if ([0].includes(c)) return "Clear";
-  if ([1,2].includes(c)) return "Partly cloudy";
-  if ([3].includes(c)) return "Overcast";
-  if ([45,48].includes(c)) return "Fog";
-  if ([51,53,55].includes(c)) return "Drizzle";
-  if ([61,63,65].includes(c)) return "Rain";
-  if ([71,73,75].includes(c)) return "Snow";
-  if ([80,81,82].includes(c)) return "Rain showers";
-  if ([95,96,99].includes(c)) return "Thunderstorms";
-  return "Weather";
-}
 
 // ---------------- UI actions ----------------
 $("loginForm").addEventListener("submit", async (e) => {
@@ -1360,19 +1266,17 @@ $("logoutBtn").addEventListener("click", async () => {
   currentCandidate = null;
   hide(appView);
   show(loginView);
+  setTheme("default");
 });
 
 $("refreshBtn").addEventListener("click", refreshAll);
 $("refreshTrainingBtn").addEventListener("click", loadTraining);
+$("refreshDeptBtn").addEventListener("click", loadDepartment);
 $("refreshTMBtn").addEventListener("click", loadQueue);
-$("refreshPMBtn").addEventListener("click", loadPersonnelManager);
-$("refreshPublicPersonnelBtn").addEventListener("click", loadMembers);
+$("refreshPMBtn").addEventListener("click", loadPersonnel);
 
 $("goTrainingBtn").addEventListener("click", () => switchPage("training"));
 $("dashTrainingTile").addEventListener("click", () => switchPage("training"));
-
-$("tmFireBtn").addEventListener("click", () => setTrainingMode("fire"));
-$("tmEmsBtn").addEventListener("click", () => setTrainingMode("ems"));
 
 // ---------------- Evaluation modal ----------------
 const overlayEval = $("overlayEval");
@@ -1393,7 +1297,7 @@ $("submitEvalBtn").addEventListener("click", async () => {
 
   const candidateId = $("evalCandidate").value;
   const requirementId = $("evalRequirement").value;
-  const result = $("evalResult").value;           // Passed/Retake/Failed
+  const result = $("evalResult").value;
   const criticalFail = $("evalCritical").value === "true";
   const notes = $("evalNotes").value;
 
@@ -1458,7 +1362,7 @@ async function populateEvalModal(){
   }
 }
 
-// ---------------- Personnel modal (Manager) ----------------
+// ---------------- Personnel modal ----------------
 const overlayPM = $("overlayPM");
 $("closePMBtn").addEventListener("click", () => overlayPM.classList.remove("show"));
 overlayPM.addEventListener("click", (e) => { if (e.target === overlayPM) overlayPM.classList.remove("show"); });
@@ -1489,7 +1393,7 @@ async function openPersonnelModal(member){
   $("pmOk").style.display = "none";
   setLastError("");
 
-  $("pmSelected").textContent = `${member.full_name ?? "—"} (${member.id ?? "—"})`;
+  $("pmSelected").textContent = `${member.full_name ?? "—"}`;
   $("pmIdTag").textContent = `ID: ${member.id}`;
 
   $("pmStation").value = String(member.station ?? "173");
@@ -1502,12 +1406,7 @@ async function openPersonnelModal(member){
 
   $("pmFireInstr").value = String(!!member.is_fire_instructor);
   $("pmEmsInstr").value  = String(!!member.is_ems_instructor);
-
-  // Only Admin can set admin_role
-  $("adminRoleBlock").style.display = access.admin ? "" : "none";
-  if (access.admin){
-    $("pmAdminRole").value = String(member.admin_role ?? "None"); // must be proper enum case
-  }
+  $("pmAdminRole").value = String(member.admin_role ?? "None");
 
   overlayPM.classList.add("show");
 }
@@ -1530,22 +1429,18 @@ $("savePMBtn").addEventListener("click", async () => {
     ao_level: $("pmAO").value,
     is_fire_instructor: $("pmFireInstr").value === "true",
     is_ems_instructor: $("pmEmsInstr").value === "true",
+    admin_role: $("pmAdminRole").value
   };
 
   const exp = $("pmEmsExp").value;
   patch.ems_expiration = exp ? exp : null;
-
-  if (access.admin){
-    // IMPORTANT: keep correct enum casing. Do NOT send "admin"
-    patch.admin_role = $("pmAdminRole").value;
-  }
 
   try{
     await restPatch("profiles", patch, { id: `eq.${editingMember.id}` });
     $("pmOk").style.display = "";
     $("pmOk").textContent = "Saved.";
     await refreshAll();
-    await loadPersonnelManager();
+    await loadPersonnel();
   }catch(err){
     $("pmErr").style.display = "";
     $("pmErr").textContent = err.message;
@@ -1553,7 +1448,45 @@ $("savePMBtn").addEventListener("click", async () => {
   }
 });
 
-// ---------------- Core loading ----------------
+// ---------------- Weather (76028) ----------------
+async function loadWeather76028(){
+  // 76028 ≈ Burleson, TX (lat/lon)
+  const lat = 32.542;
+  const lon = -97.320;
+
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago`;
+    const data = await fetchJson(url, { method:"GET" });
+
+    const temp = Math.round(data?.current?.temperature_2m ?? NaN);
+    const wind = Math.round(data?.current?.wind_speed_10m ?? NaN);
+    const code = data?.current?.weather_code;
+
+    const desc = weatherCodeToText(code);
+    setText("dashWeather", `${isFinite(temp) ? temp + "°F" : "—"} • ${desc}`);
+    setText("dashWeatherSub", `Burleson, Texas • Wind ${isFinite(wind) ? wind : "—"} mph`);
+  }catch(err){
+    setText("dashWeather", "Weather unavailable");
+    setText("dashWeatherSub", "Could not load weather right now.");
+  }
+}
+
+function weatherCodeToText(code){
+  const c = Number(code);
+  if (!isFinite(c)) return "—";
+  if (c === 0) return "Clear";
+  if (c === 1 || c === 2) return "Partly cloudy";
+  if (c === 3) return "Overcast";
+  if (c === 45 || c === 48) return "Fog";
+  if ([51,53,55].includes(c)) return "Drizzle";
+  if ([61,63,65].includes(c)) return "Rain";
+  if ([71,73,75].includes(c)) return "Snow";
+  if ([80,81,82].includes(c)) return "Showers";
+  if ([95,96,99].includes(c)) return "Thunderstorm";
+  return "Weather";
+}
+
+// ---------------- Core data loading ----------------
 async function refreshAll(){
   try{
     setLastError("");
@@ -1579,23 +1512,20 @@ async function refreshAll(){
     access = computeAccess(currentProfile);
     gateNav();
 
-    // Candidate linked (optional)
     const cand = await restSelect("candidates", "*", { linked_user_id: `eq.${session.user.id}` }, {});
     currentCandidate = (cand && cand[0]) ? cand[0] : null;
 
-    // Sidebar user header
-    const name = currentProfile.full_name ?? "User";
+    // Sidebar user card
+    setText("sideName", currentProfile.full_name ?? "User");
     const ems = String(currentProfile.ems_level ?? "—");
     const fire = String(currentProfile.fire_level ?? "—");
-    setText("sbName", name);
-    setText("sbSub", `${ems}  •  ${fire}`);
+    setText("sideSub", `${ems} - ${fire}`);
 
-    // Chips
-    const chips = [];
-    if (access.fireInstr) chips.push(`<span class="chip fireInstr">Fire Instructor</span>`);
-    if (access.emsInstr)  chips.push(`<span class="chip emsInstr">EMS Instructor</span>`);
-    if (access.admin)     chips.push(`<span class="chip admin">Admin</span>`);
-    $("sbChips").innerHTML = chips.join("") || `<span class="chip">Member</span>`;
+    const badges = [];
+    if (access.fireInstr) badges.push(`<span class="badge fire">Fire Instructor</span>`);
+    if (access.emsInstr)  badges.push(`<span class="badge ems">EMS Instructor</span>`);
+    if (access.admin)     badges.push(`<span class="badge admin">Admin</span>`);
+    $("sideBadges").innerHTML = badges.join("");
 
     // Dashboard tiles
     setText("dashFireRank", fire);
@@ -1603,8 +1533,8 @@ async function refreshAll(){
     setText("dashAO", String(currentProfile.ao_level ?? "None"));
     setText("dashStation", `Station ${String(currentProfile.station ?? "—")}`);
 
-    // EMS expiration countdown (optional)
     updateEmsCountdown(currentProfile);
+    await loadWeather76028();
 
     // Debug
     $("sessionDump").textContent = JSON.stringify({
@@ -1620,18 +1550,19 @@ async function refreshAll(){
     hide(loginView);
     show(appView);
 
-    // Load weather
-    loadWeather76028();
-
-    // Load pages
-    await loadMembers();
     await loadTraining();
+    await loadDepartment();
     if (access.instructor) await loadQueue();
-    if (access.officer) await loadPersonnelManager();
+    if (access.admin) await loadPersonnel();
 
+    // If user is currently on Training Manager, keep TM theme; otherwise default
+    const tmVisible = document.getElementById("page-trainingManager").style.display !== "none";
+    if (tmVisible) setTheme(trainingMode === "ems" ? "ems" : "fire");
+    else setTheme("default");
+
+    // Default landing
     switchPage("home");
   }catch(err){
-    // If token expired, try refresh once
     try{
       if (session?.refresh_token){
         const s2 = await refreshToken(session.refresh_token);
@@ -1651,7 +1582,6 @@ async function refreshAll(){
 
 function updateEmsCountdown(profile){
   const raw = profile?.ems_expiration || profile?.ems_expiration_date || null;
-
   if (!raw){
     setText("dashEmsExpiry", "Not set");
     setText("dashEmsExpirySub", "Ask an officer/admin to add your EMS expiration date.");
@@ -1681,69 +1611,15 @@ function updateEmsCountdown(profile){
   const days = remAfterYears - months*30;
 
   const parts = [];
-  if (years) parts.push(`${years}y`);
-  if (months) parts.push(`${months}m`);
-  parts.push(`${days}d`);
+  if (years) parts.push(`${years} year(s)`);
+  if (months) parts.push(`${months} month(s)`);
+  parts.push(`${days} day(s)`);
 
   setText("dashEmsExpiry", parts.join(" • "));
   setText("dashEmsExpirySub", `Expires on ${d.toLocaleDateString()}`);
 }
 
-// Department Personnel (everyone)
-async function loadMembers(){
-  const wrap = $("membersWrap");
-  wrap.innerHTML = `<div class="hint">Loading…</div>`;
-  try{
-    // Include instructor flags and admin_role for display
-    const members = await restSelect(
-      "profiles",
-      "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor",
-      {},
-      { order:"full_name.asc" }
-    );
-
-    $("publicMembersCount").textContent = `${(members||[]).length} members`;
-
-    wrap.innerHTML = `
-      <table class="table" aria-label="Department Members">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Station</th>
-            <th>EMS</th>
-            <th>Fire</th>
-            <th>AO</th>
-            <th>Badges</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${(members||[]).map(m => {
-            const badges = [];
-            if (m.is_fire_instructor) badges.push(`<span class="tag warn">Fire Instr</span>`);
-            if (m.is_ems_instructor) badges.push(`<span class="tag info">EMS Instr</span>`);
-            if (m.admin_role && m.admin_role !== "None") badges.push(`<span class="tag good">${esc(m.admin_role)}</span>`);
-            const badgeHtml = badges.length ? `<div class="needs">${badges.join("")}</div>` : `<span class="tag">—</span>`;
-            return `
-              <tr class="row">
-                <td><b>${esc(m.full_name ?? "")}</b></td>
-                <td>Station ${esc(m.station ?? "")}</td>
-                <td>${esc(m.ems_level ?? "")}</td>
-                <td>${esc(m.fire_level ?? "")}</td>
-                <td>${esc(m.ao_level ?? "")}</td>
-                <td>${badgeHtml}</td>
-              </tr>
-            `;
-          }).join("")}
-        </tbody>
-      </table>
-    `;
-  }catch(err){
-    wrap.innerHTML = `<div class="card"><h4>Error</h4><p>${esc(err.message)}</p></div>`;
-    setLastError(err.message);
-  }
-}
-
-// My Training
+// ---------------- My Training ----------------
 async function loadTraining(){
   const wrap = $("trainingTableWrap");
   wrap.innerHTML = `<div class="hint">Loading…</div>`;
@@ -1785,13 +1661,13 @@ async function loadTraining(){
               s === "Passed" ? "good" :
               s === "Retake" ? "warn" :
               s === "Failed" ? "bad" : "";
-            const crit = r.requirements?.is_critical ? `<span class="tag bad">CRITICAL</span>` : "";
+            const crit = r.requirements?.is_critical ? `<span class="badge" style="border-color:rgba(255,92,122,.35);background:rgba(255,92,122,.12);color:rgba(255,92,122,.95)">CRITICAL</span>` : "";
             return `
               <tr class="row">
                 <td><b>${esc(r.requirements?.name ?? "")}</b> ${crit}</td>
                 <td>${esc(r.requirements?.category ?? "")}</td>
-                <td><span class="tag ${tagClass}">${esc(s || "Pending")}</span></td>
-                <td style="color:var(--muted);font-size:12px;">${r.updated_at ? new Date(r.updated_at).toLocaleString() : "—"}</td>
+                <td><span class="badge ${tagClass}">${esc(s || "Pending")}</span></td>
+                <td style="color:rgba(255,255,255,.60);font-size:12px;">${r.updated_at ? new Date(r.updated_at).toLocaleString() : "—"}</td>
               </tr>
             `;
           }).join("")}
@@ -1804,7 +1680,50 @@ async function loadTraining(){
   }
 }
 
-// Training Manager queue
+// ---------------- Department Personnel (read-only) ----------------
+async function loadDepartment(){
+  const wrap = $("deptWrap");
+  wrap.innerHTML = `<div class="hint">Loading…</div>`;
+  try{
+    const members = await restSelect(
+      "profiles",
+      "id,full_name,station,ems_level,fire_level,ao_level",
+      {},
+      { order:"full_name.asc" }
+    );
+    $("deptCount").textContent = `${(members||[]).length}`;
+
+    wrap.innerHTML = `
+      <table class="table" aria-label="Department Personnel">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Station</th>
+            <th>EMS</th>
+            <th>Fire</th>
+            <th>AO</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(members||[]).map(m => `
+            <tr class="row">
+              <td><b>${esc(m.full_name ?? "")}</b></td>
+              <td>Station ${esc(m.station ?? "")}</td>
+              <td>${esc(m.ems_level ?? "")}</td>
+              <td>${esc(m.fire_level ?? "")}</td>
+              <td>${esc(m.ao_level ?? "")}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }catch(err){
+    wrap.innerHTML = `<div class="card"><h4>Error</h4><p>${esc(err.message)}</p></div>`;
+    setLastError(err.message);
+  }
+}
+
+// ---------------- Training Manager ----------------
 async function loadQueue(){
   const wrap = $("queueWrap");
   wrap.innerHTML = `<div class="panelBody"><div class="hint">Loading…</div></div>`;
@@ -1830,16 +1749,7 @@ async function loadQueue(){
       const total = mine.length;
       const passed = mine.filter(r => r.status === "Passed").length;
       const pct = total ? Math.round((passed/total)*100) : 0;
-
-      const needs = mine
-        .filter(r => r.status !== "Passed")
-        .slice(0,3)
-        .map(r => {
-          const cls = r.status === "Retake" ? "warn" : (r.status === "Failed" ? "bad" : "info");
-          return `<span class="tag ${cls}">${esc(r.requirements?.name ?? "Need")} (${esc(r.status || "Pending")})</span>`;
-        }).join("") || `<span class="tag good">No needs</span>`;
-
-      return { total, passed, pct, needs };
+      return { total, passed, pct };
     }
 
     wrap.innerHTML = `
@@ -1847,9 +1757,9 @@ async function loadQueue(){
         <table class="table" aria-label="Candidate Queue">
           <thead>
             <tr>
-              <th style="width:26%;">Candidate</th>
-              <th style="width:22%;">Progress</th>
-              <th>Still needs</th>
+              <th style="width:34%;">Candidate</th>
+              <th style="width:18%;">Progress</th>
+              <th style="width:22%;">Status</th>
               <th style="width:18%;">Action</th>
             </tr>
           </thead>
@@ -1860,15 +1770,10 @@ async function loadQueue(){
                 <tr class="row">
                   <td>
                     <b>${esc(c.full_name ?? "")}</b>
-                    <div style="color:var(--muted); font-size:12px;">Station ${esc(c.station ?? "")} • ${esc(c.status ?? "")}</div>
+                    <div style="color:rgba(255,255,255,.60); font-size:12px;">Station ${esc(c.station ?? "")}</div>
                   </td>
-                  <td>
-                    <div class="progressWrap">
-                      <div class="bar"><div class="fill" style="width:${p.pct}%"></div></div>
-                      <div class="pct">${p.passed}/${p.total}</div>
-                    </div>
-                  </td>
-                  <td><div class="needs">${p.needs}</div></td>
+                  <td>${p.passed}/${p.total} (${p.pct}%)</td>
+                  <td>${esc(c.status ?? "")}</td>
                   <td><button class="miniBtn" data-open-eval="${c.id}">Evaluate</button></td>
                 </tr>
               `;
@@ -1893,8 +1798,8 @@ async function loadQueue(){
   }
 }
 
-// Personnel Manager (officer/admin)
-async function loadPersonnelManager(){
+// ---------------- Personnel Manager (admin only) ----------------
+async function loadPersonnel(){
   const wrap = $("pmWrap");
   wrap.innerHTML = `<div class="hint">Loading…</div>`;
   try{
@@ -1902,23 +1807,23 @@ async function loadPersonnelManager(){
     try{
       members = await restSelect(
         "profiles",
-        "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor,ems_expiration",
+        "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_fire_instructor,is_ems_instructor,ems_expiration",
         {},
         { order:"full_name.asc" }
       );
     }catch(_){
       members = await restSelect(
         "profiles",
-        "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor",
+        "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_fire_instructor,is_ems_instructor",
         {},
         { order:"full_name.asc" }
       );
     }
 
-    $("pmCount").textContent = `${(members||[]).length} members`;
+    $("pmCount").textContent = `${(members||[]).length}`;
 
     wrap.innerHTML = `
-      <table class="table" aria-label="Personnel">
+      <table class="table" aria-label="Personnel Manager">
         <thead>
           <tr>
             <th>Name</th>
@@ -1926,18 +1831,16 @@ async function loadPersonnelManager(){
             <th>EMS</th>
             <th>Fire</th>
             <th>AO</th>
-            <th>Badges</th>
+            <th>Access</th>
             <th style="width:120px;">Action</th>
           </tr>
         </thead>
         <tbody>
           ${(members||[]).map(m => {
-            const badges = [];
-            if (m.is_fire_instructor) badges.push(`<span class="tag warn">Fire Instr</span>`);
-            if (m.is_ems_instructor) badges.push(`<span class="tag info">EMS Instr</span>`);
-            if (m.admin_role && m.admin_role !== "None") badges.push(`<span class="tag good">${esc(m.admin_role)}</span>`);
-            const badgeHtml = badges.length ? `<div class="needs">${badges.join("")}</div>` : `<span class="tag">—</span>`;
-
+            const acc = [];
+            if (m.is_fire_instructor) acc.push("Fire Instr");
+            if (m.is_ems_instructor) acc.push("EMS Instr");
+            if (m.admin_role && m.admin_role !== "None") acc.push(m.admin_role);
             return `
               <tr class="row">
                 <td><b>${esc(m.full_name ?? "")}</b></td>
@@ -1945,7 +1848,7 @@ async function loadPersonnelManager(){
                 <td>${esc(m.ems_level ?? "")}</td>
                 <td>${esc(m.fire_level ?? "")}</td>
                 <td>${esc(m.ao_level ?? "")}</td>
-                <td>${badgeHtml}</td>
+                <td>${esc(acc.join(" • ") || "—")}</td>
                 <td><button class="miniBtn" data-edit="${esc(m.id)}">Edit</button></td>
               </tr>
             `;
@@ -1972,6 +1875,7 @@ async function loadPersonnelManager(){
 async function init(){
   hide(appView);
   show(loginView);
+  setTheme("default");
 
   if (keysMissing()) {
     $("loginErr").style.display = "";
@@ -1989,10 +1893,11 @@ async function init(){
   }
 
   if (session?.access_token){
-    try{
-      await refreshAll();
-    }catch(_){}
+    try{ await refreshAll(); }catch(_){}
   }
+
+  // Default TM mode
+  setTrainingMode("fire");
 }
 
 init();
