@@ -948,10 +948,10 @@ function computeAccess(profile){
   const role = lower(profile?.role);
   const adminRole = lower(profile?.admin_role);
 
-  const isAdminRole = adminRole === "admin" || adminRole === "fire chief";
-  const isAdmin = role === "admin" || isAdminRole;
-  const isOfficer = isAdmin || role === "officer";
-  const isInstructor = isOfficer || role === "instructor";
+  const isAdminRole = adminRole === "Admin" || adminRole === "Fire Chief";
+  const isAdmin = role === "Admin" || isAdminRole;
+  const isOfficer = isAdmin || role === "Officer";
+  const isInstructor = isOfficer || role === "Instructor";
 
   // In your design: officers can do EMS + Fire instructor access automatically
   const emsInstr = isInstructor;
@@ -1668,3 +1668,4 @@ init();
 </script>
 </body>
 </html>
+
