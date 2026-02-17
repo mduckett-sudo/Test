@@ -7,7 +7,7 @@
   <style>
     :root{
       --bg:#07070a;
-      --panel:rgba(255,255,255,.05);
+      --panel:rgba(255,255,255,.06);
       --panel2:rgba(0,0,0,.22);
       --stroke:rgba(255,255,255,.12);
       --text:rgba(255,255,255,.92);
@@ -16,7 +16,6 @@
       --radius:18px; --radius2:14px;
 
       --red:#ff2b2b;
-      --red2:#c81414;
       --blue:#2b6bff;
 
       --good:#2ee59d;
@@ -30,15 +29,25 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      /* ✅ Default: light grey → dark grey → black */
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,.16), transparent 60%),
+        radial-gradient(900px 600px at 80% 25%, rgba(255,255,255,.08), transparent 55%),
+        radial-gradient(900px 600px at 70% 90%, rgba(255,255,255,.05), transparent 60%),
+        linear-gradient(180deg, #cfcfd2 0%, #3b3b42 45%, #07070a 100%);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    /* ✅ Training Manager overrides ONLY (fire / ems) */
+    body.mode-training-fire{
       background:
         radial-gradient(1200px 800px at 15% 10%, rgba(255,43,43,.18), transparent 60%),
         radial-gradient(900px 600px at 80% 20%, rgba(255,43,43,.10), transparent 55%),
         radial-gradient(900px 600px at 75% 90%, rgba(255,43,43,.08), transparent 60%),
         var(--bg);
-      color:var(--text);
-      overflow-x:hidden;
     }
-    body.mode-ems{
+    body.mode-training-ems{
       background:
         radial-gradient(1200px 800px at 15% 10%, rgba(43,107,255,.18), transparent 60%),
         radial-gradient(900px 600px at 80% 20%, rgba(43,107,255,.10), transparent 55%),
@@ -49,77 +58,125 @@
     button,input,select,textarea{font:inherit;color:inherit}
     a{color:inherit}
 
-    .shell{display:grid;grid-template-columns:290px 1fr;min-height:100vh}
+    .shell{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
     .sidebar{
       position:sticky; top:0; height:100vh;
       padding:22px;
       border-right:1px solid var(--stroke);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
       backdrop-filter: blur(10px);
     }
 
     .brand{
       display:flex; gap:12px; align-items:center;
       padding:12px; border-radius:16px;
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.06);
       border:1px solid var(--stroke);
       box-shadow:0 10px 30px rgba(0,0,0,.18);
     }
-
     .logoWrap{
       width:48px;height:48px;border-radius:14px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.18);
       display:grid;place-items:center;
       overflow:hidden;
+      flex:0 0 auto;
     }
     .logoWrap img{width:40px;height:40px;object-fit:contain;display:block}
 
-    .brand h1{margin:0;font-size:14px;letter-spacing:.3px;line-height:1.2}
-    .brand .sub{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
-    .sideCard{
-      margin-top:14px; padding:14px;
-      border-radius:var(--radius);
-      background:rgba(255,255,255,.045);
-      border:1px solid var(--stroke);
+    .userBox{min-width:0}
+    .userName{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.25px;
+      font-weight:900;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    .sideCard h3{margin:0 0 10px 0;font-size:13px;letter-spacing:.2px}
-    .metaRow{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:12px;flex-wrap:wrap}
+    .userLevels{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .badgesRow{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
     .badge{
-      font-size:12px; padding:3px 8px; border-radius:999px;
+      font-size:12px; padding:4px 10px; border-radius:999px;
       border:1px solid var(--stroke);
       color:var(--muted);
-      background:rgba(255,255,255,.03);
+      background:rgba(255,255,255,.04);
       white-space:nowrap;
     }
-    .badge.good{border-color:rgba(46,229,157,.35); background:rgba(46,229,157,.10); color:rgba(46,229,157,.95)}
-    .badge.warn{border-color:rgba(255,204,102,.35); background:rgba(255,204,102,.10); color:rgba(255,204,102,.95)}
-    .badge.bad{border-color:rgba(255,92,122,.35); background:rgba(255,92,122,.10); color:rgba(255,92,122,.95)}
-    .badge.info{border-color:rgba(122,167,255,.35); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
-    .badge.red{border-color:rgba(255,43,43,.35); background:rgba(255,43,43,.10); color:rgba(255,43,43,.95)}
-    .badge.blue{border-color:rgba(43,107,255,.35); background:rgba(43,107,255,.10); color:rgba(43,107,255,.95)}
+    .badge.fireInstr{
+      border-color:rgba(255,43,43,.45);
+      background:rgba(255,43,43,.14);
+      color:rgba(255,255,255,.92);
+    }
+    .badge.emsInstr{
+      border-color:rgba(43,107,255,.45);
+      background:rgba(43,107,255,.14);
+      color:rgba(255,255,255,.92);
+    }
+    /* ✅ Admin: grey background + glowing rainbow border */
+    .badge.adminGlow{
+      background:rgba(255,255,255,.08);
+      color:rgba(255,255,255,.92);
+      border:1px solid transparent;
+      position:relative;
+      box-shadow:0 0 18px rgba(255,255,255,.10);
+    }
+    .badge.adminGlow::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius:999px;
+      padding:2px;
+      background:conic-gradient(
+        #ff2b2b, #ffcc66, #2ee59d, #2b6bff, #b56cff, #ff2b2b
+      );
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      filter:blur(.2px);
+      opacity:.95;
+      pointer-events:none;
+    }
 
-    .nav{margin-top:14px; display:flex; flex-direction:column; gap:8px}
+    .nav{margin-top:16px; display:flex; flex-direction:column; gap:8px}
     .nav .item{
       display:flex; align-items:center; gap:10px;
       padding:10px 12px; border-radius:14px;
       border:1px solid transparent;
-      color:var(--muted); cursor:pointer; user-select:none;
+      color:var(--muted);
+      cursor:pointer; user-select:none;
     }
-    .nav .item:hover{background:rgba(255,255,255,.05); color:var(--text)}
+    .nav .item:hover{background:rgba(255,255,255,.06); color:var(--text)}
     .nav .item.active{
-      background:rgba(255,43,43,.12);
-      border-color:rgba(255,43,43,.25);
+      background:rgba(255,255,255,.10);
+      border-color:rgba(255,255,255,.18);
       color:var(--text);
     }
-    body.mode-ems .nav .item.active{
-      background:rgba(43,107,255,.14);
-      border-color:rgba(43,107,255,.28);
+    .ico{
+      width:22px; height:22px;
+      display:grid; place-items:center;
+      border-radius:10px;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.12);
+      flex:0 0 auto;
+      font-size:14px;
     }
     .pill{
-      margin-left:auto; font-size:12px; padding:3px 9px; border-radius:999px;
+      margin-left:auto;
+      font-size:12px; padding:3px 9px; border-radius:999px;
       border:1px solid var(--stroke);
-      background:rgba(255,255,255,.04);
+      background:rgba(255,255,255,.05);
       color:var(--muted);
     }
 
@@ -127,7 +184,7 @@
     .topbar{
       display:flex; gap:12px; align-items:center; justify-content:space-between;
       padding:14px; border-radius:var(--radius);
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.07);
       border:1px solid var(--stroke);
       box-shadow:var(--shadow);
       flex-wrap:wrap;
@@ -146,20 +203,16 @@
     .btn{
       padding:10px 12px; border-radius:14px;
       border:1px solid var(--stroke);
-      background:rgba(255,255,255,.045);
+      background:rgba(255,255,255,.06);
       color:var(--text); cursor:pointer; user-select:none;
       display:inline-flex; gap:10px; align-items:center;
       transition:transform .06s ease, background .12s ease, border-color .12s ease;
     }
-    .btn:hover{background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.18)}
+    .btn:hover{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.20)}
     .btn:active{transform:translateY(1px)}
-    .btn.primary{border-color:rgba(255,43,43,.32); background:rgba(255,43,43,.12)}
-    .btn.primary:hover{background:rgba(255,43,43,.16); border-color:rgba(255,43,43,.42)}
-    body.mode-ems .btn.primary{border-color:rgba(43,107,255,.34); background:rgba(43,107,255,.14)}
-    body.mode-ems .btn.primary:hover{background:rgba(43,107,255,.18); border-color:rgba(43,107,255,.44)}
+    .btn.primary{border-color:rgba(255,255,255,.22); background:rgba(255,255,255,.10)}
     .btn.danger{border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.12)}
     .btn.small{padding:8px 10px; border-radius:12px; font-size:12px}
-    .btn.ghost{background:transparent}
     .btn.warn{border-color:rgba(255,204,102,.34); background:rgba(255,204,102,.10)}
 
     .pageHead{
@@ -174,17 +227,17 @@
     .stats{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin:14px 0 12px}
     .stat{
       padding:14px; border-radius:var(--radius);
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.07);
       border:1px solid var(--stroke);
       box-shadow:0 14px 38px rgba(0,0,0,.24);
       min-height:92px;
     }
     .stat .k{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:10px}
-    .stat .v{margin-top:10px; font-size:18px; font-weight:800; letter-spacing:.2px}
-    .grid{display:grid; grid-template-columns:1.35fr .65fr; gap:12px; margin-top:12px}
+    .stat .v{margin-top:10px; font-size:18px; font-weight:900; letter-spacing:.2px}
+
     .panel{
       border-radius:var(--radius);
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.07);
       border:1px solid var(--stroke);
       box-shadow:0 18px 48px rgba(0,0,0,.24);
       overflow:hidden;
@@ -193,7 +246,7 @@
       padding:14px;
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       border-bottom:1px solid rgba(255,255,255,.10);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
       flex-wrap:wrap;
     }
     .panelHead h3{margin:0; font-size:13px; letter-spacing:.25px}
@@ -224,16 +277,16 @@
     .miniBtn{
       padding:7px 10px; border-radius:12px;
       border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);
+      background:rgba(255,255,255,.06);
       cursor:pointer; color:var(--text); font-size:12px;
     }
-    .miniBtn:hover{background:rgba(255,255,255,.07)}
+    .miniBtn:hover{background:rgba(255,255,255,.09)}
 
     .needs{display:flex; flex-wrap:wrap; gap:6px}
     .tag{
       font-size:12px; padding:4px 8px; border-radius:999px;
       border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);
+      background:rgba(255,255,255,.05);
       color:var(--muted);
       white-space:nowrap;
     }
@@ -243,9 +296,8 @@
     .tag.info{border-color:rgba(122,167,255,.30); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
 
     .progressWrap{display:flex; gap:10px; align-items:center; min-width:170px}
-    .bar{flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.10)}
-    .fill{height:100%; border-radius:999px; background:linear-gradient(90deg, rgba(255,43,43,.95), rgba(255,160,160,.85)); width:0%}
-    body.mode-ems .fill{background:linear-gradient(90deg, rgba(43,107,255,.95), rgba(140,180,255,.85))}
+    .bar{flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,.12); overflow:hidden; border:1px solid rgba(255,255,255,.12)}
+    .fill{height:100%; border-radius:999px; background:linear-gradient(90deg, rgba(255,255,255,.85), rgba(255,255,255,.35)); width:0%}
     .pct{font-size:12px; color:var(--muted); white-space:nowrap}
 
     /* Login */
@@ -254,8 +306,8 @@
       width:min(560px, 100%);
       padding:18px;
       border-radius:22px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.16);
       box-shadow:0 30px 90px rgba(0,0,0,.45);
       backdrop-filter: blur(14px);
     }
@@ -300,7 +352,6 @@
     @media (max-width: 980px){
       .shell{grid-template-columns:1fr}
       .sidebar{position:relative; height:auto}
-      .grid{grid-template-columns:1fr}
       .stats{grid-template-columns:repeat(2, minmax(0,1fr))}
       .modalBody{grid-template-columns:1fr}
       .rubric{border-right:0; border-bottom:1px solid rgba(255,255,255,.10)}
@@ -336,7 +387,7 @@
 
       <div class="card" style="margin-top:14px;">
         <h4>Sign in</h4>
-        <p>Uses Supabase Auth REST + PostgREST. If you can sign in here, the full portal will work anywhere—even on restricted networks.</p>
+        <p>Uses Supabase Auth REST + PostgREST.</p>
       </div>
 
       <form id="loginForm">
@@ -352,7 +403,7 @@
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
           <button class="btn primary" type="submit">Sign in</button>
           <button class="btn" type="button" id="signUpBtn">Create account</button>
-          <button class="btn ghost" type="button" id="clearSessionBtn" title="Clears local session storage">Clear session</button>
+          <button class="btn" type="button" id="clearSessionBtn" title="Clears local session storage">Clear session</button>
         </div>
 
         <div id="loginErr" class="err" style="display:none;"></div>
@@ -369,51 +420,39 @@
   <section id="appView" style="display:none;">
     <div class="shell">
       <aside class="sidebar">
+        <!-- ✅ New user header -->
         <div class="brand">
           <div class="logoWrap" aria-hidden="true">
             <img src="./logo.png" alt="Briaroaks logo" onerror="this.style.display='none'">
           </div>
-          <div>
-            <h1>Briaroaks Portal <span class="sub">Single login • Role-based access</span></h1>
+          <div class="userBox">
+            <div class="userName" id="sbName">Loading…</div>
+            <div class="userLevels" id="sbLevels">—</div>
+            <div class="badgesRow" id="sbBadges"></div>
           </div>
         </div>
 
-        <div class="sideCard">
-          <h3>Active Profile</h3>
-          <div class="metaRow">
-            <span class="badge info" id="whoLine">Loading…</span>
-          </div>
-          <div class="metaRow" style="margin-top:10px;">
-            <span class="badge" id="stationLine">Station —</span>
-            <span class="badge" id="emsLine">EMS —</span>
-          </div>
-          <div class="metaRow" style="margin-top:10px;">
-            <span class="badge" id="fireLine">Fire —</span>
-            <span class="badge" id="aoLine">AO —</span>
-          </div>
-          <div class="metaRow" style="margin-top:10px;">
-            <span class="badge" id="accessLine">Access —</span>
-          </div>
-        </div>
-
+        <!-- ✅ Tabs under user header -->
         <nav class="nav" id="nav">
-          <div class="item active" data-page="home"><span>Dashboard</span><span class="pill">Home</span></div>
-          <div class="item" data-page="training"><span>Training</span><span class="pill">My</span></div>
-          <div class="item" data-page="trainingManager"><span>Training Manager</span><span class="pill">Staff</span></div>
-          <div class="item" data-page="personnel"><span>Personnel Manager</span><span class="pill">Officer</span></div>
-          <div class="item" data-page="settings"><span>Settings</span></div>
-        </nav>
-
-        <div class="sideCard">
-          <h3>Mode</h3>
-          <p class="hint" style="margin:0;">
-            Instructors can toggle EMS/Fire training mode. EMS mode turns the background blue.
-          </p>
-          <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn small" id="toggleModeBtn" type="button">Toggle EMS / Fire</button>
-            <span class="badge" id="modeBadge">Fire</span>
+          <div class="item active" data-page="home">
+            <span class="ico">🏠</span><span>Dashboard Home</span><span class="pill">Home</span>
           </div>
-        </div>
+          <div class="item" data-page="training">
+            <span class="ico">✅</span><span>My Training</span><span class="pill">My</span>
+          </div>
+          <div class="item" data-page="deptPersonnel">
+            <span class="ico">👥</span><span>Department Personnel</span>
+          </div>
+          <div class="item" data-page="trainingManager">
+            <span class="ico">🧪</span><span>Training Manager</span><span class="pill">Staff</span>
+          </div>
+          <div class="item" data-page="personnelManager">
+            <span class="ico">🧑‍💼</span><span>Personnel Manager</span><span class="pill">Officer</span>
+          </div>
+          <div class="item" data-page="settings">
+            <span class="ico">⚙️</span><span>Settings</span>
+          </div>
+        </nav>
       </aside>
 
       <main class="main">
@@ -422,7 +461,6 @@
             <span style="opacity:.8;">🔎</span>
             <input placeholder="Search (visual only) …" />
           </div>
-
           <div class="rightTools">
             <button class="btn" id="refreshBtn" type="button">Refresh</button>
             <button class="btn danger" id="logoutBtn" type="button">Log out</button>
@@ -433,77 +471,62 @@
         <section id="page-home">
           <div class="pageHead">
             <div>
-              <h2>Firefighter Dashboard</h2>
-              <p>Clean, fast view. Training stays on the Training page.</p>
+              <h2>Dashboard Home</h2>
+              <p>Quick snapshot: Weather • Fire rank • EMS level • EMS expiration.</p>
             </div>
             <div class="actions">
-              <button class="btn primary" id="goTrainingBtn" type="button">Open Training</button>
+              <button class="btn primary" id="goTrainingBtn" type="button">Open My Training</button>
             </div>
           </div>
 
           <div class="stats">
             <div class="stat">
-              <div class="k"><span>Weather</span><span class="badge">Mock</span></div>
-              <div class="v" id="dashWeather">62°F • Clear</div>
-              <div style="margin-top:8px; color:var(--muted); font-size:12px;">Later: real weather by station.</div>
+              <div class="k"><span>Weather</span><span class="badge" id="weatherZip">76028</span></div>
+              <div class="v" id="dashWeather">Loading…</div>
+              <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashWeatherSub">Using Open-Meteo (no API key).</div>
             </div>
 
             <div class="stat">
-              <div class="k"><span>Name</span><span class="badge info">Profile</span></div>
-              <div class="v" id="dashName">—</div>
+              <div class="k"><span>Fire Rank</span><span class="badge info">Profile</span></div>
+              <div class="v" id="dashFireRank">—</div>
               <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashStation">Station —</div>
             </div>
 
             <div class="stat">
-              <div class="k"><span>Levels</span><span class="badge">Current</span></div>
-              <div class="v" id="dashLevels">—</div>
+              <div class="k"><span>EMS Level</span><span class="badge info">Profile</span></div>
+              <div class="v" id="dashEmsLevel">—</div>
               <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashAO">AO —</div>
             </div>
 
             <div class="stat">
               <div class="k"><span>EMS Expiration</span><span class="badge warn">Countdown</span></div>
               <div class="v" id="dashEmsExpiry">Not set</div>
-              <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashEmsExpirySub">Add ems_expiration on the backend to enable.</div>
+              <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashEmsExpirySub">Ask an officer/admin to add it.</div>
             </div>
           </div>
 
-          <div class="grid">
-            <div class="panel">
-              <div class="panelHead">
-                <div>
-                  <h3>Training Tile</h3>
-                  <div class="small">Click to see requirements, tasks, and evaluations.</div>
-                </div>
-                <button class="btn primary small" id="dashTrainingTile" type="button">Go</button>
+          <div class="panel">
+            <div class="panelHead">
+              <div>
+                <h3>What’s next</h3>
+                <div class="small">Your requirements and progress live under “My Training”.</div>
               </div>
-              <div class="panelBody">
-                <div class="card">
-                  <h4>Keep dashboard light</h4>
-                  <p>Dashboard shows high-level info; Training page is where your tasks, progress, and evaluations live.</p>
-                </div>
-              </div>
+              <button class="btn small primary" id="dashTrainingTile" type="button">Go</button>
             </div>
-
-            <div class="panel">
-              <div class="panelHead">
-                <div>
-                  <h3>Department Members</h3>
-                  <div class="small">Names + EMS/Fire/AO levels</div>
-                </div>
-                <span class="badge" id="membersCount">—</span>
-              </div>
-              <div class="panelBody" id="membersWrap">
-                <div class="hint">Loading…</div>
+            <div class="panelBody">
+              <div class="card">
+                <h4>Keep it simple</h4>
+                <p>Dashboard stays lightweight so it loads fast on iPads and station Wi-Fi.</p>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- TRAINING -->
+        <!-- MY TRAINING -->
         <section id="page-training" style="display:none;">
           <div class="pageHead">
             <div>
-              <h2>Training</h2>
+              <h2>My Training</h2>
               <p>Your requirements, progress, and status updates.</p>
             </div>
             <div class="actions">
@@ -523,15 +546,40 @@
           </div>
         </section>
 
+        <!-- DEPARTMENT PERSONNEL (all users can see) -->
+        <section id="page-deptPersonnel" style="display:none;">
+          <div class="pageHead">
+            <div>
+              <h2>Department Personnel</h2>
+              <p>Roster: station, EMS, Fire, AO, and access badges.</p>
+            </div>
+            <div class="actions">
+              <button class="btn" id="refreshDeptBtn" type="button">Refresh</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panelHead">
+              <div>
+                <h3>Members</h3>
+                <div class="small">Read-only roster (RLS enforced).</div>
+              </div>
+              <span class="badge" id="membersCount">—</span>
+            </div>
+            <div class="panelBody" id="membersWrap"><div class="hint">Loading…</div></div>
+          </div>
+        </section>
+
         <!-- TRAINING MANAGER -->
         <section id="page-trainingManager" style="display:none;">
           <div class="pageHead">
             <div>
               <h2>Training Manager</h2>
-              <p>Staff view. EMS/Fire mode changes the theme. Permissions enforced by your access.</p>
+              <p>Pick Fire or EMS training. Theme changes only while you’re on this page.</p>
             </div>
             <div class="actions">
-              <button class="btn warn" id="toggleModeBtn2" type="button">Toggle EMS / Fire</button>
+              <button class="btn warn" id="tmFireBtn" type="button">Fire Training</button>
+              <button class="btn warn" id="tmEmsBtn" type="button">EMS Training</button>
               <button class="btn" id="refreshTMBtn" type="button">Refresh</button>
               <button class="btn primary" id="openEvalBtn" type="button">Start Evaluation</button>
             </div>
@@ -549,12 +597,12 @@
           </div>
         </section>
 
-        <!-- PERSONNEL MANAGER -->
-        <section id="page-personnel" style="display:none;">
+        <!-- PERSONNEL MANAGER (Officer/Admin) -->
+        <section id="page-personnelManager" style="display:none;">
           <div class="pageHead">
             <div>
               <h2>Personnel Manager</h2>
-              <p>Officer/Admin can manage member assignments and levels.</p>
+              <p>Officer/Admin can update station/levels/AO/expiration. Admin can update instructor flags + admin role.</p>
             </div>
             <div class="actions">
               <button class="btn" id="refreshPMBtn" type="button">Refresh</button>
@@ -565,7 +613,7 @@
             <div class="panelHead">
               <div>
                 <h3>Members</h3>
-                <div class="small">Edit station, levels, AO, EMS expiration. Admin can also change access.</div>
+                <div class="small">Edit profiles (RLS enforced).</div>
               </div>
               <span class="badge" id="pmCount">—</span>
             </div>
@@ -700,7 +748,7 @@
             <h4>Editing rules</h4>
             <p>
               Officer can edit station/levels/AO + EMS expiration.
-              Admin can also edit access level (admin_role + instructor flags).
+              Admin can also edit admin role and instructor flags.
             </p>
           </div>
           <div class="card">
@@ -727,7 +775,7 @@
           </div>
 
           <div class="field">
-            <label>Fire Level (fire_level enum)</label>
+            <label>Fire Rank (fire_level enum)</label>
             <select id="pmFire"></select>
           </div>
 
@@ -739,13 +787,13 @@
           <div class="field">
             <label>EMS Expiration (optional column: ems_expiration)</label>
             <input id="pmEmsExp" type="date" />
-            <div class="hint">If your profiles table doesn’t have <code>ems_expiration</code>, this will be ignored safely.</div>
+            <div class="hint">If your profiles table doesn’t have <code>ems_expiration</code>, save will ignore it.</div>
           </div>
 
           <div id="adminOnlyBlock" style="display:none;">
             <div class="card">
               <h4>Admin-only access</h4>
-              <p>Change access level for the member.</p>
+              <p>Change admin role and instructor flags.</p>
             </div>
 
             <div class="field">
@@ -823,7 +871,9 @@ let currentProfile = null;
 let currentCandidate = null;
 
 let access = { admin:false, officer:false, instructor:false, emsInstr:false, fireInstr:false };
-let instructorMode = "fire";  // fire | ems
+
+// Training Manager theme mode ONLY
+let tmMode = "fire"; // fire | ems
 
 function baseHeaders(){
   return {
@@ -915,52 +965,78 @@ async function restPatch(table, patchObj, filters){
 // ---------------- Access model (schema correct) ----------------
 function computeAccess(profile){
   const adminRole = String(profile?.admin_role ?? "").trim();
-
   const admin = (adminRole === "Admin" || adminRole === "Fire Chief");
+
   const emsInstr = !!profile?.is_ems_instructor || admin;
   const fireInstr = !!profile?.is_fire_instructor || admin;
+
+  // "Instructor" means either flag
   const instructor = emsInstr || fireInstr;
 
-  // You do not currently have an "Officer" column.
-  // Treat Admin as Officer-level for now.
+  // You do not currently have an Officer field.
+  // Treat Admin as Officer-level for now (matches your current behavior).
   const officer = admin;
 
   return { admin, officer, instructor, emsInstr, fireInstr };
 }
 
-// ---------------- UI State / Navigation ----------------
+// ---------------- Navigation + page switching ----------------
 const loginView = $("loginView");
 const appView = $("appView");
 
-const pages = ["home","training","trainingManager","personnel","settings"];
+// NOTE: page ids correspond to section ids: page-<name>
+const pages = ["home","training","deptPersonnel","trainingManager","personnelManager","settings"];
 const navItems = Array.from(document.querySelectorAll("#nav .item"));
 
+let currentPage = "home";
+
+function applyTrainingThemeIfNeeded(){
+  // Only apply fire/ems theme inside Training Manager
+  document.body.classList.remove("mode-training-fire", "mode-training-ems");
+  if (currentPage === "trainingManager"){
+    document.body.classList.add(tmMode === "ems" ? "mode-training-ems" : "mode-training-fire");
+  }
+}
+
 function switchPage(page){
+  currentPage = page;
   navItems.forEach(i => i.classList.toggle("active", i.dataset.page === page));
   pages.forEach(p => {
     const el = document.getElementById("page-" + p);
     if (el) el.style.display = (p === page) ? "" : "none";
   });
+  applyTrainingThemeIfNeeded();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
 navItems.forEach(item => item.addEventListener("click", () => switchPage(item.dataset.page)));
 
 function gateNav(){
   const tm = navItems.find(x => x.dataset.page === "trainingManager");
-  const pm = navItems.find(x => x.dataset.page === "personnel");
-  if (tm) tm.style.display = access.instructor ? "" : "none";
-  if (pm) pm.style.display = access.officer ? "" : "none";
+  const pm = navItems.find(x => x.dataset.page === "personnelManager");
+
+  // Requested:
+  // Training Manager if Instructor OR Officer OR Admin
+  // Personnel Manager if Officer OR Admin
+  if (tm) tm.style.display = (access.instructor || access.officer || access.admin) ? "" : "none";
+  if (pm) pm.style.display = (access.officer || access.admin) ? "" : "none";
 }
 
-function applyMode(){
-  const isEms = instructorMode === "ems";
-  document.body.classList.toggle("mode-ems", isEms);
-  setText("modeBadge", isEms ? "EMS" : "Fire");
+// ---------------- Sidebar header population ----------------
+function renderSidebarHeader(profile){
+  setText("sbName", profile?.full_name ?? "—");
+  setText("sbLevels", `${String(profile?.ems_level ?? "—")} - ${String(profile?.fire_level ?? "—")}`);
+
+  const badges = [];
+  if (access.fireInstr) badges.push(`<span class="badge fireInstr">Fire Instructor</span>`);
+  if (access.emsInstr)  badges.push(`<span class="badge emsInstr">EMS Instructor</span>`);
+  if (access.admin)     badges.push(`<span class="badge adminGlow">Admin</span>`);
+
+  $("sbBadges").innerHTML = badges.join("");
 }
 
 // ---------------- Session persistence ----------------
 const SESSION_KEY = "briaroaks_portal_session_v1";
-
 function saveSession(s){
   session = s;
   localStorage.setItem(SESSION_KEY, JSON.stringify(s));
@@ -977,16 +1053,77 @@ function clearSession(){
   localStorage.removeItem(SESSION_KEY);
 }
 
-// ---------------- Event wiring ----------------
-$("toggleModeBtn")?.addEventListener("click", () => {
-  instructorMode = (instructorMode === "fire") ? "ems" : "fire";
-  applyMode();
-});
-$("toggleModeBtn2")?.addEventListener("click", () => {
-  instructorMode = (instructorMode === "fire") ? "ems" : "fire";
-  applyMode();
-});
+// ---------------- Weather (zip 76028) ----------------
+// Uses Open-Meteo (no key): zip -> lat/lon -> current weather
+async function loadWeatherForZip(zip="76028"){
+  try{
+    setText("dashWeather", "Loading…");
+    setText("dashWeatherSub", "Using Open-Meteo (no API key).");
 
+    // 1) Geocode by postal code (US)
+    const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(zip)}&count=1&language=en&format=json`;
+    const geo = await fetchJson(geoUrl, { method:"GET" });
+    const hit = geo?.results?.[0];
+    if (!hit) throw new Error("Could not find location for ZIP " + zip);
+
+    const lat = hit.latitude;
+    const lon = hit.longitude;
+    const place = [hit.name, hit.admin1, hit.country_code].filter(Boolean).join(", ");
+
+    // 2) Current weather
+    const wxUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph`;
+    const wx = await fetchJson(wxUrl, { method:"GET" });
+    const c = wx?.current;
+    if (!c) throw new Error("Weather unavailable.");
+
+    const desc = weatherCodeToText(c.weather_code);
+    const temp = Math.round(c.temperature_2m);
+    const wind = Math.round(c.wind_speed_10m);
+
+    setText("dashWeather", `${temp}°F • ${desc}`);
+    setText("dashWeatherSub", `${place} • Wind ${wind} mph`);
+  }catch(err){
+    setText("dashWeather", "Weather unavailable");
+    setText("dashWeatherSub", err.message);
+    setLastError(err.message);
+  }
+}
+
+function weatherCodeToText(code){
+  const map = {
+    0:"Clear",
+    1:"Mainly clear",
+    2:"Partly cloudy",
+    3:"Overcast",
+    45:"Fog",
+    48:"Depositing rime fog",
+    51:"Light drizzle",
+    53:"Drizzle",
+    55:"Dense drizzle",
+    56:"Freezing drizzle",
+    57:"Freezing drizzle",
+    61:"Light rain",
+    63:"Rain",
+    65:"Heavy rain",
+    66:"Freezing rain",
+    67:"Freezing rain",
+    71:"Light snow",
+    73:"Snow",
+    75:"Heavy snow",
+    77:"Snow grains",
+    80:"Rain showers",
+    81:"Rain showers",
+    82:"Violent rain showers",
+    85:"Snow showers",
+    86:"Heavy snow showers",
+    95:"Thunderstorm",
+    96:"Thunderstorm + hail",
+    99:"Thunderstorm + heavy hail"
+  };
+  return map[code] ?? `Code ${code}`;
+}
+
+// ---------------- UI wiring ----------------
 $("clearSessionBtn")?.addEventListener("click", () => {
   clearSession();
   $("loginOk").style.display = "";
@@ -1026,12 +1163,6 @@ $("signUpBtn")?.addEventListener("click", async () => {
   $("loginOk").style.display = "none";
   setLastError("");
 
-  if (keysMissing()) {
-    $("loginErr").style.display = "";
-    $("loginErr").textContent = "Missing key: set SUPABASE_ANON_KEY at the top of the file.";
-    return;
-  }
-
   const email = $("email").value.trim();
   const password = $("password").value;
 
@@ -1046,7 +1177,7 @@ $("signUpBtn")?.addEventListener("click", async () => {
   }
 });
 
-$("logoutBtn")?.addEventListener("click", async () => {
+$("logoutBtn")?.addEventListener("click", () => {
   signOut();
   currentProfile = null;
   currentCandidate = null;
@@ -1056,11 +1187,15 @@ $("logoutBtn")?.addEventListener("click", async () => {
 
 $("refreshBtn")?.addEventListener("click", () => refreshAll());
 $("refreshTrainingBtn")?.addEventListener("click", () => loadTraining());
+$("refreshDeptBtn")?.addEventListener("click", () => loadMembers());
 $("refreshTMBtn")?.addEventListener("click", () => loadQueue());
 $("refreshPMBtn")?.addEventListener("click", () => loadPersonnel());
 
 $("goTrainingBtn")?.addEventListener("click", () => switchPage("training"));
 $("dashTrainingTile")?.addEventListener("click", () => switchPage("training"));
+
+$("tmFireBtn")?.addEventListener("click", () => { tmMode = "fire"; applyTrainingThemeIfNeeded(); });
+$("tmEmsBtn")?.addEventListener("click", () => { tmMode = "ems"; applyTrainingThemeIfNeeded(); });
 
 // ---------------- Evaluation modal ----------------
 const overlayEval = $("overlayEval");
@@ -1081,7 +1216,7 @@ $("submitEvalBtn")?.addEventListener("click", async () => {
 
   const candidateId = $("evalCandidate").value;
   const requirementId = $("evalRequirement").value;
-  const result = $("evalResult").value;           // Passed/Retake/Failed
+  const result = $("evalResult").value;
   const criticalFail = $("evalCritical").value === "true";
   const notes = $("evalNotes").value;
 
@@ -1217,12 +1352,11 @@ $("savePMBtn")?.addEventListener("click", async () => {
     ao_level: $("pmAO").value,
   };
 
-  // Optional: ems_expiration (if column exists)
   const exp = $("pmEmsExp").value;
   patch.ems_expiration = exp ? exp : null;
 
   if (access.admin){
-    patch.admin_role = $("pmAdminRole").value; // None/Admin/Fire Chief
+    patch.admin_role = $("pmAdminRole").value;
     patch.is_ems_instructor = ($("pmIsEmsInstr").value === "true");
     patch.is_fire_instructor = ($("pmIsFireInstr").value === "true");
   }
@@ -1251,7 +1385,6 @@ async function refreshAll(){
       return;
     }
 
-    // Profiles row MUST exist with id = auth user id
     const prof = await restSelect("profiles", "*", { id: `eq.${session.user.id}` }, {});
     currentProfile = (prof && prof[0]) ? prof[0] : null;
 
@@ -1266,39 +1399,20 @@ async function refreshAll(){
 
     access = computeAccess(currentProfile);
     gateNav();
+    renderSidebarHeader(currentProfile);
 
-    // Candidate linked (optional)
     const cand = await restSelect("candidates", "*", { linked_user_id: `eq.${session.user.id}` }, {});
     currentCandidate = (cand && cand[0]) ? cand[0] : null;
 
-    // Sidebar lines
-    const title =
-      access.admin ? "Admin" :
-      access.instructor ? "Instructor" :
-      "Firefighter";
-
-    setText("whoLine", `${currentProfile.full_name ?? "User"} • ${title}`);
-    setText("stationLine", `Station ${String(currentProfile.station ?? "—")}`);
-    setText("emsLine", `EMS: ${String(currentProfile.ems_level ?? "—")}`);
-    setText("fireLine", `Fire: ${String(currentProfile.fire_level ?? "—")}`);
-    setText("aoLine", `AO: ${String(currentProfile.ao_level ?? "None")}`);
-    setText(
-      "accessLine",
-      access.admin ? "Access: Admin" :
-      access.officer ? "Access: Officer" :
-      access.instructor ? "Access: Instructor" :
-      "Access: Firefighter"
-    );
-
-    // Dashboard
-    setText("dashName", currentProfile.full_name ?? "—");
+    // Dashboard blocks
+    setText("dashFireRank", String(currentProfile.fire_level ?? "—"));
+    setText("dashEmsLevel", String(currentProfile.ems_level ?? "—"));
     setText("dashStation", `Station ${String(currentProfile.station ?? "—")}`);
-    setText("dashLevels", `Fire: ${String(currentProfile.fire_level ?? "—")} • EMS: ${String(currentProfile.ems_level ?? "—")}`);
     setText("dashAO", `AO: ${String(currentProfile.ao_level ?? "None")}`);
 
     updateEmsCountdown(currentProfile);
 
-    // Debug (remove old role reference)
+    // Debug
     $("sessionDump").textContent = JSON.stringify({
       user_id: session.user.id,
       email: session.user.email,
@@ -1312,14 +1426,16 @@ async function refreshAll(){
     hide(loginView);
     show(appView);
 
-    applyMode();
+    // Default to home
+    switchPage("home");
 
+    // Loads
+    await loadWeatherForZip("76028");
     await loadMembers();
     await loadTraining();
-    if (access.instructor) await loadQueue();
-    if (access.officer) await loadPersonnel();
+    if (access.instructor || access.officer || access.admin) await loadQueue();
+    if (access.officer || access.admin) await loadPersonnel();
 
-    switchPage("home");
   }catch(err){
     // If token expired, try refresh once
     try{
@@ -1378,18 +1494,24 @@ function updateEmsCountdown(profile){
   setText("dashEmsExpirySub", `Expires on ${d.toLocaleDateString()}`);
 }
 
+// Department Personnel roster (read-only)
 async function loadMembers(){
   const wrap = $("membersWrap");
   wrap.innerHTML = `<div class="hint">Loading…</div>`;
   try{
-    // NOTE: profiles does NOT have "role" in your schema output. Remove it.
-    const members = await restSelect("profiles", "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor", {}, { order:"full_name.asc" });
+    const members = await restSelect(
+      "profiles",
+      "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor",
+      {},
+      { order:"full_name.asc" }
+    );
     $("membersCount").textContent = `${(members||[]).length}`;
 
-    function labelFor(m){
-      const a = String(m.admin_role ?? "None");
-      if (a === "Admin" || a === "Fire Chief") return a;
-      if (m.is_ems_instructor || m.is_fire_instructor) return "Instructor";
+    function accessLabel(m){
+      const ar = String(m.admin_role ?? "None");
+      const instr = (m.is_ems_instructor || m.is_fire_instructor);
+      if (ar !== "None") return ar;
+      if (instr) return "Instructor";
       return "Member";
     }
 
@@ -1402,19 +1524,18 @@ async function loadMembers(){
             <th>EMS</th>
             <th>Fire</th>
             <th>AO</th>
+            <th>Access</th>
           </tr>
         </thead>
         <tbody>
           ${(members||[]).map(m => `
             <tr class="row">
-              <td>
-                <b>${esc(m.full_name ?? "")}</b>
-                <div style="color:var(--muted);font-size:12px;">${esc(labelFor(m))}</div>
-              </td>
+              <td><b>${esc(m.full_name ?? "")}</b></td>
               <td>Station ${esc(m.station ?? "")}</td>
               <td>${esc(m.ems_level ?? "")}</td>
               <td>${esc(m.fire_level ?? "")}</td>
               <td>${esc(m.ao_level ?? "")}</td>
+              <td>${esc(accessLabel(m))}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -1576,12 +1697,21 @@ async function loadPersonnel(){
   const wrap = $("pmWrap");
   wrap.innerHTML = `<div class="hint">Loading…</div>`;
   try{
-    // Include optional ems_expiration if it exists
     let members = null;
     try{
-      members = await restSelect("profiles", "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor,ems_expiration", {}, { order:"full_name.asc" });
+      members = await restSelect(
+        "profiles",
+        "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor,ems_expiration",
+        {},
+        { order:"full_name.asc" }
+      );
     }catch(_){
-      members = await restSelect("profiles", "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor", {}, { order:"full_name.asc" });
+      members = await restSelect(
+        "profiles",
+        "id,full_name,station,ems_level,fire_level,ao_level,admin_role,is_ems_instructor,is_fire_instructor",
+        {},
+        { order:"full_name.asc" }
+      );
     }
 
     $("pmCount").textContent = `${(members||[]).length}`;
@@ -1650,7 +1780,6 @@ async function init(){
 
   loadSession();
 
-  // If session exists, try to refresh & load
   if (session?.refresh_token && !session?.access_token){
     try{
       const s2 = await refreshToken(session.refresh_token);
