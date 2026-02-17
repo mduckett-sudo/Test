@@ -790,34 +790,50 @@ textarea{min-height:120px; resize:vertical}
         </section>
 
         <!-- TRAINING MANAGER -->
-        <section id="page-trainingManager" style="display:none;">
-          <div class="pageHead">
-            <div>
-              <h2>Training Manager</h2>
-              <p>Staff view. Choose Fire or EMS training for this page.</p>
-            </div>
-            <div class="actions segWrap">
-              <div class="seg" aria-label="Training track toggle">
-                <button id="tmFireBtn" type="button" class="active">Fire Training</button>
-                <button id="tmEmsBtn" type="button">EMS Training</button>
-              </div>
-              <span class="segHint" id="tmModeHint">Theme: Fire</span>
-              <button class="btn" id="refreshTMBtn">Refresh</button>
-              <button class="btn primary" id="openEvalBtn">Start Evaluation</button>
-            </div>
-          </div>
+<section id="page-trainingManager" style="display:none;">
+  <div class="pageHead">
+    <div>
+      <h2>Training Manager</h2>
+      <p>Staff view. Choose Fire or EMS training for this page.</p>
+    </div>
+    <div class="actions segWrap">
+      <div class="seg" aria-label="Training track toggle">
+        <button id="tmFireBtn" type="button" class="active">Fire Training</button>
+        <button id="tmEmsBtn" type="button">EMS Training</button>
+      </div>
+      <span class="segHint" id="tmModeHint">Theme: Fire</span>
+      <button class="btn" id="refreshTMBtn">Refresh</button>
+      <button class="btn primary" id="openEvalBtn">Start Evaluation</button>
+    </div>
+  </div>
 
-          <div class="panel">
-            <div class="panelHead">
-              <div>
-                <h3>Candidate Queue</h3>
-                <div class="small">Shows candidates your account is allowed to see (RLS).</div>
-              </div>
-              <span class="badge" id="queueCount">—</span>
-            </div>
-            <div id="queueWrap"></div>
-          </div>
-        </section>
+  <div class="panel">
+    <div class="panelHead">
+      <div>
+        <h3>Candidate Queue</h3>
+        <div class="small">Shows candidates your account is allowed to see (RLS).</div>
+      </div>
+
+      <!-- ✅ ENROLL CONTROLS (keep as sibling inside panelHead) -->
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <select id="tmEnrollCandidate" class="miniBtn" style="padding:10px 12px; border-radius:14px;">
+          <option value="">Select candidate…</option>
+        </select>
+
+        <select id="tmEnrollPath" class="miniBtn" style="padding:10px 12px; border-radius:14px;">
+          <option value="">Select pathway…</option>
+        </select>
+
+        <button class="btn small primary" id="tmEnrollBtn">Enroll</button>
+
+        <span id="tmEnrollMsg" class="hint" style="margin-left:6px;"></span>
+        <span class="badge" id="queueCount">—</span>
+      </div>
+    </div>
+
+    <div id="queueWrap"></div>
+  </div>
+</section>
 
         <!-- PERSONNEL MANAGER (admin only) -->
         <section id="page-personnel" style="display:none;">
@@ -1987,4 +2003,5 @@ init();
 </script>
 </body>
 </html>
+
 
