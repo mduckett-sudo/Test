@@ -1838,10 +1838,8 @@ async function loadQueue(){
   if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "";
 
   try{
-    // Track is controlled by toggle buttons
     const track = trainingMode; // "ems" | "fire"
 
-    // Only show ENROLLED candidates for this track
     const enrollments = await restSelect(
       "candidate_enrollments",
       "candidate_id,path_id,enrolled_at,candidates(id,full_name,station,status,created_at),training_paths(id,name,track,active)",
@@ -1858,10 +1856,8 @@ async function loadQueue(){
 
     setText("queueCount", `${rows.length}`);
 
-    // Fill the enroll dropdowns (Step 4 will add this function)
-    if (typeof populateEnrollControls === "function"){
-      await populateEnrollControls(track, rows);
-    }
+    // Fill enroll controls
+    await populateEnrollControls(track, rows);
 
     wrap.innerHTML = `
       <div class="panelBody">
@@ -1938,10 +1934,6 @@ async function loadQueue(){
         if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "Unenrolling…";
 
         try{
-          if (typeof restRpc !== "function"){
-            throw new Error("restRpc() is missing. Add Step 4 helper.");
-          }
-
           await restRpc("training_unenroll_candidate", {
             p_candidate_id: candidateId,
             p_track: track
@@ -1965,10 +1957,6 @@ async function loadQueue(){
         if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "Deleting training data…";
 
         try{
-          if (typeof restRpc !== "function"){
-            throw new Error("restRpc() is missing. Add Step 4 helper.");
-          }
-
           await restRpc("training_delete_candidate_data", {
             p_candidate_id: candidateId
           });
@@ -1987,6 +1975,90 @@ async function loadQueue(){
     setLastError(err.message);
   }
 }
+
+
+// ✅ Enrollment dropdown population
+async function populateEnrollControls(track, activeEnrollmentRows){
+  const candSel = $("tmEnrollCandidate");
+  const pathSel = $("tmEnrollPath");
+  if (!candSel || !pathSel) return;
+
+  const enrolledIds = new Set((activeEnrollmentRows || [])
+    .map(r => r.candidates?.id)
+    .filter(Boolean)
+  );
+
+  const allCands = await restSelect(
+    "candidates",
+    "id,full_name,station,status,created_at",
+    {},
+    { order:"full_name.asc" }
+  );
+
+  const available = (allCands || []).filter(c => c?.id && !enrolledIds.has(c.id));
+
+  candSel.innerHTML =
+    `<option value="">Select candidate…</option>` +
+    available.map(c =>
+      `<option value="${esc(c.id)}">${esc(c.full_name)} • Station ${esc(c.station ?? "—")}</option>`
+    ).join("");
+
+  const paths = await restSelect(
+    "training_paths",
+    "id,name,track,active",
+    { track: `eq.${track}`, active: "eq.true" },
+    { order:"name.asc" }
+  );
+
+  pathSel.innerHTML =
+    `<option value="">Select pathway…</option>` +
+    (paths || []).map(p =>
+      `<option value="${esc(p.id)}">${esc(p.name)}</option>`
+    ).join("");
+}
+
+
+// ✅ RPC helper (you need this)
+async function restRpc(fnName, argsObj){
+  const url = `${REST_URL()}/rpc/${fnName}`;
+  return await fetchJson(url, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(argsObj || {})
+  });
+}
+
+
+// ✅ Enroll button
+$("tmEnrollBtn").addEventListener("click", async () => {
+  if (!$("tmEnrollMsg")) return;
+
+  $("tmEnrollMsg").textContent = "";
+  setLastError("");
+
+  const candidateId = $("tmEnrollCandidate")?.value;
+  const pathId = $("tmEnrollPath")?.value;
+
+  if (!candidateId || !pathId){
+    $("tmEnrollMsg").textContent = "Select a candidate and a pathway.";
+    return;
+  }
+
+  $("tmEnrollMsg").textContent = "Enrolling…";
+
+  try{
+    await restRpc("training_enroll_candidate", {
+      p_candidate_id: candidateId,
+      p_path_id: pathId
+    });
+
+    $("tmEnrollMsg").textContent = "Enrolled.";
+    await loadQueue();
+  }catch(err){
+    $("tmEnrollMsg").textContent = "Enroll failed: " + err.message;
+    setLastError(err.message);
+  }
+});
 
 // ---------------- Personnel Manager (admin only) ----------------
 async function loadPersonnel(){
@@ -2094,6 +2166,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
