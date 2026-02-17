@@ -1830,73 +1830,155 @@ async function loadDepartment(){
     setLastError(err.message);
   }
 }
-
 // ---------------- Training Manager ----------------
 async function loadQueue(){
   const wrap = $("queueWrap");
   wrap.innerHTML = `<div class="panelBody"><div class="hint">Loading…</div></div>`;
+  setText("queueCount", "—");
+  if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "";
+
   try{
-    const cands = await restSelect("candidates", "id,full_name,station,status,created_at", {}, { order:"created_at.desc" });
-    const candidates = cands ?? [];
-    $("queueCount").textContent = `${candidates.length}`;
+    // Track is controlled by toggle buttons
+    const track = trainingMode; // "ems" | "fire"
 
-    const candIds = candidates.map(c => c.id);
-    let reqRows = [];
-    if (candIds.length){
-      const ids = `(${candIds.join(",")})`;
-      reqRows = await restSelect(
-        "candidate_requirements",
-        "candidate_id,status,requirements(name,is_critical,category)",
-        { candidate_id: `in.${ids}` },
-        {}
-      );
-    }
+    // Only show ENROLLED candidates for this track
+    const enrollments = await restSelect(
+      "candidate_enrollments",
+      "candidate_id,path_id,enrolled_at,candidates(id,full_name,station,status,created_at),training_paths(id,name,track,active)",
+      {
+        unenrolled_at: "is.null",
+        "training_paths.track": `eq.${track}`
+      },
+      { order: "enrolled_at.desc" }
+    );
 
-    function progressFor(id){
-      const mine = (reqRows||[]).filter(r => r.candidate_id === id);
-      const total = mine.length;
-      const passed = mine.filter(r => r.status === "Passed").length;
-      const pct = total ? Math.round((passed/total)*100) : 0;
-      return { total, passed, pct };
+    const rows = (enrollments || [])
+      .filter(e => e.training_paths && String(e.training_paths.track).toLowerCase() === track)
+      .filter(e => e.candidates && e.candidates.id);
+
+    setText("queueCount", `${rows.length}`);
+
+    // Fill the enroll dropdowns (Step 4 will add this function)
+    if (typeof populateEnrollControls === "function"){
+      await populateEnrollControls(track, rows);
     }
 
     wrap.innerHTML = `
       <div class="panelBody">
+        ${rows.length ? `
         <table class="table" aria-label="Candidate Queue">
           <thead>
             <tr>
               <th style="width:34%;">Candidate</th>
-              <th style="width:18%;">Progress</th>
-              <th style="width:22%;">Status</th>
-              <th style="width:18%;">Action</th>
+              <th style="width:30%;">Pathway</th>
+              <th style="width:18%;">Enrolled</th>
+              <th style="width:18%;">Actions</th>
             </tr>
           </thead>
           <tbody>
-            ${candidates.map(c => {
-              const p = progressFor(c.id);
+            ${rows.map(r => {
+              const c = r.candidates;
+              const p = r.training_paths;
+              const enrolled = r.enrolled_at ? new Date(r.enrolled_at).toLocaleDateString() : "—";
+
+              const adminBtns = access.admin ? `
+                <button class="miniBtn" data-delete="${esc(c.id)}" title="Deletes training data for this candidate">Delete</button>
+              ` : "";
+
               return `
                 <tr class="row">
                   <td>
                     <b>${esc(c.full_name ?? "")}</b>
-                    <div style="color:rgba(255,255,255,.60); font-size:12px;">Station ${esc(c.station ?? "")}</div>
+                    <div style="color:rgba(255,255,255,.60); font-size:12px;">
+                      Station ${esc(c.station ?? "—")} • ${esc(c.status ?? "")}
+                    </div>
                   </td>
-                  <td>${p.passed}/${p.total} (${p.pct}%)</td>
-                  <td>${esc(c.status ?? "")}</td>
-                  <td><button class="miniBtn" data-open-eval="${c.id}">Evaluate</button></td>
+                  <td>
+                    <b>${esc(p?.name ?? "—")}</b>
+                    <div style="color:rgba(255,255,255,.60); font-size:12px;">
+                      ${track.toUpperCase()} pathway
+                    </div>
+                  </td>
+                  <td style="color:rgba(255,255,255,.75); font-size:12px;">${enrolled}</td>
+                  <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="miniBtn" data-open-eval="${esc(c.id)}">Evaluate</button>
+                    <button class="miniBtn" data-unenroll="${esc(c.id)}">Unenroll</button>
+                    ${adminBtns}
+                  </td>
                 </tr>
               `;
             }).join("")}
           </tbody>
         </table>
+        ` : `
+          <div class="card">
+            <h4>No ${track.toUpperCase()} candidates enrolled</h4>
+            <p>Use the enrollment controls above to add someone into the ${track.toUpperCase()} pathway.</p>
+          </div>
+        `}
       </div>
     `;
 
+    // Evaluate
     wrap.querySelectorAll("[data-open-eval]").forEach(btn => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-open-eval");
         overlayEval.classList.add("show");
         await populateEvalModal();
         $("evalCandidate").value = id;
+      });
+    });
+
+    // Unenroll
+    wrap.querySelectorAll("[data-unenroll]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const candidateId = btn.getAttribute("data-unenroll");
+        if (!candidateId) return;
+
+        if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "Unenrolling…";
+
+        try{
+          if (typeof restRpc !== "function"){
+            throw new Error("restRpc() is missing. Add Step 4 helper.");
+          }
+
+          await restRpc("training_unenroll_candidate", {
+            p_candidate_id: candidateId,
+            p_track: track
+          });
+
+          if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "Unenrolled.";
+          await loadQueue();
+        }catch(err){
+          if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "Unenroll failed: " + err.message;
+          setLastError(err.message);
+        }
+      });
+    });
+
+    // Delete (admin)
+    wrap.querySelectorAll("[data-delete]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const candidateId = btn.getAttribute("data-delete");
+        if (!candidateId) return;
+
+        if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "Deleting training data…";
+
+        try{
+          if (typeof restRpc !== "function"){
+            throw new Error("restRpc() is missing. Add Step 4 helper.");
+          }
+
+          await restRpc("training_delete_candidate_data", {
+            p_candidate_id: candidateId
+          });
+
+          if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "Deleted training data.";
+          await loadQueue();
+        }catch(err){
+          if ($("tmEnrollMsg")) $("tmEnrollMsg").textContent = "Delete failed: " + err.message;
+          setLastError(err.message);
+        }
       });
     });
 
@@ -2012,6 +2094,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
