@@ -1,229 +1,1560 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Briaroaks Department Portal</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Briaroaks Fire Rescue EMS • Member Portal</title>
 
-<style>
-body{
-  margin:0;
-  font-family:system-ui;
-  background:#0b0000;
-  background:radial-gradient(circle at 20% 20%, #2b0000, #0b0000 70%);
-  color:white;
-}
-.center{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.card{
-  width:420px;
-  padding:28px;
-  border-radius:18px;
-  background:rgba(255,255,255,0.06);
-  backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,0.1);
-}
-input{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.2);
-  background:#160000;
-  color:white;
-}
-button{
-  margin-top:14px;
-  padding:10px;
-  width:100%;
-  border-radius:8px;
-  border:none;
-  background:#b30000;
-  color:white;
-  cursor:pointer;
-}
-button:hover{
-  background:#e00000;
-}
-.error{
-  margin-top:12px;
-  color:#ff7070;
-  display:none;
-}
-.dashboard{
-  padding:30px;
-}
-.tile{
-  padding:20px;
-  border-radius:14px;
-  background:rgba(255,255,255,0.05);
-  margin-bottom:16px;
-}
-</style>
+  <style>
+    :root{
+      --bg:#050505;
+      --panel:rgba(255,255,255,.055);
+      --panel2:rgba(0,0,0,.24);
+      --stroke:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.62);
+      --shadow:0 18px 48px rgba(0,0,0,.55);
+      --radius:18px; --radius2:14px;
+
+      /* Fire theme (default) */
+      --accent:#ff2b2b;
+      --accent2:#b60000;
+
+      /* EMS theme */
+      --ems:#2f7dff;
+
+      --good:#46f0a7;
+      --warn:#ffcc66;
+      --bad:#ff5c7a;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:
+        radial-gradient(1200px 800px at 15% 10%, rgba(255,0,0,.16), transparent 60%),
+        radial-gradient(900px 600px at 82% 20%, rgba(180,0,0,.10), transparent 55%),
+        radial-gradient(900px 600px at 75% 92%, rgba(255,0,0,.08), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    body.ems-mode{
+      background:
+        radial-gradient(1200px 800px at 15% 10%, rgba(47,125,255,.18), transparent 60%),
+        radial-gradient(900px 600px at 82% 20%, rgba(47,125,255,.10), transparent 55%),
+        radial-gradient(900px 600px at 75% 92%, rgba(255,255,255,.06), transparent 60%),
+        var(--bg);
+    }
+
+    button,input,select,textarea{font:inherit;color:inherit}
+
+    /* Shell */
+    .shell{display:grid;grid-template-columns:290px 1fr;min-height:100vh}
+    .sidebar{
+      position:sticky; top:0; height:100vh;
+      padding:20px;
+      border-right:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,0,0,.06), rgba(0,0,0,.62));
+      backdrop-filter: blur(12px);
+    }
+    body.ems-mode .sidebar{
+      background:linear-gradient(180deg, rgba(47,125,255,.07), rgba(0,0,0,.62));
+    }
+
+    /* Brand */
+    .brand{
+      display:flex; gap:12px; align-items:center;
+      padding:12px; border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
+      box-shadow:0 10px 28px rgba(0,0,0,.35);
+    }
+    .crest{
+      width:54px;height:54px;border-radius:14px;
+      display:grid;place-items:center;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    .crest img{width:100%;height:100%;object-fit:contain}
+    .brand h1{margin:0;font-size:13px;letter-spacing:.35px;line-height:1.15}
+    .brand .sub{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
+
+    /* Cards / badges */
+    .sideCard{
+      margin-top:14px; padding:14px;
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.045);
+      border:1px solid var(--stroke);
+    }
+    .sideCard h3{margin:0 0 10px 0;font-size:12px;letter-spacing:.3px;text-transform:uppercase;color:rgba(255,255,255,.78)}
+    .metaRow{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:12px;flex-wrap:wrap}
+
+    .badge{
+      font-size:12px; padding:3px 8px; border-radius:999px;
+      border:1px solid var(--stroke);
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+      white-space:nowrap;
+    }
+    .badge.good{border-color:rgba(70,240,167,.35); background:rgba(70,240,167,.10); color:rgba(70,240,167,.95)}
+    .badge.warn{border-color:rgba(255,204,102,.35); background:rgba(255,204,102,.10); color:rgba(255,204,102,.95)}
+    .badge.bad{border-color:rgba(255,92,122,.35); background:rgba(255,92,122,.10); color:rgba(255,92,122,.95)}
+    .badge.accent{border-color:rgba(255,43,43,.35); background:rgba(255,43,43,.12); color:rgba(255,170,170,.95)}
+    body.ems-mode .badge.accent{border-color:rgba(47,125,255,.35); background:rgba(47,125,255,.12); color:rgba(175,205,255,.98)}
+
+    /* Nav */
+    .nav{margin-top:14px; display:flex; flex-direction:column; gap:8px}
+    .nav .item{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:14px;
+      border:1px solid transparent;
+      color:var(--muted); cursor:pointer; user-select:none;
+    }
+    .nav .item:hover{background:rgba(255,255,255,.05); color:var(--text)}
+    .nav .item.active{
+      background:rgba(255,43,43,.10);
+      border-color:rgba(255,43,43,.22);
+      color:var(--text);
+    }
+    body.ems-mode .nav .item.active{
+      background:rgba(47,125,255,.10);
+      border-color:rgba(47,125,255,.22);
+    }
+    .pill{
+      margin-left:auto; font-size:12px; padding:3px 9px; border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+    }
+
+    /* Main */
+    .main{padding:20px 22px 34px}
+    .topbar{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding:14px; border-radius:var(--radius);
+      background:var(--panel);
+      border:1px solid var(--stroke);
+      box-shadow:var(--shadow);
+      flex-wrap:wrap;
+    }
+    .titleBlock{display:flex;flex-direction:column;gap:4px}
+    .titleBlock .h{font-weight:800;letter-spacing:.2px}
+    .titleBlock .s{font-size:12px;color:var(--muted)}
+    .rightTools{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .btn{
+      padding:10px 12px; border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.045);
+      color:var(--text); cursor:pointer; user-select:none;
+      display:inline-flex; gap:10px; align-items:center;
+      transition:transform .06s ease, background .12s ease, border-color .12s ease;
+    }
+    .btn:hover{background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.18)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{border-color:rgba(255,43,43,.32); background:rgba(255,43,43,.12)}
+    .btn.primary:hover{background:rgba(255,43,43,.16); border-color:rgba(255,43,43,.42)}
+    body.ems-mode .btn.primary{border-color:rgba(47,125,255,.32); background:rgba(47,125,255,.12)}
+    body.ems-mode .btn.primary:hover{background:rgba(47,125,255,.16); border-color:rgba(47,125,255,.42)}
+    .btn.danger{border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.12)}
+
+    .pageHead{
+      margin:18px 4px 14px;
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+      flex-wrap:wrap;
+    }
+    .pageHead h2{margin:0; font-size:18px; letter-spacing:.2px}
+    .pageHead p{margin:6px 0 0 0; font-size:13px; color:var(--muted)}
+
+    .stats{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin:14px 0 12px}
+    .stat{
+      padding:14px; border-radius:var(--radius);
+      background:var(--panel);
+      border:1px solid var(--stroke);
+      box-shadow:0 14px 38px rgba(0,0,0,.24);
+      min-height:92px;
+    }
+    .stat .k{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:10px}
+    .stat .v{margin-top:10px; font-size:18px; font-weight:800; letter-spacing:.2px}
+
+    .grid{display:grid; grid-template-columns:1.15fr .85fr; gap:12px; margin-top:12px}
+    .panel{
+      border-radius:var(--radius);
+      background:var(--panel);
+      border:1px solid var(--stroke);
+      box-shadow:0 18px 48px rgba(0,0,0,.24);
+      overflow:hidden;
+    }
+    .panelHead{
+      padding:14px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+      flex-wrap:wrap;
+    }
+    .panelHead h3{margin:0; font-size:12px; letter-spacing:.35px; text-transform:uppercase; color:rgba(255,255,255,.78)}
+    .panelHead .small{font-size:12px; color:var(--muted)}
+    .panelBody{padding:14px}
+
+    .card{
+      padding:12px; border-radius:var(--radius2);
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,.10);
+      margin-bottom:10px;
+    }
+    .card h4{margin:0; font-size:13px; letter-spacing:.2px}
+    .card p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
+
+    .table{width:100%; border-collapse:collapse}
+    .table th,.table td{
+      text-align:left; padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      font-size:13px; vertical-align:top;
+    }
+    .table th{
+      font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.25px;
+      background:rgba(0,0,0,.14);
+    }
+    .row:hover td{background:rgba(255,255,255,.03)}
+
+    /* Login */
+    .center{min-height:100vh; display:grid; place-items:center; padding:22px}
+    .loginCard{
+      width:min(560px, 100%);
+      padding:18px;
+      border-radius:22px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 30px 90px rgba(0,0,0,.55);
+      backdrop-filter: blur(14px);
+    }
+    .loginHead{display:flex;gap:14px;align-items:center}
+    .loginLogo{
+      width:70px;height:70px;border-radius:18px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.20);
+      overflow:hidden;
+      display:grid;place-items:center;
+    }
+    .loginLogo img{width:100%;height:100%;object-fit:contain}
+    .field{display:flex; flex-direction:column; gap:6px; margin-top:10px}
+    .field label{font-size:12px; color:var(--muted)}
+    .field input, .field select{
+      width:100%; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+      padding:10px; outline:none; font-size:13px;
+    }
+    .hint{font-size:12px; color:var(--muted); line-height:1.45}
+    .err{margin-top:10px; color:rgba(255,92,122,.95); font-size:12px; display:none}
+    .ok{margin-top:10px; color:rgba(70,240,167,.95); font-size:12px; display:none}
+
+    /* Toggle */
+    .toggle{
+      display:flex; align-items:center; gap:10px;
+      padding:8px 10px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.18);
+    }
+    .toggle small{color:var(--muted)}
+    .switch{
+      width:48px;height:26px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.07);
+      position:relative; cursor:pointer; user-select:none;
+    }
+    .knob{
+      position:absolute; top:3px; left:3px;
+      width:20px;height:20px;border-radius:999px;
+      background:linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.55));
+      box-shadow:0 10px 20px rgba(0,0,0,.35);
+      transition:left .18s ease;
+    }
+    body.ems-mode .knob{left:25px;}
+    .switch::after{
+      content:"";
+      position:absolute; inset:0;
+      border-radius:999px;
+      background:linear-gradient(90deg, rgba(255,43,43,.35), rgba(0,0,0,0));
+      opacity:.9;
+    }
+    body.ems-mode .switch::after{
+      background:linear-gradient(90deg, rgba(47,125,255,.40), rgba(0,0,0,0));
+    }
+
+    /* Status toast */
+    #status{
+      position:fixed;top:12px;left:12px;z-index:9999;
+      padding:8px 10px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.35);
+      color:white;font:12px system-ui;
+      backdrop-filter:blur(8px);
+    }
+
+    @media (max-width: 1020px){
+      .shell{grid-template-columns:1fr}
+      .sidebar{position:relative;height:auto}
+      .grid{grid-template-columns:1fr}
+      .stats{grid-template-columns:repeat(2, minmax(0,1fr))}
+    }
+    @media (max-width: 520px){
+      .stats{grid-template-columns:1fr}
+      .rightTools{width:100%;justify-content:space-between}
+    }
+
+    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+  </style>
 </head>
 
 <body>
+<div id="status">Ready</div>
 
-<div id="loginView" class="center">
-  <div class="card">
-    <h2>Briaroaks Department Portal</h2>
+<!-- LOGIN -->
+<section id="loginView" class="center">
+  <div class="loginCard">
+    <div class="loginHead">
+      <div class="loginLogo" aria-hidden="true" id="logoSlotLogin"></div>
+      <div>
+        <div style="font-weight:900; letter-spacing:.25px; font-size:16px;">Briaroaks Fire Rescue EMS</div>
+        <div class="hint">Member Portal • Command Staff Theme • iPad-friendly</div>
+      </div>
+      <span class="badge accent" style="margin-left:auto;">Secure</span>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h4>Sign in</h4>
+      <p>Use your department portal login (Supabase Auth).</p>
+    </div>
+
     <form id="loginForm">
-      <input id="email" type="email" placeholder="Email" required />
-      <input id="password" type="password" placeholder="Password" required />
-      <button type="submit">Sign In</button>
-      <div id="loginErr" class="error"></div>
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="you@department.org" required />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" placeholder="••••••••" required />
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+        <button class="btn primary" type="submit">Sign in</button>
+        <button class="btn" type="button" id="signUpBtn">Create account</button>
+      </div>
+
+      <div id="loginErr" class="err"></div>
+      <div id="loginOk" class="ok"></div>
+
+      <div class="hint" style="margin-top:10px;">
+        Tip: You can also create users in Supabase → Authentication → Users.
+      </div>
     </form>
   </div>
-</div>
+</section>
 
-<div id="appView" style="display:none;">
-  <div class="dashboard">
-    <div class="tile" id="nameTile"></div>
-    <div class="tile" id="stationTile"></div>
-    <div class="tile" id="emsTile"></div>
-    <button onclick="logout()">Logout</button>
+<!-- APP -->
+<section id="appView" style="display:none;">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="crest" aria-hidden="true" id="logoSlotSide"></div>
+        <div>
+          <h1>Member Portal <span class="sub">Dashboard • Training • Personnel</span></h1>
+          <div style="margin-top:6px; font-size:12px; color:rgba(255,255,255,.68);" id="modeLabel">Mode: Fire</div>
+        </div>
+      </div>
+
+      <div class="sideCard">
+        <h3>My Profile</h3>
+        <div class="metaRow"><span class="badge accent" id="whoLine">Loading…</span></div>
+        <div class="metaRow" style="margin-top:10px;">
+          <span class="badge" id="stationLine">Station</span>
+          <span class="badge" id="emsLine">EMS</span>
+        </div>
+        <div class="metaRow" style="margin-top:10px;">
+          <span class="badge" id="fireLine">Fire</span>
+          <span class="badge" id="aoLine">AO</span>
+        </div>
+        <div class="metaRow" style="margin-top:10px;">
+          <span class="badge" id="accessLine">Access</span>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <div class="item active" data-page="dashboard"><span>Dashboard</span><span class="pill">Home</span></div>
+        <div class="item" data-page="training"><span>Training</span><span class="pill">Tasks</span></div>
+        <div class="item" data-page="trainingManager"><span>Training Manager</span><span class="pill">Staff</span></div>
+        <div class="item" data-page="personnel"><span>Personnel Manager</span><span class="pill">Officer</span></div>
+        <div class="item" data-page="settings"><span>Settings</span><span class="pill">Debug</span></div>
+      </nav>
+
+      <div class="sideCard" id="modeCard" style="display:none;">
+        <h3>Instructor Mode</h3>
+        <div class="toggle">
+          <div>
+            <div style="font-weight:800;font-size:13px;">Fire / EMS</div>
+            <small id="modeHint">Fire mode: red background</small>
+          </div>
+          <div class="switch" id="modeSwitch" title="Toggle Fire/EMS mode">
+            <div class="knob"></div>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:10px;">
+          EMS mode shows blue theme. If you’re not an EMS instructor, edits are locked (view-only).
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="titleBlock">
+          <div class="h" id="topTitle">Dashboard</div>
+          <div class="s" id="topSub">Quick overview — keep the dashboard lightweight.</div>
+        </div>
+        <div class="rightTools">
+          <button class="btn" id="refreshBtn">Refresh</button>
+          <button class="btn danger" id="logoutBtn">Log out</button>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <section id="page-dashboard">
+        <div class="pageHead">
+          <div>
+            <h2>Firefighter Dashboard</h2>
+            <p>Keep it light: identity, station, levels, EMS expiration countdown, and members.</p>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k"><span>Name</span><span class="badge">Profile</span></div>
+            <div class="v" id="dashName">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashEmail">—</div>
+          </div>
+
+          <div class="stat">
+            <div class="k"><span>Weather</span><span class="badge">Station</span></div>
+            <div class="v" id="dashWeather">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;">(We’ll make this real later.)</div>
+          </div>
+
+          <div class="stat">
+            <div class="k"><span>Assigned Station</span><span class="badge">Station</span></div>
+            <div class="v" id="dashStation">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashAO">AO: —</div>
+          </div>
+
+          <div class="stat">
+            <div class="k"><span>EMS Expiration</span><span class="badge accent">Countdown</span></div>
+            <div class="v" style="font-size:16px;" id="dashEmsExp">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="dashEmsExpHint">—</div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <div class="panelHead">
+              <div>
+                <h3>My Levels</h3>
+                <div class="small">Fire • EMS • AO</div>
+              </div>
+              <span class="badge" id="dashAccessBadge">—</span>
+            </div>
+            <div class="panelBody" id="levelsBody"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panelHead">
+              <div>
+                <h3>Quick Actions</h3>
+                <div class="small">Simple tiles only</div>
+              </div>
+              <span class="badge">Tiles</span>
+            </div>
+            <div class="panelBody" id="quickTiles"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:12px;">
+          <div class="panelHead">
+            <div>
+              <h3>Department Members</h3>
+              <div class="small">Names + EMS + Fire + AO</div>
+            </div>
+            <span class="badge" id="memberCount">—</span>
+          </div>
+          <div class="panelBody" id="membersTableWrap"></div>
+        </div>
+      </section>
+
+      <!-- TRAINING -->
+      <section id="page-training" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Training</h2>
+            <p>Tasks, requirements, checkoffs and evaluations live here — not on the dashboard.</p>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="toDashboardBtn">Back to Dashboard</button>
+            <button class="btn" id="refreshTrainingBtn">Refresh</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panelHead">
+            <div>
+              <h3>My Requirements</h3>
+              <div class="small">From <code>candidate_requirements</code> joined to <code>requirements</code>.</div>
+            </div>
+            <span class="badge" id="trainingCount">—</span>
+          </div>
+          <div class="panelBody" id="trainingTableWrap"></div>
+        </div>
+      </section>
+
+      <!-- TRAINING MANAGER -->
+      <section id="page-trainingManager" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Training Manager</h2>
+            <p>Instructor access: view & complete checkoffs (permissions depend on EMS/Fire mode).</p>
+          </div>
+          <div class="actions">
+            <button class="btn" id="refreshTMBtn">Refresh</button>
+            <span class="badge" id="tmPermBadge">—</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panelHead">
+            <div>
+              <h3>Members</h3>
+              <div class="small">Select a member to view training and submit checkoffs (if allowed).</div>
+            </div>
+            <span class="badge" id="tmCount">—</span>
+          </div>
+          <div class="panelBody" id="tmWrap"></div>
+        </div>
+
+        <div class="panel" style="margin-top:12px;">
+          <div class="panelHead">
+            <div>
+              <h3>Checkoff Panel</h3>
+              <div class="small">Edits lock based on mode + instructor status.</div>
+            </div>
+            <span class="badge" id="tmModeBadge">Fire Mode</span>
+          </div>
+          <div class="panelBody" id="tmDetailWrap"></div>
+        </div>
+      </section>
+
+      <!-- PERSONNEL MANAGER -->
+      <section id="page-personnel" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Personnel Manager</h2>
+            <p>Officer tools: station/levels/AO/EMS expirations. Admin can assign access tiers.</p>
+          </div>
+          <div class="actions">
+            <button class="btn" id="refreshPMBtn">Refresh</button>
+            <span class="badge" id="pmPermBadge">—</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panelHead">
+            <div>
+              <h3>Members</h3>
+              <div class="small">Select a member to edit details.</div>
+            </div>
+            <span class="badge" id="pmCount">—</span>
+          </div>
+          <div class="panelBody" id="pmWrap"></div>
+        </div>
+
+        <div class="panel" style="margin-top:12px;">
+          <div class="panelHead">
+            <div>
+              <h3>User Detail</h3>
+              <div class="small">Edit station/levels/AO and add EMS cert expirations.</div>
+            </div>
+            <span class="badge" id="pmEditBadge">—</span>
+          </div>
+          <div class="panelBody" id="pmDetailWrap"></div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="page-settings" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Settings / Debug</h2>
+            <p>Useful when something doesn’t show up.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panelHead">
+            <h3>Debug</h3>
+            <span class="badge">Useful</span>
+          </div>
+          <div class="panelBody">
+            <div class="card">
+              <h4>Session</h4>
+              <pre id="sessionDump" style="white-space:pre-wrap;margin:0;color:rgba(255,255,255,.78);font-size:12px;"></pre>
+            </div>
+            <div class="card">
+              <h4>Profile</h4>
+              <pre id="profileDump" style="white-space:pre-wrap;margin:0;color:rgba(255,255,255,.78);font-size:12px;"></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
   </div>
-</div>
+</section>
 
 <script>
-/****************************************************************
-  🔐 SUPABASE CONFIG
-****************************************************************/
+/***********************************************************************
+ * ✅ SUPABASE CONFIG
+ **********************************************************************/
 const SUPABASE_URL = "https://xjaihdmbblieyzkltvmm.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqYWloZG1iYmxpZXl6a2x0dm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyOTY3MzcsImV4cCI6MjA4Njg3MjczN30.eR8C_ororBpLxSXfuLM8Q6fKvKQnCVRcZnNEH2pM4jA";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqYWloZG1iYmxpZXl6a2x0dm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyOTY3MzcsImV4cCI6MjA4Njg3MjczN30.eR8C_ororBpLxSXfuLM8Q6fKvKQnCVRcZnNEH2pM4jA";
 
-/****************************************************************
-  🧠 STATE
-****************************************************************/
-let accessToken = localStorage.getItem("sb_access_token");
-let refreshToken = localStorage.getItem("sb_refresh_token");
+/***********************************************************************
+ * ✅ LOGO
+ * Option 1 (recommended): put a file called logo.png in your repo root,
+ * then this will work automatically:
+ **********************************************************************/
+const LOGO_HTML = `<img alt="Briaroaks Fire Rescue EMS" src="/logo.png" />`;
 
-/****************************************************************
-  🔐 SIGN IN
-****************************************************************/
-async function signInWithPassword(email, password) {
-  const res = await fetch(
-    `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
-    {
-      method: "POST",
-      headers: {
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password })
-    }
-  );
+/* Option 2: If you want a data-uri logo, replace LOGO_HTML with:
+   const LOGO_HTML = `<img alt="..." src="data:image/png;base64,....." />`;
+*/
 
-  const data = await res.json().catch(()=>({}));
+/***********************************************************************
+ * Helpers
+ **********************************************************************/
+const $ = (id) => document.getElementById(id);
+const show = (el) => el.style.display = "";
+const hide = (el) => el.style.display = "none";
+const setText = (id, text) => { const el = $(id); if (el) el.textContent = text; };
+const status = (msg) => { const el = $("status"); if (el) el.textContent = msg; };
 
-  if (!res.ok) {
-    throw new Error(data?.error_description || data?.error || `Login failed (${res.status})`);
-  }
-
-  accessToken = data.access_token;
-  refreshToken = data.refresh_token;
-
-  localStorage.setItem("sb_access_token", accessToken);
-  localStorage.setItem("sb_refresh_token", refreshToken);
-
-  return data.user;
+function escapeHtml(s){
+  return (s ?? "").toString()
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
+const lower = (v) => (v ?? "").toString().trim().toLowerCase();
 
-/****************************************************************
-  👤 LOAD PROFILE
-****************************************************************/
-async function loadProfile(userId) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`,
-    {
-      headers:{
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type":"application/json"
-      }
-    }
-  );
+/***********************************************************************
+ * Token storage
+ **********************************************************************/
+const TOKEN_KEY = "bfrem_portal_tokens_v1";
+function saveTokens(t){ localStorage.setItem(TOKEN_KEY, JSON.stringify(t)); }
+function loadTokens(){ try{ return JSON.parse(localStorage.getItem(TOKEN_KEY) || "null"); }catch{ return null; } }
+function clearTokens(){ localStorage.removeItem(TOKEN_KEY); }
 
-  const data = await res.json();
-  if(!data.length) throw new Error("Profile not found.");
-  return data[0];
+/***********************************************************************
+ * Auth headers
+ **********************************************************************/
+function authHeaders(accessToken){
+  return {
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": "Bearer " + accessToken
+  };
 }
+async function safeJson(res){ try{ return await res.json(); } catch{ return null; } }
 
-/****************************************************************
-  🚀 INITIALIZE
-****************************************************************/
-async function initializeApp(userId){
-  const profile = await loadProfile(userId);
-
-  document.getElementById("loginView").style.display="none";
-  document.getElementById("appView").style.display="block";
-
-  document.getElementById("nameTile").innerHTML =
-    `<strong>Name:</strong> ${profile.full_name}`;
-
-  document.getElementById("stationTile").innerHTML =
-    `<strong>Station:</strong> ${profile.station}`;
-
-  document.getElementById("emsTile").innerHTML =
-    `<strong>EMS Level:</strong> ${profile.ems_level}`;
-}
-
-/****************************************************************
-  🔄 AUTO RESTORE SESSION
-****************************************************************/
-async function getCurrentUser(){
-  if(!accessToken) return null;
-
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`,{
-    headers:{
+/***********************************************************************
+ * AUTH (fetch-only)
+ **********************************************************************/
+async function authSignIn(email, password){
+  const url = `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
       "apikey": SUPABASE_ANON_KEY,
-      "Authorization": `Bearer ${accessToken}`
-    }
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email, password })
+  });
+  const json = await safeJson(res) || {};
+  if (!res.ok) throw new Error(json?.error_description || json?.msg || json?.message || "Sign-in failed");
+  return json;
+}
+
+async function authSignUp(email, password){
+  const url = `${SUPABASE_URL}/auth/v1/signup`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email, password })
+  });
+  const json = await safeJson(res) || {};
+  if (!res.ok) throw new Error(json?.error_description || json?.msg || json?.message || "Sign-up failed");
+  return json;
+}
+
+async function authGetUser(accessToken){
+  const url = `${SUPABASE_URL}/auth/v1/user`;
+  const res = await fetch(url, { headers: authHeaders(accessToken) });
+  const json = await safeJson(res) || {};
+  if (!res.ok) throw new Error(json?.error_description || json?.msg || json?.message || "Could not fetch user");
+  return json;
+}
+
+/***********************************************************************
+ * REST helpers (Supabase PostgREST)
+ **********************************************************************/
+async function restGet(path, accessToken){
+  const url = `${SUPABASE_URL}/rest/v1/${path}`;
+  const res = await fetch(url, { headers: { ...authHeaders(accessToken), "Accept":"application/json" } });
+  const json = await safeJson(res);
+  if (!res.ok) throw new Error(json?.message || "REST GET failed");
+  return json;
+}
+async function restPost(path, accessToken, body){
+  const url = `${SUPABASE_URL}/rest/v1/${path}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { ...authHeaders(accessToken), "Content-Type":"application/json", "Prefer":"return=representation" },
+    body: JSON.stringify(body)
+  });
+  const json = await safeJson(res);
+  if (!res.ok) throw new Error(json?.message || "REST POST failed");
+  return json;
+}
+async function restPatch(path, accessToken, body){
+  const url = `${SUPABASE_URL}/rest/v1/${path}`;
+  const res = await fetch(url, {
+    method:"PATCH",
+    headers: { ...authHeaders(accessToken), "Content-Type":"application/json", "Prefer":"return=representation" },
+    body: JSON.stringify(body)
+  });
+  const json = await safeJson(res);
+  if (!res.ok) throw new Error(json?.message || "REST PATCH failed");
+  return json;
+}
+
+/***********************************************************************
+ * Pages
+ **********************************************************************/
+const loginView = $("loginView");
+const appView = $("appView");
+const pages = ["dashboard","training","trainingManager","personnel","settings"];
+const navItems = Array.from(document.querySelectorAll("#nav .item"));
+
+function switchPage(page){
+  navItems.forEach(i => i.classList.toggle("active", i.dataset.page === page));
+  pages.forEach(p => {
+    const el = document.getElementById("page-" + p);
+    if (el) el.style.display = (p === page) ? "" : "none";
   });
 
-  if(!res.ok) return null;
-  return res.json();
+  setText("topTitle",
+    page === "dashboard" ? "Dashboard" :
+    page === "training" ? "Training" :
+    page === "trainingManager" ? "Training Manager" :
+    page === "personnel" ? "Personnel Manager" : "Settings"
+  );
+
+  setText("topSub",
+    page === "dashboard" ? "Quick overview — keep the dashboard lightweight." :
+    page === "training" ? "Tasks, requirements, and evaluations." :
+    page === "trainingManager" ? "Instructor view for checkoffs." :
+    page === "personnel" ? "Officer tools for member management." :
+    "Debug and diagnostics."
+  );
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+navItems.forEach(item => item.addEventListener("click", () => switchPage(item.dataset.page)));
+
+/***********************************************************************
+ * Mode toggle (Fire/EMS theme)
+ **********************************************************************/
+let mode = "fire"; // fire | ems
+function setMode(next){
+  mode = next;
+  document.body.classList.toggle("ems-mode", mode === "ems");
+  setText("modeLabel", "Mode: " + (mode === "ems" ? "EMS" : "Fire"));
+  setText("modeHint", mode === "ems" ? "EMS mode: blue background" : "Fire mode: red background");
+  setText("tmModeBadge", mode === "ems" ? "EMS Mode" : "Fire Mode");
+}
+$("modeSwitch").addEventListener("click", () => setMode(mode === "ems" ? "fire" : "ems"));
+
+/***********************************************************************
+ * State
+ **********************************************************************/
+let tokens = null;
+let currentUser = null;
+let currentProfile = null;
+
+let isInstructor = false;
+let isOfficer = false;
+let isAdmin = false;
+let isEmsInstructor = false;
+let isFireInstructor = false;
+
+function computeAccess(profile){
+  // NOTE: these are string checks; if your role is an ENUM, it still comes to JS as text
+  const role = lower(profile?.role);
+  const instr = lower(profile?.instructor_status);
+
+  const admin = role.includes("admin") || role.includes("chief");
+  const officer = admin || role.includes("officer");
+  const emsInstr = instr.includes("ems instructor");
+  const fireInstr = instr.includes("fire instructor");
+  const instructor = emsInstr || fireInstr || officer;
+
+  return { admin, officer, instructor, emsInstr: emsInstr || officer, fireInstr: fireInstr || officer };
 }
 
-(async function boot(){
-  const user = await getCurrentUser();
-  if(user) initializeApp(user.id);
-})();
+function gateNav(){
+  const tmItem = navItems.find(x => x.dataset.page === "trainingManager");
+  const pmItem = navItems.find(x => x.dataset.page === "personnel");
 
-/****************************************************************
-  🧪 LOGIN FORM
-****************************************************************/
-document.getElementById("loginForm").addEventListener("submit", async(e)=>{
+  if (tmItem) tmItem.style.display = isInstructor ? "" : "none";
+  if (pmItem) pmItem.style.display = isOfficer ? "" : "none";
+  $("modeCard").style.display = isInstructor ? "" : "none";
+}
+
+/***********************************************************************
+ * Countdown helpers (EMS cert expiration)
+ **********************************************************************/
+function fmtCountdown(targetDate){
+  if (!targetDate) return "—";
+  const d = new Date(targetDate);
+  if (isNaN(d.getTime())) return "—";
+
+  const now = new Date();
+  let diff = d.getTime() - now.getTime();
+  const past = diff < 0;
+  diff = Math.abs(diff);
+
+  const day = 24*60*60*1000;
+  const year = 365.25*day;
+  const month = 30.44*day;
+
+  const years = Math.floor(diff / year);
+  diff -= years*year;
+  const months = Math.floor(diff / month);
+  diff -= months*month;
+  const days = Math.floor(diff / day);
+
+  const parts = [];
+  if (years) parts.push(`${years} year${years===1?"":"s"}`);
+  if (months) parts.push(`${months} month${months===1?"":"s"}`);
+  if (!years && !months) parts.push(`${days} day${days===1?"":"s"}`);
+
+  return past ? ("Expired " + parts.join(", ") + " ago") : ("In " + parts.join(", "));
+}
+
+function pickNextExpiration(rows){
+  if (!rows || !rows.length) return null;
+  const now = Date.now();
+  const parsed = rows
+    .map(r => ({...r, _t: new Date(r.expires_on).getTime()}))
+    .filter(r => !isNaN(r._t))
+    .sort((a,b) => a._t - b._t);
+
+  const future = parsed.find(r => r._t >= now);
+  return future || parsed[0];
+}
+
+/***********************************************************************
+ * Login UI helpers
+ **********************************************************************/
+function showErr(msg){ $("loginErr").style.display=""; $("loginErr").textContent = msg; }
+function showOk(msg){ $("loginOk").style.display=""; $("loginOk").textContent = msg; }
+
+/***********************************************************************
+ * Events
+ **********************************************************************/
+$("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const errEl=document.getElementById("loginErr");
-  errEl.style.display="none";
+  $("loginErr").style.display="none";
+  $("loginOk").style.display="none";
+
+  const email = $("email").value.trim();
+  const password = $("password").value;
 
   try{
-    const user = await signInWithPassword(
-      document.getElementById("email").value.trim(),
-      document.getElementById("password").value
-    );
-    initializeApp(user.id);
+    status("Signing in…");
+    const t = await authSignIn(email, password);
+    saveTokens({
+      access_token:t.access_token,
+      refresh_token:t.refresh_token,
+      token_type:t.token_type,
+      expires_in:t.expires_in
+    });
+    showOk("Signed in. Loading portal…");
+    await refreshAll();
   }catch(err){
-    errEl.style.display="block";
-    errEl.textContent=err.message;
+    status("Sign-in error");
+    showErr(err.message || String(err));
   }
 });
 
-/****************************************************************
-  🚪 LOGOUT
-****************************************************************/
-function logout(){
-  localStorage.removeItem("sb_access_token");
-  localStorage.removeItem("sb_refresh_token");
-  location.reload();
-}
-</script>
+$("signUpBtn").addEventListener("click", async () => {
+  $("loginErr").style.display="none";
+  $("loginOk").style.display="none";
 
+  const email = $("email").value.trim();
+  const password = $("password").value;
+
+  try{
+    status("Creating account…");
+    await authSignUp(email, password);
+    showOk("Account created. If confirmation is enabled, check email. Otherwise, sign in now.");
+    status("Ready");
+  }catch(err){
+    status("Sign-up error");
+    showErr(err.message || String(err));
+  }
+});
+
+$("logoutBtn").addEventListener("click", () => {
+  clearTokens();
+  currentUser = null; currentProfile = null;
+  hide(appView); show(loginView);
+  status("Signed out");
+});
+
+$("refreshBtn").addEventListener("click", () => refreshAll().catch(console.error));
+$("refreshTrainingBtn").addEventListener("click", () => loadTrainingMy().catch(console.error));
+$("refreshTMBtn").addEventListener("click", () => loadTrainingManager().catch(console.error));
+$("refreshPMBtn").addEventListener("click", () => loadPersonnelManager().catch(console.error));
+$("toDashboardBtn").addEventListener("click", () => switchPage("dashboard"));
+
+/***********************************************************************
+ * Load all app data
+ **********************************************************************/
+async function refreshAll(){
+  tokens = loadTokens();
+  if (!tokens?.access_token) {
+    hide(appView); show(loginView);
+    status("Signed out");
+    return;
+  }
+
+  status("Fetching user…");
+  currentUser = await authGetUser(tokens.access_token);
+
+  status("Loading profile…");
+  const profs = await restGet(`profiles?select=*&id=eq.${encodeURIComponent(currentUser.id)}&limit=1`, tokens.access_token);
+  currentProfile = Array.isArray(profs) ? profs[0] : null;
+
+  if (!currentProfile) {
+    clearTokens();
+    hide(appView); show(loginView);
+    showErr("Signed in, but no matching profiles row exists for this user ID (or blocked by RLS).");
+    status("Profile missing");
+    return;
+  }
+
+  const acc = computeAccess(currentProfile);
+  isAdmin = acc.admin;
+  isOfficer = acc.officer;
+  isInstructor = acc.instructor;
+  isEmsInstructor = acc.emsInstr;
+  isFireInstructor = acc.fireInstr;
+
+  gateNav();
+  setMode("fire");
+
+  // Sidebar labels
+  setText("whoLine", `${currentProfile.full_name ?? "Member"}`);
+  setText("stationLine", String(currentProfile.station ?? "Station —"));
+  setText("emsLine", `EMS: ${String(currentProfile.ems_level ?? "—")}`);
+  setText("fireLine", `Fire: ${String(currentProfile.fire_level ?? "—")}`);
+  setText("aoLine", `AO: ${String(currentProfile.ao_level ?? "None")}`);
+  setText("accessLine", isAdmin ? "Admin" : isOfficer ? "Officer" : isInstructor ? "Instructor" : "Firefighter");
+
+  // Dashboard tiles
+  setText("dashName", currentProfile.full_name ?? "—");
+  setText("dashEmail", currentUser.email ?? "—");
+  setText("dashStation", currentProfile.station ?? "—");
+  setText("dashAO", `AO: ${currentProfile.ao_level ?? "None"}`);
+
+  // Weather placeholder
+  setText("dashWeather", "Clear • 62°F");
+
+  // Levels panel
+  $("levelsBody").innerHTML = `
+    <div class="card">
+      <h4>Fire Level</h4>
+      <p><span class="badge">${escapeHtml(currentProfile.fire_level ?? "Recruit")}</span></p>
+    </div>
+    <div class="card">
+      <h4>EMS Certification Level</h4>
+      <p><span class="badge">${escapeHtml(currentProfile.ems_level ?? "In-Training")}</span></p>
+    </div>
+    <div class="card">
+      <h4>Apparatus Operator Level</h4>
+      <p><span class="badge">${escapeHtml(currentProfile.ao_level ?? "None")}</span></p>
+    </div>
+  `;
+
+  setText("dashAccessBadge", isAdmin ? "Admin access" : isOfficer ? "Officer access" : isInstructor ? "Instructor access" : "Member access");
+
+  // Quick tiles
+  const tiles = [];
+  tiles.push(`<button class="btn primary" onclick="switchPage('training')">Training</button>`);
+  if (isInstructor) tiles.push(`<button class="btn" onclick="switchPage('trainingManager')">Training Manager</button>`);
+  if (isOfficer) tiles.push(`<button class="btn" onclick="switchPage('personnel')">Personnel Manager</button>`);
+  tiles.push(`<div class="card" style="margin-top:12px;"><h4>Rule</h4><p>Dashboard stays lightweight. Training/checkoffs live on Training pages.</p></div>`);
+  $("quickTiles").innerHTML = tiles.join("");
+
+  // Load lists
+  await loadMembersList();
+  await loadMyEmsExpiration();
+  await loadTrainingMy();
+  if (isInstructor) await loadTrainingManager();
+  if (isOfficer) await loadPersonnelManager();
+
+  // Debug
+  $("sessionDump").textContent = JSON.stringify({
+    user_id: currentUser.id,
+    email: currentUser.email,
+    access: isAdmin ? "admin" : isOfficer ? "officer" : isInstructor ? "instructor" : "member",
+    ems_instructor: isEmsInstructor,
+    fire_instructor: isFireInstructor
+  }, null, 2);
+  $("profileDump").textContent = JSON.stringify(currentProfile, null, 2);
+
+  // Show app
+  hide(loginView); show(appView);
+  switchPage("dashboard");
+  status("Ready");
+}
+
+async function loadMembersList(){
+  status("Loading members…");
+  const rows = await restGet(`profiles?select=full_name,ems_level,fire_level,ao_level,station&order=full_name.asc`, tokens.access_token);
+  const list = rows ?? [];
+  setText("memberCount", `${list.length}`);
+
+  $("membersTableWrap").innerHTML = `
+    <table class="table" aria-label="Department Members">
+      <thead>
+        <tr>
+          <th style="width:34%;">Name</th>
+          <th style="width:18%;">Station</th>
+          <th style="width:16%;">Fire Level</th>
+          <th style="width:16%;">EMS Level</th>
+          <th>AO</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map(m => `
+          <tr class="row">
+            <td><b>${escapeHtml(m.full_name ?? "")}</b></td>
+            <td>${escapeHtml(m.station ?? "")}</td>
+            <td>${escapeHtml(m.fire_level ?? "")}</td>
+            <td>${escapeHtml(m.ems_level ?? "")}</td>
+            <td>${escapeHtml(m.ao_level ?? "None")}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+  status("Ready");
+}
+
+/* EMS expiration countdown — pulls ONLY track='ems' from certifications */
+async function loadMyEmsExpiration(){
+  try{
+    const rows = await restGet(`certifications?select=cert_name,expires_on,track&user_id=eq.${encodeURIComponent(currentUser.id)}&track=eq.ems&order=expires_on.asc`, tokens.access_token);
+    const next = pickNextExpiration(rows || []);
+    if (!next){
+      setText("dashEmsExp", "No EMS expiration set");
+      setText("dashEmsExpHint", "Add an EMS cert in Personnel Manager (Officer) or in the table.");
+      return;
+    }
+    setText("dashEmsExp", `${next.cert_name} • ${fmtCountdown(next.expires_on)}`);
+    setText("dashEmsExpHint", `Expires: ${new Date(next.expires_on).toLocaleDateString()}`);
+  }catch(e){
+    setText("dashEmsExp", "EMS countdown not enabled");
+    setText("dashEmsExpHint", "Create the certifications table + RLS policies.");
+  }
+}
+
+/* My training — requires candidates + candidate_requirements + requirements */
+async function loadTrainingMy(){
+  const wrap = $("trainingTableWrap");
+  wrap.innerHTML = `<div class="hint">Loading…</div>`;
+
+  try{
+    const cands = await restGet(`candidates?select=id,full_name,station,status&linked_user_id=eq.${encodeURIComponent(currentUser.id)}&limit=1`, tokens.access_token);
+    const cand = Array.isArray(cands) ? cands[0] : null;
+
+    if (!cand){
+      $("trainingCount").textContent = "—";
+      wrap.innerHTML = `<div class="card"><h4>No linked trainee record</h4><p>Link <code>candidates.linked_user_id</code> to your user id to show training.</p></div>`;
+      return;
+    }
+
+    const rows = await restGet(`candidate_requirements?select=status,requirements(name,category,is_critical)&candidate_id=eq.${encodeURIComponent(cand.id)}`, tokens.access_token);
+    const list = rows ?? [];
+    $("trainingCount").textContent = `${list.length} total`;
+
+    wrap.innerHTML = `
+      <table class="table" aria-label="My Training">
+        <thead>
+          <tr>
+            <th style="width:46%;">Requirement</th>
+            <th style="width:24%;">Category</th>
+            <th style="width:14%;">Status</th>
+            <th>Critical</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(r => {
+            const tagClass = r.status === "passed" ? "good" : (r.status === "redo" ? "warn" : (r.status === "failed" ? "bad" : ""));
+            return `
+              <tr class="row">
+                <td><b>${escapeHtml(r.requirements?.name ?? "")}</b></td>
+                <td>${escapeHtml(r.requirements?.category ?? "")}</td>
+                <td><span class="badge ${tagClass}">${escapeHtml(r.status ?? "pending")}</span></td>
+                <td>${r.requirements?.is_critical ? "<span class='badge bad'>CRITICAL</span>" : "<span class='badge'>—</span>"}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+  }catch(e){
+    wrap.innerHTML = `<div class="card"><h4>Error</h4><p>${escapeHtml(e.message || String(e))}</p></div>`;
+  }
+}
+
+/* Training Manager — submit checkoffs if allowed by mode + instructor status */
+let tmSelectedProfileId = null;
+
+async function loadTrainingManager(){
+  const wrap = $("tmWrap");
+  wrap.innerHTML = `<div class="hint">Loading…</div>`;
+
+  const perm = (mode === "ems") ? isEmsInstructor : isFireInstructor;
+  setText("tmPermBadge", perm ? "Edit: Allowed" : "Edit: View-only");
+
+  const members = await restGet(`profiles?select=id,full_name,station,ems_level,fire_level&order=full_name.asc`, tokens.access_token);
+  setText("tmCount", `${(members||[]).length}`);
+
+  wrap.innerHTML = `
+    <table class="table" aria-label="Training Manager Members">
+      <thead>
+        <tr>
+          <th style="width:34%;">Member</th>
+          <th style="width:18%;">Station</th>
+          <th style="width:18%;">Fire</th>
+          <th style="width:18%;">EMS</th>
+          <th style="width:12%;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${(members||[]).map(m => `
+          <tr class="row">
+            <td><b>${escapeHtml(m.full_name ?? "")}</b></td>
+            <td>${escapeHtml(m.station ?? "")}</td>
+            <td>${escapeHtml(m.fire_level ?? "")}</td>
+            <td>${escapeHtml(m.ems_level ?? "")}</td>
+            <td><button class="btn" style="padding:7px 10px;border-radius:12px;" data-tm-open="${m.id}">Open</button></td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+
+  wrap.querySelectorAll("[data-tm-open]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      tmSelectedProfileId = btn.getAttribute("data-tm-open");
+      await renderTrainingDetail(tmSelectedProfileId);
+    });
+  });
+
+  if (!tmSelectedProfileId) {
+    $("tmDetailWrap").innerHTML = `
+      <div class="card">
+        <h4>Select a member</h4>
+        <p>Choose a member above to view their training and perform checkoffs (if permitted).</p>
+      </div>
+    `;
+  }
+}
+
+async function renderTrainingDetail(profileId){
+  const perm = (mode === "ems") ? isEmsInstructor : isFireInstructor;
+
+  const cands = await restGet(`candidates?select=id,full_name,status&linked_user_id=eq.${encodeURIComponent(profileId)}&limit=1`, tokens.access_token);
+  const cand = Array.isArray(cands) ? cands[0] : null;
+
+  if (!cand) {
+    $("tmDetailWrap").innerHTML = `
+      <div class="card">
+        <h4>No linked candidate record</h4>
+        <p>This member does not have a row in <code>candidates</code> with <code>linked_user_id</code> set to their user id.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const rows = await restGet(`candidate_requirements?select=candidate_id,requirement_id,status,requirements(name,category,is_critical)&candidate_id=eq.${encodeURIComponent(cand.id)}`, tokens.access_token);
+  const list = rows ?? [];
+
+  $("tmDetailWrap").innerHTML = `
+    <div class="card">
+      <h4>${escapeHtml(cand.full_name ?? "Member")} • Training</h4>
+      <p>${escapeHtml(perm ? "You can submit checkoffs in this mode." : "View-only in this mode (no edits).")}</p>
+    </div>
+
+    <div class="card">
+      <h4>Submit Checkoff</h4>
+      <p class="hint">Writes to <code>candidate_requirements.status</code>.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 180px 180px;gap:10px;align-items:end;margin-top:10px;">
+        <div>
+          <div class="hint" style="margin-bottom:6px;">Requirement</div>
+          <select id="tmReqSel" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;">
+            ${list.map(r => `<option value="${r.requirement_id}">${escapeHtml(r.requirements?.name ?? "Requirement")} • ${escapeHtml(r.status ?? "pending")}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <div class="hint" style="margin-bottom:6px;">New Status</div>
+          <select id="tmStatusSel" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;">
+            <option value="passed">passed</option>
+            <option value="redo">redo</option>
+            <option value="failed">failed</option>
+            <option value="pending">pending</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn primary" id="tmSubmitBtn" style="width:100%;" ${perm ? "" : "disabled"}>Submit</button>
+        </div>
+      </div>
+
+      <div id="tmMsg" class="hint" style="margin-top:10px;"></div>
+    </div>
+
+    <table class="table" aria-label="Member Requirements">
+      <thead>
+        <tr>
+          <th style="width:46%;">Requirement</th>
+          <th style="width:24%;">Category</th>
+          <th style="width:14%;">Status</th>
+          <th>Critical</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map(r => {
+          const tagClass = r.status === "passed" ? "good" : (r.status === "redo" ? "warn" : (r.status === "failed" ? "bad" : ""));
+          return `
+            <tr class="row">
+              <td><b>${escapeHtml(r.requirements?.name ?? "")}</b></td>
+              <td>${escapeHtml(r.requirements?.category ?? "")}</td>
+              <td><span class="badge ${tagClass}">${escapeHtml(r.status ?? "pending")}</span></td>
+              <td>${r.requirements?.is_critical ? "<span class='badge bad'>CRITICAL</span>" : "<span class='badge'>—</span>"}</td>
+            </tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
+
+  const btn = $("tmSubmitBtn");
+  if (btn && perm) {
+    btn.addEventListener("click", async () => {
+      const reqId = $("tmReqSel").value;
+      const newStatus = $("tmStatusSel").value;
+      try{
+        status("Saving checkoff…");
+        await restPatch(`candidate_requirements?candidate_id=eq.${encodeURIComponent(cand.id)}&requirement_id=eq.${encodeURIComponent(reqId)}`, tokens.access_token, {
+          status: newStatus
+        });
+        $("tmMsg").textContent = "Saved ✓";
+        await loadTrainingManager();
+        await loadTrainingMy();
+        status("Ready");
+      }catch(e){
+        $("tmMsg").textContent = "Error: " + (e.message || String(e));
+        status("Error");
+      }
+    });
+  } else if (btn && !perm) {
+    btn.title = "View-only in this mode";
+    btn.style.opacity = ".6";
+    btn.style.cursor = "not-allowed";
+  }
+}
+
+/* Personnel Manager — officer tools (edit profiles + add EMS cert expiration) */
+let pmSelectedId = null;
+
+async function loadPersonnelManager(){
+  const wrap = $("pmWrap");
+  wrap.innerHTML = `<div class="hint">Loading…</div>`;
+
+  setText("pmPermBadge", isAdmin ? "Admin: can set access tier" : "Officer: can edit station/levels/AO/EMS certs");
+
+  const members = await restGet(`profiles?select=id,full_name,station,ems_level,fire_level,ao_level,role,instructor_status&order=full_name.asc`, tokens.access_token);
+  setText("pmCount", `${(members||[]).length}`);
+
+  wrap.innerHTML = `
+    <table class="table" aria-label="Personnel Manager Members">
+      <thead>
+        <tr>
+          <th style="width:28%;">Name</th>
+          <th style="width:16%;">Station</th>
+          <th style="width:14%;">Fire</th>
+          <th style="width:14%;">EMS</th>
+          <th style="width:12%;">AO</th>
+          <th style="width:16%;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${(members||[]).map(m => `
+          <tr class="row">
+            <td><b>${escapeHtml(m.full_name ?? "")}</b></td>
+            <td>${escapeHtml(m.station ?? "")}</td>
+            <td>${escapeHtml(m.fire_level ?? "")}</td>
+            <td>${escapeHtml(m.ems_level ?? "")}</td>
+            <td>${escapeHtml(m.ao_level ?? "None")}</td>
+            <td><button class="btn" style="padding:7px 10px;border-radius:12px;" data-pm-open="${m.id}">Edit</button></td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+
+  wrap.querySelectorAll("[data-pm-open]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      pmSelectedId = btn.getAttribute("data-pm-open");
+      await renderPersonnelDetail(pmSelectedId);
+    });
+  });
+
+  if (!pmSelectedId){
+    $("pmDetailWrap").innerHTML = `
+      <div class="card">
+        <h4>Select a member</h4>
+        <p>Officers can update station/levels/AO and EMS expiration. Admins can also assign access tiers.</p>
+      </div>
+    `;
+  }
+}
+
+async function renderPersonnelDetail(profileId){
+  setText("pmEditBadge", isAdmin ? "Admin editing" : "Officer editing");
+
+  const profs = await restGet(`profiles?select=*&id=eq.${encodeURIComponent(profileId)}&limit=1`, tokens.access_token);
+  const p = Array.isArray(profs) ? profs[0] : null;
+  if (!p){
+    $("pmDetailWrap").innerHTML = `<div class="card"><h4>Not found</h4><p>Could not load profile.</p></div>`;
+    return;
+  }
+
+  let certRows = [];
+  let certHint = "";
+  try{
+    certRows = await restGet(`certifications?select=id,cert_name,track,expires_on&user_id=eq.${encodeURIComponent(profileId)}&track=eq.ems&order=expires_on.asc`, tokens.access_token);
+  }catch(e){
+    certHint = "Certifications table not found yet (optional).";
+  }
+
+  $("pmDetailWrap").innerHTML = `
+    <div class="card">
+      <h4>${escapeHtml(p.full_name ?? "Member")}</h4>
+      <p>Update station assignment, Fire/EMS level, AO, and EMS expiration.</p>
+    </div>
+
+    <div class="card">
+      <h4>Core Fields</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
+        <div>
+          <div class="hint" style="margin-bottom:6px;">Station</div>
+          <select id="pmStation" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;">
+            <option${p.station==="Station 173"?" selected":""}>Station 173</option>
+            <option${p.station==="Station 273"?" selected":""}>Station 273</option>
+          </select>
+        </div>
+        <div>
+          <div class="hint" style="margin-bottom:6px;">Fire Level</div>
+          <select id="pmFire" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;">
+            ${["Recruit","Level 5","Level 4","Level 3","Level 2","Level 1"].map(x => `<option${p.fire_level===x?" selected":""}>${x}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <div class="hint" style="margin-bottom:6px;">EMS Level</div>
+          <select id="pmEms" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;">
+            ${["In-Training","Recruit","ECA","EMT","Paramedic"].map(x => `<option${p.ems_level===x?" selected":""}>${x}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <div class="hint" style="margin-bottom:6px;">AO Level</div>
+          <select id="pmAO" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;">
+            ${["None","AO-EMS","AO-1","AO-2"].map(x => `<option${(p.ao_level??"None")===x?" selected":""}>${x}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <div class="hint" style="margin-bottom:6px;">Instructor Status</div>
+          <select id="pmInstr" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;">
+            ${["None","EMS Instructor","Fire Instructor","EMS Instructor, Fire Instructor"].map(x => `<option${(p.instructor_status??"None")===x?" selected":""}>${x}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <div class="hint" style="margin-bottom:6px;">Role (access)</div>
+          <select id="pmRole" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;" ${isAdmin ? "" : "disabled"}>
+            <option value="firefighter"${lower(p.role)==="firefighter"?" selected":""}>Firefighter</option>
+            <option value="officer"${lower(p.role)==="officer"?" selected":""}>Officer</option>
+            <option value="admin"${lower(p.role)==="admin"?" selected":""}>Admin</option>
+            <option value="fire_chief"${(lower(p.role)==="fire_chief"||lower(p.role)==="fire chief")?" selected":""}>Fire Chief</option>
+          </select>
+          ${isAdmin ? "" : "<div class='hint' style='margin-top:6px;'>Only Admin can change role.</div>"}
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <button class="btn primary" id="pmSaveBtn">Save Changes</button>
+        <span class="hint" id="pmMsg"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>EMS Certifications & Expiration Dates</h4>
+      <p class="hint">${certHint || "Store EMS expirations here to show countdowns on the dashboard."}</p>
+
+      <div id="pmCertWrap"></div>
+    </div>
+  `;
+
+  const certWrap = $("pmCertWrap");
+  if (!Array.isArray(certRows)) certRows = [];
+
+  certWrap.innerHTML = (certRows.length ? `
+    <table class="table" aria-label="Certifications">
+      <thead>
+        <tr>
+          <th style="width:45%;">Certification</th>
+          <th style="width:25%;">Expires</th>
+          <th>Countdown</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${certRows.map(c => `
+          <tr class="row">
+            <td><b>${escapeHtml(c.cert_name||"")}</b></td>
+            <td>${c.expires_on ? new Date(c.expires_on).toLocaleDateString() : "—"}</td>
+            <td><span class="badge accent">${escapeHtml(fmtCountdown(c.expires_on))}</span></td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  ` : `<div class="hint">No EMS certifications saved for this user yet.</div>`) + `
+    <div style="margin-top:10px;display:grid;grid-template-columns:1fr 220px;gap:10px;align-items:end;">
+      <div>
+        <div class="hint" style="margin-bottom:6px;">Cert Name</div>
+        <input id="pmCertName" placeholder="e.g., EMT, Paramedic" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;outline:none;font-size:13px;">
+      </div>
+      <div>
+        <div class="hint" style="margin-bottom:6px;">Expires On</div>
+        <input id="pmCertExp" type="date" style="width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);padding:10px;outline:none;font-size:13px;">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button class="btn" id="pmAddCertBtn">Add EMS Certification</button>
+      <span class="hint" id="pmCertMsg"></span>
+    </div>
+  `;
+
+  $("pmSaveBtn").addEventListener("click", async () => {
+    try{
+      status("Saving…");
+      const station = $("pmStation").value;
+      const fire_level = $("pmFire").value;
+      const ems_level = $("pmEms").value;
+      const ao_level = $("pmAO").value;
+      const instructor_status = $("pmInstr").value;
+      const role = isAdmin ? $("pmRole").value : p.role;
+
+      await restPatch(`profiles?id=eq.${encodeURIComponent(profileId)}`, tokens.access_token, {
+        station, fire_level, ems_level, ao_level, instructor_status, role
+      });
+
+      $("pmMsg").textContent = "Saved ✓";
+      await loadMembersList();
+      await loadPersonnelManager();
+      await loadMyEmsExpiration();
+      status("Ready");
+    }catch(e){
+      $("pmMsg").textContent = "Error: " + (e.message || String(e));
+      status("Error");
+    }
+  });
+
+  $("pmAddCertBtn").addEventListener("click", async () => {
+    const cert_name = $("pmCertName").value.trim();
+    const expires_on = $("pmCertExp").value;
+
+    if (!cert_name || !expires_on) {
+      $("pmCertMsg").textContent = "Enter cert name and expiration date.";
+      return;
+    }
+
+    try{
+      status("Adding cert…");
+      await restPost("certifications", tokens.access_token, [{
+        user_id: profileId,
+        cert_name,
+        track: "ems",
+        expires_on
+      }]);
+      $("pmCertMsg").textContent = "Added ✓";
+      await renderPersonnelDetail(profileId);
+      await loadMyEmsExpiration();
+      status("Ready");
+    }catch(e){
+      $("pmCertMsg").textContent = "Error: " + (e.message || String(e));
+      status("Error");
+    }
+  });
+}
+
+/***********************************************************************
+ * Boot
+ **********************************************************************/
+(function initLogo(){
+  // Logo slots
+  $("logoSlotLogin").innerHTML = LOGO_HTML;
+  $("logoSlotSide").innerHTML = LOGO_HTML;
+})();
+
+(async function boot(){
+  try{
+    const t = loadTokens();
+    if (t?.access_token) await refreshAll();
+    else { hide(appView); show(loginView); status("Signed out"); }
+  }catch(e){
+    hide(appView); show(loginView);
+    showErr(e.message || String(e));
+    status("Error");
+  }
+})();
+</script>
 </body>
 </html>
