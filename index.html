@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Department Portal (No CDN) • Supabase via fetch()</title>
+  <title>Department Portal • No-CDN Supabase</title>
   <style>
     :root{
       --bg:#0b1220;
@@ -32,65 +32,52 @@
       overflow-x:hidden;
     }
     button,input,select,textarea{font:inherit;color:inherit}
-    .center{min-height:100vh; display:grid; place-items:center; padding:22px}
-    .card{
-      width:min(560px, 100%);
-      padding:18px;
-      border-radius:22px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow:0 30px 90px rgba(0,0,0,.45);
-      backdrop-filter: blur(14px);
+    code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    .sidebar{
+      position:sticky; top:0; height:100vh;
+      padding:22px;
+      border-right:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      backdrop-filter: blur(10px);
     }
-    .row{display:flex;gap:12px;align-items:center}
+    .brand{
+      display:flex; gap:12px; align-items:center;
+      padding:12px; border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
+    }
     .logo{
       width:44px;height:44px;border-radius:14px;
       background:
         radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), transparent 55%),
         linear-gradient(135deg, rgba(122,167,255,.85), rgba(46,229,157,.85));
+      display:grid;place-items:center;
       border:1px solid rgba(255,255,255,.18);
     }
-    .hint{font-size:12px; color:var(--muted); line-height:1.45}
-    .field{display:flex; flex-direction:column; gap:6px; margin-top:10px}
-    .field label{font-size:12px; color:var(--muted)}
-    .field input,.field select,.field textarea{
-      width:100%; border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.18);
-      padding:10px; outline:none; font-size:13px;
-    }
-    .btn{
-      padding:10px 12px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
+    .brand h1{margin:0;font-size:14px;letter-spacing:.3px;line-height:1.2}
+    .brand .sub{display:block;margin-top:2px;font-size:12px;color:var(--muted)}
+    .sideCard{
+      margin-top:14px; padding:14px;
+      border-radius:var(--radius);
       background:rgba(255,255,255,.045);
-      cursor:pointer;
-      display:inline-flex; gap:10px; align-items:center;
+      border:1px solid var(--stroke);
     }
-    .btn.primary{border-color:rgba(46,229,157,.32); background:rgba(46,229,157,.12)}
-    .btn.danger{border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.12)}
-    .err{margin-top:10px; color:rgba(255,92,122,.95); font-size:12px}
-    .ok{margin-top:10px; color:rgba(46,229,157,.95); font-size:12px}
+    .sideCard h3{margin:0 0 10px 0;font-size:13px;letter-spacing:.2px}
+    .metaRow{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:12px;flex-wrap:wrap}
     .badge{
       font-size:12px; padding:3px 8px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
+      border:1px solid var(--stroke);
       color:var(--muted);
+      background:rgba(255,255,255,.03);
       white-space:nowrap;
     }
     .badge.good{border-color:rgba(46,229,157,.35); background:rgba(46,229,157,.10); color:rgba(46,229,157,.95)}
-    .badge.info{border-color:rgba(122,167,255,.35); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
     .badge.warn{border-color:rgba(255,204,102,.35); background:rgba(255,204,102,.10); color:rgba(255,204,102,.95)}
     .badge.bad{border-color:rgba(255,92,122,.35); background:rgba(255,92,122,.10); color:rgba(255,92,122,.95)}
+    .badge.info{border-color:rgba(122,167,255,.35); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
 
-    /* App */
-    .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
-    .sidebar{
-      position:sticky; top:0; height:100vh;
-      padding:22px;
-      border-right:1px solid rgba(255,255,255,.12);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      backdrop-filter: blur(10px);
-    }
     .nav{margin-top:14px; display:flex; flex-direction:column; gap:8px}
     .nav .item{
       display:flex; align-items:center; gap:10px;
@@ -106,24 +93,69 @@
     }
     .pill{
       margin-left:auto; font-size:12px; padding:3px 9px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
+      border:1px solid var(--stroke);
       background:rgba(255,255,255,.04);
       color:var(--muted);
     }
+
     .main{padding:22px 26px 36px}
     .topbar{
       display:flex; gap:12px; align-items:center; justify-content:space-between;
-      padding:14px; border-radius:18px;
+      padding:14px; border-radius:var(--radius);
       background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.12);
+      border:1px solid var(--stroke);
       box-shadow:var(--shadow);
       flex-wrap:wrap;
     }
-    .panel{
-      margin-top:14px;
-      border-radius:18px;
+    .search{
+      flex:1; min-width:220px;
+      display:flex; gap:10px; align-items:center;
+      padding:10px 12px; border-radius:14px;
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .search input{width:100%; border:0; outline:0; background:transparent; font-size:14px}
+    .search input::placeholder{color:rgba(255,255,255,.42)}
+    .rightTools{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+
+    .btn{
+      padding:10px 12px; border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.045);
+      color:var(--text); cursor:pointer; user-select:none;
+      display:inline-flex; gap:10px; align-items:center;
+      transition:transform .06s ease, background .12s ease, border-color .12s ease;
+    }
+    .btn:hover{background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.18)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{border-color:rgba(46,229,157,.32); background:rgba(46,229,157,.12)}
+    .btn.danger{border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.12)}
+
+    .pageHead{
+      margin:18px 4px 14px;
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+      flex-wrap:wrap;
+    }
+    .pageHead h2{margin:0; font-size:18px; letter-spacing:.2px}
+    .pageHead p{margin:6px 0 0 0; font-size:13px; color:var(--muted)}
+    .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
+
+    .stats{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin:14px 0 12px}
+    .stat{
+      padding:14px; border-radius:var(--radius);
       background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.12);
+      border:1px solid var(--stroke);
+      box-shadow:0 14px 38px rgba(0,0,0,.24);
+      min-height:92px;
+    }
+    .stat .k{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:10px}
+    .stat .v{margin-top:10px; font-size:22px; font-weight:700; letter-spacing:.2px}
+
+    .grid{display:grid; grid-template-columns:1.35fr .65fr; gap:12px; margin-top:12px}
+    .panel{
+      border-radius:var(--radius);
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
       box-shadow:0 18px 48px rgba(0,0,0,.24);
       overflow:hidden;
     }
@@ -134,154 +166,376 @@
       background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       flex-wrap:wrap;
     }
+    .panelHead h3{margin:0; font-size:13px; letter-spacing:.25px}
+    .panelHead .small{font-size:12px; color:var(--muted)}
     .panelBody{padding:14px}
-    pre{white-space:pre-wrap; margin:0; font-size:12px; color:rgba(255,255,255,.78)}
-    @media (max-width: 980px){ .shell{grid-template-columns:1fr} .sidebar{position:relative;height:auto} }
+    .card{
+      padding:12px; border-radius:var(--radius2);
+      background:rgba(0,0,0,.16);
+      border:1px solid rgba(255,255,255,.10);
+      margin-bottom:10px;
+    }
+    .card h4{margin:0; font-size:13px; letter-spacing:.2px}
+    .card p{margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.45}
+
+    .table{width:100%; border-collapse:collapse}
+    .table th,.table td{
+      text-align:left; padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      font-size:13px; vertical-align:top;
+    }
+    .table th{
+      font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.25px;
+      background:rgba(0,0,0,.12);
+    }
+    .row:hover td{background:rgba(255,255,255,.04)}
+    .miniBtn{
+      padding:7px 10px; border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      cursor:pointer; color:var(--text); font-size:12px;
+    }
+    .miniBtn:hover{background:rgba(255,255,255,.07)}
+
+    .needs{display:flex; flex-wrap:wrap; gap:6px}
+    .tag{
+      font-size:12px; padding:4px 8px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .tag.good{border-color:rgba(46,229,157,.30); background:rgba(46,229,157,.10); color:rgba(46,229,157,.95)}
+    .tag.warn{border-color:rgba(255,204,102,.28); background:rgba(255,204,102,.10); color:rgba(255,204,102,.95)}
+    .tag.bad{border-color:rgba(255,92,122,.30); background:rgba(255,92,122,.10); color:rgba(255,92,122,.95)}
+    .tag.info{border-color:rgba(122,167,255,.30); background:rgba(122,167,255,.10); color:rgba(122,167,255,.95)}
+    .progressWrap{display:flex; gap:10px; align-items:center; min-width:170px}
+    .bar{flex:1; height:8px; border-radius:999px; background:rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.10)}
+    .fill{height:100%; border-radius:999px; background:linear-gradient(90deg, rgba(122,167,255,.95), rgba(46,229,157,.95)); width:0%}
+    .pct{font-size:12px; color:var(--muted); white-space:nowrap}
+
+    /* Login */
+    .center{min-height:100vh; display:grid; place-items:center; padding:22px}
+    .loginCard{
+      width:min(540px, 100%);
+      padding:18px;
+      border-radius:22px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 30px 90px rgba(0,0,0,.45);
+      backdrop-filter: blur(14px);
+    }
+    .field{display:flex; flex-direction:column; gap:6px; margin-top:10px}
+    .field label{font-size:12px; color:var(--muted)}
+    .field input,.field select,.field textarea{
+      width:100%; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      padding:10px; outline:none; font-size:13px;
+    }
+    .hint{font-size:12px; color:var(--muted); line-height:1.45}
+    .err{margin-top:10px; color:rgba(255,92,122,.95); font-size:12px}
+    .ok{margin-top:10px; color:rgba(46,229,157,.95); font-size:12px}
+
+    /* Modal */
+    .overlay{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; padding:18px; z-index:50}
+    .overlay.show{display:flex}
+    .modal{
+      width:min(920px, 100%);
+      border-radius:22px;
+      background:rgba(15,22,38,.78);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 30px 90px rgba(0,0,0,.6);
+      backdrop-filter: blur(16px);
+      overflow:hidden;
+    }
+    .modalHead{
+      display:flex; justify-content:space-between; gap:10px;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .modalHead h3{margin:0; font-size:14px}
+    .modalBody{display:grid; grid-template-columns:1fr 340px; min-height:380px}
+    .rubric{padding:16px; border-right:1px solid rgba(255,255,255,.10)}
+    .sideForm{padding:16px; display:flex; flex-direction:column; gap:12px}
+    textarea{min-height:120px; resize:vertical}
+
+    /* Status banner */
+    #status{
+      position:fixed;top:12px;left:12px;z-index:9999;
+      padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.35);color:white;font:12px system-ui;backdrop-filter:blur(8px);
+    }
+
+    @media (max-width: 980px){
+      .shell{grid-template-columns:1fr}
+      .sidebar{position:relative; height:auto}
+      .grid{grid-template-columns:1fr}
+      .stats{grid-template-columns:repeat(2, minmax(0,1fr))}
+      .modalBody{grid-template-columns:1fr}
+      .rubric{border-right:0; border-bottom:1px solid rgba(255,255,255,.10)}
+    }
+    @media (max-width: 520px){
+      .stats{grid-template-columns:1fr}
+      .search{width:100%}
+      .rightTools{width:100%; justify-content:space-between}
+    }
   </style>
 </head>
 
 <body>
-<!-- Small status banner -->
-<div id="status" style="position:fixed;top:12px;left:12px;z-index:9999;
-padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.18);
-background:rgba(0,0,0,.35);color:white;font:12px system-ui;backdrop-filter:blur(8px);">
-No-CDN build • ready
-</div>
+<div id="status">No-CDN build • ready</div>
 
+<!-- LOGIN -->
 <section id="loginView" class="center">
-  <div class="card">
-    <div class="row">
+  <div class="loginCard">
+    <div style="display:flex;gap:12px;align-items:center;">
       <div class="logo" aria-hidden="true"></div>
       <div>
         <div style="font-weight:800; letter-spacing:.2px;">Department Portal</div>
-        <div class="hint">No external JS CDN • Supabase via <code>fetch()</code></div>
+        <div class="hint">No external JS libraries • Supabase via <code>fetch()</code></div>
       </div>
       <span class="badge info" style="margin-left:auto;">Works on restrictive networks</span>
     </div>
 
-    <div class="panel" style="margin-top:14px;">
-      <div class="panelHead">
-        <div>
-          <div style="font-weight:800;">Sign in</div>
-          <div class="hint">Uses Supabase Auth REST endpoints (GoTrue) + PostgREST.</div>
-        </div>
-        <span class="badge" id="keyBadge">Keys: set</span>
-      </div>
-      <div class="panelBody">
-        <form id="loginForm">
-          <div class="field">
-            <label>Email</label>
-            <input id="email" type="email" placeholder="you@department.org" required />
-          </div>
-          <div class="field">
-            <label>Password</label>
-            <input id="password" type="password" placeholder="••••••••" required />
-          </div>
-
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-            <button class="btn primary" type="submit">Sign in</button>
-            <button class="btn" type="button" id="signUpBtn">Create account</button>
-          </div>
-
-          <div id="loginErr" class="err" style="display:none;"></div>
-          <div id="loginOk" class="ok" style="display:none;"></div>
-
-          <div class="hint" style="margin-top:10px;">
-            If “Create account” says email confirmation required, you can disable it in Supabase Auth settings (or confirm emails).
-          </div>
-        </form>
-      </div>
+    <div class="card" style="margin-top:14px;">
+      <h4 style="margin:0;">Sign in</h4>
+      <p class="hint" style="margin:6px 0 0;">If you can log in here, the full portal works on your iPad and station networks.</p>
     </div>
 
-    <div class="panel">
-      <div class="panelHead">
-        <div style="font-weight:700;">Troubleshooting</div>
-        <span class="badge warn">Read me</span>
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="you@department.org" required />
       </div>
-      <div class="panelBody">
-        <div class="hint">
-          This version avoids loading <b>supabase-js</b> from a CDN (your network was blocking it).
-          If login still fails, the error message will show exactly why (bad password, email not confirmed, missing profile row, or RLS).
-        </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" placeholder="••••••••" required />
       </div>
-    </div>
 
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+        <button class="btn primary" type="submit">Sign in</button>
+        <button class="btn" type="button" id="signUpBtn">Create account</button>
+      </div>
+
+      <div id="loginErr" class="err" style="display:none;"></div>
+      <div id="loginOk" class="ok" style="display:none;"></div>
+      <div class="hint" style="margin-top:10px;">
+        Tip: You can also create users in Supabase → Authentication → Users.
+      </div>
+    </form>
   </div>
 </section>
 
+<!-- APP -->
 <section id="appView" style="display:none;">
   <div class="shell">
     <aside class="sidebar">
-      <div class="row" style="padding:12px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);">
+      <div class="brand">
         <div class="logo" aria-hidden="true"></div>
         <div>
-          <div style="font-weight:800; font-size:14px;">Department Portal</div>
-          <div class="hint">Role-based access (RLS)</div>
+          <h1>Department Portal <span class="sub">Single login • Role-based access</span></h1>
         </div>
       </div>
 
-      <div style="margin-top:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);">
-        <div style="font-weight:700;font-size:13px;">Active Profile</div>
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-          <span class="badge info" id="whoLine">Loading…</span>
+      <div class="sideCard">
+        <h3>Active Profile</h3>
+        <div class="metaRow"><span class="badge info" id="whoLine">Loading…</span></div>
+        <div class="metaRow" style="margin-top:10px;">
           <span class="badge" id="stationLine">Station</span>
           <span class="badge" id="shiftLine">Shift</span>
+        </div>
+        <div class="metaRow" style="margin-top:10px;">
+          <span class="badge" id="emsLine">EMS</span>
+          <span class="badge" id="fireLine">Fire</span>
+          <span class="badge" id="aoLine">AO</span>
+        </div>
+        <div class="metaRow" style="margin-top:10px;">
+          <span class="badge" id="staffLine">Access</span>
         </div>
       </div>
 
       <nav class="nav" id="nav">
-        <div class="item active" data-page="home"><span>Home</span><span class="pill">Me</span></div>
-        <div class="item" data-page="debug"><span>Debug</span><span class="pill">JSON</span></div>
+        <div class="item active" data-page="home"><span>Home</span><span class="pill">Widgets</span></div>
+        <div class="item" data-page="training"><span>Training</span><span class="pill" id="trainingPill">My</span></div>
+        <div class="item" data-page="evaluations" data-staff="true"><span>Evaluations</span><span class="pill">Staff</span></div>
+        <div class="item" data-page="inventory" data-staff="officer"><span>Inventory</span><span class="pill">Later</span></div>
+        <div class="item" data-page="settings"><span>Settings</span></div>
       </nav>
 
-      <div style="margin-top:14px;">
-        <button class="btn danger" id="logoutBtn">Log out</button>
+      <div class="sideCard">
+        <h3>Notes</h3>
+        <p class="hint" style="margin:0;">UI gating is cosmetic; your Supabase RLS policies are the real security.</p>
       </div>
     </aside>
 
     <main class="main">
       <div class="topbar">
-        <div>
-          <div style="font-weight:800;">Welcome</div>
-          <div class="hint" id="welcomeLine">Loading…</div>
+        <div class="search" role="search">
+          <span style="opacity:.8;">🔎</span>
+          <input placeholder="Search (visual only for now) …" />
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+
+        <div class="rightTools">
           <button class="btn" id="refreshBtn">Refresh</button>
+          <button class="btn danger" id="logoutBtn">Log out</button>
         </div>
       </div>
 
       <section id="page-home">
-        <div class="panel">
-          <div class="panelHead">
-            <div style="font-weight:800;">Quick status</div>
-            <span class="badge" id="accessBadge">—</span>
+        <div class="pageHead">
+          <div>
+            <h2>Home Dashboard</h2>
+            <p>Personalized data based on your access level.</p>
           </div>
-          <div class="panelBody" id="homeBody">
-            <div class="hint">Loading…</div>
+          <div class="actions">
+            <button class="btn primary" id="goTrainingBtn">Go to Training</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="k"><span>Weather</span><span class="badge">Mock</span></div>
+            <div class="v" style="font-size:18px; font-weight:800;">62°F • Clear</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;">(Later we can pull real weather by station.)</div>
+          </div>
+          <div class="stat">
+            <div class="k"><span>My Candidate</span><span class="badge info">RLS</span></div>
+            <div class="v" style="font-size:18px; font-weight:800;" id="candidateName">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="candidateMeta">—</div>
+          </div>
+          <div class="stat">
+            <div class="k"><span>Progress</span><span class="badge">Training</span></div>
+            <div class="v" id="progressLine">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;" id="progressSub">—</div>
+          </div>
+          <div class="stat">
+            <div class="k"><span>Access</span><span class="badge">Policy</span></div>
+            <div class="v" style="font-size:18px; font-weight:800;" id="accessLine">—</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px;">RLS decides what each person can see.</div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <div class="panelHead">
+              <div>
+                <h3>What’s Next</h3>
+                <div class="small" id="whatsNextSub">Loading…</div>
+              </div>
+              <span class="badge" id="whatsNextBadge">—</span>
+            </div>
+            <div class="panelBody" id="whatsNextBody"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panelHead">
+              <div>
+                <h3>Quick Actions</h3>
+                <div class="small">Based on your access</div>
+              </div>
+              <span class="badge">Live</span>
+            </div>
+            <div class="panelBody" id="quickActions"></div>
           </div>
         </div>
       </section>
 
-      <section id="page-debug" style="display:none;">
+      <section id="page-training" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Training</h2>
+            <p id="trainingSub">Your requirements and progress (derived from latest evaluations).</p>
+          </div>
+          <div class="actions" id="trainingActions">
+            <button class="btn" id="refreshTrainingBtn">Refresh</button>
+          </div>
+        </div>
+
         <div class="panel">
           <div class="panelHead">
-            <div style="font-weight:800;">Session + Profile</div>
-            <span class="badge">Debug</span>
+            <div>
+              <h3>Requirements</h3>
+              <div class="small">Reads <code>requirements</code> and the latest <code>evaluations</code> per skill.</div>
+            </div>
+            <span class="badge" id="trainingCount">—</span>
+          </div>
+          <div class="panelBody" id="trainingTableWrap"></div>
+        </div>
+      </section>
+
+      <section id="page-evaluations" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Evaluations</h2>
+            <p>Staff view: pick a candidate and submit an evaluation.</p>
+          </div>
+          <div class="actions">
+            <button class="btn" id="refreshEvalsBtn">Refresh</button>
+            <button class="btn primary" id="openEvalBtn">Start Evaluation</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panelHead">
+            <div>
+              <h3>Candidate Queue</h3>
+              <div class="small">Shows what your account is allowed to see (RLS).</div>
+            </div>
+            <span class="badge" id="queueCount">—</span>
+          </div>
+          <div id="queueWrap"></div>
+        </div>
+      </section>
+
+      <section id="page-inventory" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Inventory</h2>
+            <p>Placeholder. We’ll add this module later.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panelHead">
+            <h3>Coming soon</h3>
+            <span class="badge">Module</span>
           </div>
           <div class="panelBody">
-            <div style="display:grid;gap:10px;">
-              <div class="panel" style="margin:0;">
-                <div class="panelHead"><div style="font-weight:700;">Session</div></div>
-                <div class="panelBody"><pre id="sessionDump"></pre></div>
-              </div>
-              <div class="panel" style="margin:0;">
-                <div class="panelHead"><div style="font-weight:700;">Profile</div></div>
-                <div class="panelBody"><pre id="profileDump"></pre></div>
-              </div>
-              <div class="panel" style="margin:0;">
-                <div class="panelHead"><div style="font-weight:700;">Candidate (linked)</div></div>
-                <div class="panelBody"><pre id="candidateDump"></pre></div>
-              </div>
+            <div class="card">
+              <h4>Future features</h4>
+              <p>Low stock • Expirations • Check-out logs • Station transfers</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-settings" style="display:none;">
+        <div class="pageHead">
+          <div>
+            <h2>Settings</h2>
+            <p>Account info and debugging.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panelHead">
+            <h3>Debug</h3>
+            <span class="badge">Useful</span>
+          </div>
+          <div class="panelBody">
+            <div class="card">
+              <h4>Session</h4>
+              <pre id="sessionDump" style="white-space:pre-wrap;margin:0;color:rgba(255,255,255,.78);font-size:12px;"></pre>
+            </div>
+            <div class="card">
+              <h4>Profile (raw)</h4>
+              <pre id="profileDump" style="white-space:pre-wrap;margin:0;color:rgba(255,255,255,.78);font-size:12px;"></pre>
+            </div>
+            <div class="card">
+              <h4>Candidate (linked)</h4>
+              <pre id="candidateDump" style="white-space:pre-wrap;margin:0;color:rgba(255,255,255,.78);font-size:12px;"></pre>
             </div>
           </div>
         </div>
@@ -290,6 +544,80 @@ No-CDN build • ready
     </main>
   </div>
 </section>
+
+<!-- EVAL MODAL -->
+<div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Evaluation Modal">
+  <div class="modal">
+    <div class="modalHead">
+      <h3>Submit Evaluation</h3>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <span class="badge">Writes to DB</span>
+        <button class="btn" id="closeEvalBtn">Close</button>
+      </div>
+    </div>
+
+    <div class="modalBody">
+      <div class="rubric">
+        <div class="card">
+          <h4>How this works</h4>
+          <p>On submit, we create a row in <code>evaluations</code>. Progress is derived from the latest evaluation per requirement.</p>
+        </div>
+        <div class="card">
+          <h4>Rubric (mock)</h4>
+          <p>Visual placeholder. Later we’ll build real rubrics per skill.</p>
+          <div class="needs" style="margin-top:10px;">
+            <span class="tag info">Scene safety / PPE</span>
+            <span class="tag">Primary assessment</span>
+            <span class="tag warn">Critical steps</span>
+            <span class="tag">Reassessment</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sideForm">
+        <div class="field">
+          <label>Candidate</label>
+          <select id="evalCandidate"></select>
+        </div>
+
+        <div class="field">
+          <label>Requirement</label>
+          <select id="evalRequirement"></select>
+        </div>
+
+        <div class="field">
+          <label>Result</label>
+          <select id="evalResult">
+            <option value="passed">Passed</option>
+            <option value="redo">Redo</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Critical Fail</label>
+          <select id="evalCritical">
+            <option value="false">No</option>
+            <option value="true">Yes — Critical Fail</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="evalNotes" placeholder="Remediation notes / strengths / follow-up."></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn primary" id="submitEvalBtn">Submit</button>
+          <button class="btn" id="markCredentialedBtn" title="Will only mark if all requirements are passed">Mark Credentialed</button>
+        </div>
+
+        <div id="evalErr" class="err" style="display:none;"></div>
+        <div id="evalOk" class="ok" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
   /***********************************************************************
@@ -305,14 +633,22 @@ No-CDN build • ready
   const setText = (id, text) => { const el = $(id); if (el) el.textContent = text; };
   const status = (msg) => { const el = $("status"); if (el) el.textContent = msg; };
 
-  function keysMissing(){
+  function escapeHtml(s){
+    return (s ?? "").toString()
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function keysMissing() {
     return !SUPABASE_URL || !SUPABASE_ANON_KEY ||
       SUPABASE_URL.includes("PASTE_") || SUPABASE_ANON_KEY.includes("PASTE_");
   }
 
   // Simple token storage
-  const TOKEN_KEY = "dept_portal_tokens_v1";
-
+  const TOKEN_KEY = "dept_portal_tokens_v2";
   function saveTokens(t){ localStorage.setItem(TOKEN_KEY, JSON.stringify(t)); }
   function loadTokens(){ try{ return JSON.parse(localStorage.getItem(TOKEN_KEY) || "null"); }catch{ return null; } }
   function clearTokens(){ localStorage.removeItem(TOKEN_KEY); }
@@ -324,66 +660,68 @@ No-CDN build • ready
     };
   }
 
+  async function httpJson(url, opts={}){
+    const res = await fetch(url, opts);
+    const txt = await res.text();
+    let json = null;
+    try{ json = txt ? JSON.parse(txt) : null; }catch{ json = { _raw: txt }; }
+    if (!res.ok){
+      const msg = json?.error_description || json?.message || json?.msg || res.status + " " + res.statusText;
+      throw new Error(msg);
+    }
+    return json;
+  }
+
+  // AUTH (GoTrue)
   async function authSignIn(email, password){
     const url = `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
-    const res = await fetch(url, {
+    return httpJson(url, {
       method: "POST",
-      headers: {
-        "apikey": SUPABASE_ANON_KEY,
-        "Content-Type": "application/json"
-      },
+      headers: { "apikey": SUPABASE_ANON_KEY, "Content-Type":"application/json" },
       body: JSON.stringify({ email, password })
     });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json?.error_description || json?.msg || json?.message || "Sign-in failed");
-    return json; // includes access_token, refresh_token, user, etc.
   }
 
   async function authSignUp(email, password){
     const url = `${SUPABASE_URL}/auth/v1/signup`;
-    const res = await fetch(url, {
+    return httpJson(url, {
       method: "POST",
-      headers: {
-        "apikey": SUPABASE_ANON_KEY,
-        "Content-Type": "application/json"
-      },
+      headers: { "apikey": SUPABASE_ANON_KEY, "Content-Type":"application/json" },
       body: JSON.stringify({ email, password })
     });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json?.error_description || json?.msg || json?.message || "Sign-up failed");
-    return json;
   }
 
   async function authGetUser(accessToken){
     const url = `${SUPABASE_URL}/auth/v1/user`;
-    const res = await fetch(url, { headers: authHeaders(accessToken) });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json?.error_description || json?.msg || json?.message || "Could not fetch user");
-    return json;
+    return httpJson(url, { headers: authHeaders(accessToken) });
   }
 
+  // REST (PostgREST)
   async function restGet(path, accessToken){
     const url = `${SUPABASE_URL}/rest/v1/${path}`;
-    const res = await fetch(url, { headers: { ...authHeaders(accessToken), "Accept":"application/json" } });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json?.message || "REST GET failed");
-    return json;
+    return httpJson(url, { headers: { ...authHeaders(accessToken), "Accept":"application/json" } });
   }
 
-  async function restPatch(path, accessToken, body){
-    const url = `${SUPABASE_URL}/rest/v1/${path}`;
-    const res = await fetch(url, {
+  async function restInsert(table, accessToken, rows){
+    const url = `${SUPABASE_URL}/rest/v1/${table}`;
+    return httpJson(url, {
+      method:"POST",
+      headers: { ...authHeaders(accessToken), "Content-Type":"application/json", "Prefer":"return=representation" },
+      body: JSON.stringify(rows)
+    });
+  }
+
+  async function restPatch(tableQuery, accessToken, body){
+    const url = `${SUPABASE_URL}/rest/v1/${tableQuery}`;
+    return httpJson(url, {
       method:"PATCH",
       headers: { ...authHeaders(accessToken), "Content-Type":"application/json", "Prefer":"return=representation" },
       body: JSON.stringify(body)
     });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(json?.message || "REST PATCH failed");
-    return json;
   }
 
-  // UI: nav pages
-  const pages = ["home","debug"];
+  // UI NAV
+  const pages = ["home","training","evaluations","inventory","settings"];
   const navItems = Array.from(document.querySelectorAll("#nav .item"));
   function switchPage(page){
     navItems.forEach(i => i.classList.toggle("active", i.dataset.page === page));
@@ -395,14 +733,67 @@ No-CDN build • ready
   }
   navItems.forEach(item => item.addEventListener("click", () => switchPage(item.dataset.page)));
 
-  // State
-  let tokens = null;
-  let user = null;
-  let profile = null;
-  let candidate = null;
+  // Modal
+  const overlay = $("overlay");
+  $("closeEvalBtn").addEventListener("click", () => overlay.classList.remove("show"));
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.classList.remove("show"); });
 
-  function showErr(msg){ $("loginErr").style.display=""; $("loginErr").textContent = msg; }
-  function showOk(msg){ $("loginOk").style.display=""; $("loginOk").textContent = msg; }
+  // APP STATE
+  let tokens = null;
+  let currentUser = null;
+  let currentProfile = null;
+  let currentCandidate = null;
+  let isStaff = false;
+  let canInventory = false;
+
+  // caches
+  let reqsCache = [];
+  let candidatesCache = [];
+  let evalsCache = []; // for currently-loaded candidate(s)
+
+  // Access calculation (robust to your earlier schema)
+  function computeAccess(profile){
+    const roleTxt = (profile?.role ?? profile?.Role ?? "").toString().toLowerCase();
+    const instrTxt = (profile?.instructor_status ?? profile?.Instructor_Status ?? "").toString().toLowerCase();
+
+    const staffByInstr = instrTxt.includes("instructor");
+    const staffByRole = roleTxt.includes("admin") || roleTxt.includes("chief") || roleTxt.includes("officer");
+
+    // If you later add explicit booleans/admin_role, this will still work.
+    const staff = staffByInstr || staffByRole;
+    const inventoryOk = roleTxt.includes("officer") || roleTxt.includes("admin") || roleTxt.includes("chief");
+    return { staff, inventoryOk };
+  }
+
+  function gateNav(){
+    const evalItem = navItems.find(x => x.dataset.page === "evaluations");
+    const invItem  = navItems.find(x => x.dataset.page === "inventory");
+    if (evalItem) evalItem.style.display = isStaff ? "" : "none";
+    if (invItem) invItem.style.display = canInventory ? "" : "none";
+    setText("trainingPill", isStaff ? "All" : "My");
+  }
+
+  function showLoginErr(msg){ $("loginErr").style.display=""; $("loginErr").textContent = msg; }
+  function showLoginOk(msg){ $("loginOk").style.display=""; $("loginOk").textContent = msg; }
+
+  // HELPERS: compute latest eval per requirement
+  function latestEvalMapForCandidate(candidateId, evalRows){
+    // evalRows expected sorted desc by created_at
+    const map = new Map(); // reqId -> row
+    for (const r of evalRows){
+      if (r.candidate_id !== candidateId) continue;
+      if (!map.has(r.requirement_id)) map.set(r.requirement_id, r);
+    }
+    return map;
+  }
+
+  function normalizeResult(r){
+    const v = (r ?? "").toString().toLowerCase();
+    if (v === "passed") return "passed";
+    if (v === "redo") return "redo";
+    if (v === "failed") return "failed";
+    return "pending";
+  }
 
   async function refreshAll(){
     $("loginErr").style.display="none";
@@ -416,65 +807,337 @@ No-CDN build • ready
     }
 
     status("Fetching user…");
-    user = await authGetUser(tokens.access_token);
+    currentUser = await authGetUser(tokens.access_token);
 
     status("Loading profile…");
-    // profiles row must exist, id = auth.users.id
-    const profs = await restGet(`profiles?select=*&id=eq.${encodeURIComponent(user.id)}&limit=1`, tokens.access_token);
-    profile = Array.isArray(profs) ? profs[0] : null;
+    const profs = await restGet(`profiles?select=*&id=eq.${encodeURIComponent(currentUser.id)}&limit=1`, tokens.access_token);
+    currentProfile = Array.isArray(profs) ? profs[0] : null;
 
-    if (!profile){
+    if (!currentProfile){
       clearTokens();
       hide($("appView")); show($("loginView"));
-      showErr("Signed in, but no matching profiles row exists for this user ID. Create profiles row with id = auth.users.id.");
+      showLoginErr("Signed in, but no matching profiles row exists for this user ID. Create profiles row with id = auth.users.id.");
       status("Profile missing");
       return;
     }
 
+    const acc = computeAccess(currentProfile);
+    isStaff = acc.staff;
+    canInventory = acc.inventoryOk;
+    gateNav();
+
     status("Loading linked candidate…");
-    const cands = await restGet(`candidates?select=*&linked_user_id=eq.${encodeURIComponent(user.id)}&limit=1`, tokens.access_token);
-    candidate = Array.isArray(cands) ? cands[0] : null;
+    const cands = await restGet(`candidates?select=*&linked_user_id=eq.${encodeURIComponent(currentUser.id)}&limit=1`, tokens.access_token);
+    currentCandidate = Array.isArray(cands) ? cands[0] : null;
 
-    // Paint UI
-    setText("whoLine", `${profile.full_name ?? "User"} • ${profile.role ?? "—"}`);
-    setText("stationLine", String(profile.station ?? "Station —"));
-    setText("shiftLine", String(profile.shift ?? "Shift —"));
-    setText("welcomeLine", `${profile.full_name ?? "User"} (${profile.role ?? "—"})`);
-    setText("accessBadge", candidate ? "Linked candidate: Yes" : "Linked candidate: No");
+    // Paint sidebar
+    setText("whoLine", `${currentProfile?.full_name ?? "User"} • ${(currentProfile?.role ?? currentProfile?.Role ?? "—")}`);
+    setText("stationLine", String(currentProfile?.station ?? currentProfile?.Station ?? "Station —"));
+    setText("shiftLine", String(currentProfile?.shift ?? currentProfile?.Shift ?? "Shift —"));
+    setText("emsLine", `EMS: ${String(currentProfile?.ems_level ?? currentProfile?.EMS_Level ?? "—")}`);
+    setText("fireLine", `Fire: ${String(currentProfile?.fire_level ?? currentProfile?.Fire_Level ?? "—")}`);
+    setText("aoLine", `AO: ${String(currentProfile?.ao_level ?? "None")}`);
+    setText("staffLine", isStaff ? "Staff: Yes" : "Staff: No");
 
-    $("sessionDump").textContent = JSON.stringify({ user_id:user.id, email:user.email }, null, 2);
-    $("profileDump").textContent = JSON.stringify(profile, null, 2);
-    $("candidateDump").textContent = JSON.stringify(candidate, null, 2);
-
-    $("homeBody").innerHTML = `
-      <div class="hint" style="margin-bottom:10px;">
-        This “no-CDN” build proves your network can talk to Supabase without loading external libraries.
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <span class="badge info">Auth OK</span>
-        <span class="badge ${profile ? "good":"bad"}">Profile ${profile ? "OK":"Missing"}</span>
-        <span class="badge ${candidate ? "good":"warn"}">Candidate ${candidate ? "Linked":"Not linked"}</span>
-      </div>
-      <div class="hint" style="margin-top:12px;">
-        Next step: once this works, we swap your full portal UI over to this same fetch()-based client.
-      </div>
-    `;
+    $("sessionDump").textContent = JSON.stringify({ user_id: currentUser.id, email: currentUser.email, staff: isStaff, inventory: canInventory }, null, 2);
+    $("profileDump").textContent = JSON.stringify(currentProfile, null, 2);
+    $("candidateDump").textContent = JSON.stringify(currentCandidate, null, 2);
 
     hide($("loginView")); show($("appView"));
+
+    await loadHome();
+    await loadTraining();
+    if (isStaff) await loadQueue();
     switchPage("home");
     status("Ready");
   }
 
+  async function loadRequirements(){
+    // Your requirements table is: id, name, category, is_critical, created_at
+    status("Loading requirements…");
+    const reqs = await restGet(`requirements?select=id,name,category,is_critical,created_at&order=created_at.desc`, tokens.access_token);
+    reqsCache = Array.isArray(reqs) ? reqs : [];
+    return reqsCache;
+  }
+
+  async function loadEvaluationsForCandidates(candidateIds){
+    // candidateIds: array of uuid
+    if (!candidateIds.length) return [];
+    // PostgREST: candidate_id=in.(a,b,c)
+    const inList = candidateIds.map(x => x).join(",");
+    const q = `evaluations?select=candidate_id,requirement_id,result,critical_fail,notes,created_at,evaluator_id&candidate_id=in.(${encodeURIComponent(inList)})&order=created_at.desc`;
+    status("Loading evaluations…");
+    const rows = await restGet(q, tokens.access_token);
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  async function loadHome(){
+    // Requirements + latest eval map
+    const reqs = await loadRequirements();
+    const candidateId = currentCandidate?.id;
+
+    if (!candidateId){
+      setText("candidateName", isStaff ? "No linked candidate (staff account)" : "No linked candidate");
+      setText("candidateMeta", "Link candidates.linked_user_id to this user to enable recruit view.");
+      setText("progressLine", "—");
+      setText("progressSub", "—");
+      setText("whatsNextSub", isStaff ? "Staff view: open Evaluations." : "Recruit view: link your candidate.");
+      setText("whatsNextBadge", "Setup");
+      $("whatsNextBody").innerHTML = `
+        <div class="card">
+          <h4>Setup step</h4>
+          <p>Make sure the logged-in user has a <code>profiles</code> row, and the correct candidate has <code>linked_user_id</code> set to that same UUID.</p>
+        </div>
+      `;
+      setText("accessLine", isStaff ? "Instructor / Admin" : "Recruit");
+      $("quickActions").innerHTML = [
+        `<button class="btn primary" onclick="switchPage('training')">Open Training</button>`,
+        isStaff ? `<button class="btn" onclick="switchPage('evaluations')">Open Evaluations</button>` : "",
+        canInventory ? `<button class="btn" onclick="switchPage('inventory')">Open Inventory</button>` : ""
+      ].join("");
+      return;
+    }
+
+    setText("candidateName", currentCandidate.full_name ?? "—");
+    setText("candidateMeta", `${currentCandidate.station ?? ""} • ${currentCandidate.status ?? ""}`);
+
+    const evals = await loadEvaluationsForCandidates([candidateId]);
+    evalsCache = evals;
+
+    const latest = latestEvalMapForCandidate(candidateId, evals);
+    const total = reqs.length;
+    let passed = 0, redo = 0, failed = 0, pending = 0;
+
+    for (const r of reqs){
+      const le = latest.get(r.id);
+      const st = normalizeResult(le?.result);
+      if (st === "passed") passed++;
+      else if (st === "redo") redo++;
+      else if (st === "failed") failed++;
+      else pending++;
+    }
+
+    setText("progressLine", `${passed}/${total}`);
+    setText("progressSub", `Pending: ${pending} • Redo: ${redo} • Failed: ${failed}`);
+
+    // What's next: first pending, else redo, else failed (simple)
+    let nextReq = null;
+    for (const r of reqs){
+      const st = normalizeResult(latest.get(r.id)?.result);
+      if (st === "pending"){ nextReq = { r, st }; break; }
+    }
+    if (!nextReq){
+      for (const r of reqs){
+        const st = normalizeResult(latest.get(r.id)?.result);
+        if (st === "redo"){ nextReq = { r, st }; break; }
+      }
+    }
+    if (!nextReq){
+      for (const r of reqs){
+        const st = normalizeResult(latest.get(r.id)?.result);
+        if (st === "failed"){ nextReq = { r, st }; break; }
+      }
+    }
+
+    if (nextReq){
+      setText("whatsNextSub", "Recruit view: your next requirement");
+      setText("whatsNextBadge", nextReq.st === "redo" ? "Redo" : (nextReq.st === "failed" ? "Failed" : "Next"));
+      const cls = nextReq.st === "redo" ? "warn" : (nextReq.st === "failed" ? "bad" : "info");
+      $("whatsNextBody").innerHTML = `
+        <div class="card">
+          <h4>${escapeHtml(nextReq.r.name)} ${nextReq.r.is_critical ? "<span class='badge bad'>CRITICAL</span>" : ""}</h4>
+          <p>Category: ${escapeHtml(nextReq.r.category ?? "—")}</p>
+          <div class="needs" style="margin-top:10px;">
+            <span class="tag ${cls}">${escapeHtml(nextReq.st.toUpperCase())}</span>
+            <span class="tag">Assigned: auto</span>
+          </div>
+        </div>
+      `;
+    } else {
+      setText("whatsNextSub", "All requirements complete (based on latest evaluations).");
+      setText("whatsNextBadge", "Done");
+      $("whatsNextBody").innerHTML = `
+        <div class="card">
+          <h4>Nothing pending</h4>
+          <p>If this candidate is complete, staff can mark as credentialed.</p>
+        </div>
+      `;
+    }
+
+    setText("accessLine", isStaff ? "Instructor / Admin" : "Recruit");
+    const qa = [];
+    qa.push(`<button class="btn primary" onclick="switchPage('training')">Open Training</button>`);
+    if (isStaff) qa.push(`<button class="btn" onclick="switchPage('evaluations')">Open Evaluations</button>`);
+    if (canInventory) qa.push(`<button class="btn" onclick="switchPage('inventory')">Open Inventory</button>`);
+    qa.push(`<div class="card" style="margin-top:12px;"><h4>Tip</h4><p>${isStaff ? "Staff accounts can view multiple candidates (RLS filtered)." : "Recruit accounts see only their linked candidate."}</p></div>`);
+    $("quickActions").innerHTML = qa.join("");
+  }
+
+  async function loadTraining(){
+    const wrap = $("trainingTableWrap");
+    wrap.innerHTML = `<div class="hint">Loading…</div>`;
+
+    const reqs = reqsCache.length ? reqsCache : await loadRequirements();
+
+    if (!currentCandidate?.id){
+      $("trainingCount").textContent = "—";
+      wrap.innerHTML = `<div class="card"><h4>No linked candidate</h4><p>Link your user to a candidate to view progress.</p></div>`;
+      return;
+    }
+
+    const evals = evalsCache.length ? evalsCache : await loadEvaluationsForCandidates([currentCandidate.id]);
+    const latest = latestEvalMapForCandidate(currentCandidate.id, evals);
+
+    $("trainingCount").textContent = `${reqs.length} total`;
+
+    wrap.innerHTML = `
+      <table class="table" aria-label="Requirements">
+        <thead>
+          <tr>
+            <th style="width:40%;">Requirement</th>
+            <th style="width:24%;">Category</th>
+            <th style="width:16%;">Status</th>
+            <th>Last Eval</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${reqs.map(r => {
+            const le = latest.get(r.id);
+            const st = normalizeResult(le?.result);
+            const tagClass = st === "passed" ? "good" : (st === "redo" ? "warn" : (st === "failed" ? "bad" : "info"));
+            const crit = r.is_critical ? `<span class="badge bad">CRITICAL</span>` : "";
+            const last = le?.created_at ? new Date(le.created_at).toLocaleString() : "—";
+            return `
+              <tr class="row">
+                <td><b>${escapeHtml(r.name ?? "")}</b> ${crit}</td>
+                <td>${escapeHtml(r.category ?? "")}</td>
+                <td><span class="badge ${tagClass}">${escapeHtml(st)}</span></td>
+                <td style="color:var(--muted);font-size:12px;">${escapeHtml(last)}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function loadQueue(){
+    const wrap = $("queueWrap");
+    wrap.innerHTML = `<div class="panelBody"><div class="hint">Loading…</div></div>`;
+
+    // Candidates visible by RLS
+    status("Loading candidates…");
+    const cands = await restGet(`candidates?select=id,full_name,station,shift,status,created_at&order=created_at.desc`, tokens.access_token);
+    candidatesCache = Array.isArray(cands) ? cands : [];
+    $("queueCount").textContent = `${candidatesCache.length}`;
+
+    const candIds = candidatesCache.map(c => c.id);
+    const evals = await loadEvaluationsForCandidates(candIds);
+    // Build candidate->latest map
+    const reqs = reqsCache.length ? reqsCache : await loadRequirements();
+
+    function progressFor(candidateId){
+      const latest = latestEvalMapForCandidate(candidateId, evals);
+      const total = reqs.length;
+      let passed = 0;
+      const needs = [];
+      for (const r of reqs){
+        const st = normalizeResult(latest.get(r.id)?.result);
+        if (st === "passed") passed++;
+        else needs.push({ name: r.name, st });
+      }
+      const pct = total ? Math.round((passed/total)*100) : 0;
+
+      const needsHtml = needs.slice(0,3).map(n => {
+        const cls = n.st === "redo" ? "warn" : (n.st === "failed" ? "bad" : "info");
+        return `<span class="tag ${cls}">${escapeHtml(n.name)} (${escapeHtml(n.st)})</span>`;
+      }).join("") || `<span class="tag good">No needs</span>`;
+
+      return { total, passed, pct, needsHtml };
+    }
+
+    wrap.innerHTML = `
+      <table class="table" aria-label="Candidate Queue">
+        <thead>
+          <tr>
+            <th style="width:26%;">Candidate</th>
+            <th style="width:22%;">Progress</th>
+            <th>Still needs</th>
+            <th style="width:18%;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${candidatesCache.map(c => {
+            const p = progressFor(c.id);
+            return `
+              <tr class="row">
+                <td>
+                  <b>${escapeHtml(c.full_name ?? "")}</b>
+                  <div style="color:var(--muted); font-size:12px;">${escapeHtml(c.station ?? "")}${c.shift ? " • " + escapeHtml(c.shift) : ""}</div>
+                </td>
+                <td>
+                  <div class="progressWrap">
+                    <div class="bar"><div class="fill" style="width:${p.pct}%"></div></div>
+                    <div class="pct">${p.passed}/${p.total}</div>
+                  </div>
+                </td>
+                <td><div class="needs">${p.needsHtml}</div></td>
+                <td><button class="miniBtn" data-open-eval="${c.id}">Evaluate</button></td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+
+    wrap.querySelectorAll("[data-open-eval]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-open-eval");
+        overlay.classList.add("show");
+        await populateEvalModal();
+        $("evalCandidate").value = id;
+      });
+    });
+  }
+
+  async function populateEvalModal(){
+    $("evalErr").style.display="none";
+    $("evalOk").style.display="none";
+
+    const reqs = reqsCache.length ? reqsCache : await loadRequirements();
+
+    // Load candidates list (RLS)
+    const cands = candidatesCache.length ? candidatesCache : await restGet(`candidates?select=id,full_name,station,status&order=created_at.desc`, tokens.access_token);
+    candidatesCache = Array.isArray(cands) ? cands : [];
+
+    const candSel = $("evalCandidate");
+    candSel.innerHTML = "";
+    candidatesCache.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = `${c.full_name} • ${c.station ?? ""} • ${c.status ?? ""}`;
+      candSel.appendChild(opt);
+    });
+
+    const reqSel = $("evalRequirement");
+    reqSel.innerHTML = "";
+    reqs.forEach(r => {
+      const opt = document.createElement("option");
+      opt.value = r.id;
+      opt.textContent = `${r.name}${r.is_critical ? " • CRITICAL" : ""} • ${r.category ?? ""}`;
+      reqSel.appendChild(opt);
+    });
+
+    if (currentCandidate?.id) candSel.value = currentCandidate.id;
+  }
+
+  // BUTTONS
   $("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     $("loginErr").style.display="none";
     $("loginOk").style.display="none";
 
-    if (keysMissing()){
-      $("keyBadge").textContent = "Keys: MISSING";
-      $("keyBadge").className = "badge bad";
-      return showErr("Set SUPABASE_URL and SUPABASE_ANON_KEY in this file.");
-    }
+    if (keysMissing()) return showLoginErr("Missing keys. Set SUPABASE_URL and SUPABASE_ANON_KEY at the bottom of the file.");
 
     const email = $("email").value.trim();
     const password = $("password").value;
@@ -483,11 +1146,11 @@ No-CDN build • ready
       status("Signing in…");
       const t = await authSignIn(email, password);
       saveTokens({ access_token:t.access_token, refresh_token:t.refresh_token, token_type:t.token_type, expires_in:t.expires_in });
-      showOk("Signed in. Loading portal…");
+      showLoginOk("Signed in. Loading portal…");
       await refreshAll();
     }catch(err){
       status("Sign-in error");
-      showErr(err.message || String(err));
+      showLoginErr(err.message || String(err));
     }
   });
 
@@ -495,11 +1158,7 @@ No-CDN build • ready
     $("loginErr").style.display="none";
     $("loginOk").style.display="none";
 
-    if (keysMissing()){
-      $("keyBadge").textContent = "Keys: MISSING";
-      $("keyBadge").className = "badge bad";
-      return showErr("Set SUPABASE_URL and SUPABASE_ANON_KEY in this file.");
-    }
+    if (keysMissing()) return showLoginErr("Missing keys. Set SUPABASE_URL and SUPABASE_ANON_KEY at the bottom of the file.");
 
     const email = $("email").value.trim();
     const password = $("password").value;
@@ -507,36 +1166,112 @@ No-CDN build • ready
     try{
       status("Creating account…");
       await authSignUp(email, password);
-      showOk("Account created. If confirmation is enabled, check email. Otherwise, sign in now.");
+      showLoginOk("Account created. If confirmation is enabled, check email. Otherwise, sign in now.");
       status("Ready");
     }catch(err){
       status("Sign-up error");
-      showErr(err.message || String(err));
+      showLoginErr(err.message || String(err));
     }
   });
 
   $("logoutBtn").addEventListener("click", async () => {
     clearTokens();
-    await refreshAll();
+    currentUser = null; currentProfile = null; currentCandidate = null;
+    hide($("appView")); show($("loginView"));
+    status("Signed out");
   });
 
-  $("refreshBtn").addEventListener("click", async () => {
-    try{ await refreshAll(); }catch(e){ showErr(e.message || String(e)); }
+  $("refreshBtn").addEventListener("click", () => refreshAll().catch(e => showLoginErr(e.message || String(e))));
+  $("refreshTrainingBtn").addEventListener("click", () => loadTraining().catch(e => alert(e.message || e)));
+  $("goTrainingBtn").addEventListener("click", () => switchPage("training"));
+  $("refreshEvalsBtn").addEventListener("click", () => loadQueue().catch(e => alert(e.message || e)));
+
+  $("openEvalBtn").addEventListener("click", async () => {
+    overlay.classList.add("show");
+    await populateEvalModal();
   });
 
-  // Init
-  if (keysMissing()){
-    $("keyBadge").textContent = "Keys: MISSING";
-    $("keyBadge").className = "badge bad";
-    status("Keys missing");
-  } else {
-    $("keyBadge").textContent = "Keys: set";
-    status("Keys set");
-  }
+  $("submitEvalBtn").addEventListener("click", async () => {
+    $("evalErr").style.display="none";
+    $("evalOk").style.display="none";
 
-  // Auto resume session if tokens exist
-  refreshAll().catch(e => showErr(e.message || String(e)));
+    try{
+      const candidateId = $("evalCandidate").value;
+      const requirementId = $("evalRequirement").value;
+      const result = $("evalResult").value;
+      const criticalFail = $("evalCritical").value === "true";
+      const notes = $("evalNotes").value;
+
+      if (!candidateId || !requirementId) throw new Error("Choose a candidate and a requirement.");
+
+      status("Saving evaluation…");
+      await restInsert("evaluations", tokens.access_token, [{
+        candidate_id: candidateId,
+        requirement_id: requirementId,
+        evaluator_id: currentUser.id,
+        result,
+        critical_fail: criticalFail,
+        notes
+      }]);
+
+      $("evalOk").style.display="";
+      $("evalOk").textContent = "Saved.";
+      $("evalNotes").value = "";
+      await loadHome();
+      await loadTraining();
+      if (isStaff) await loadQueue();
+      status("Ready");
+    }catch(err){
+      status("Eval error");
+      $("evalErr").style.display="";
+      $("evalErr").textContent = err.message || String(err);
+    }
+  });
+
+  $("markCredentialedBtn").addEventListener("click", async () => {
+    $("evalErr").style.display="none";
+    $("evalOk").style.display="none";
+
+    try{
+      const candidateId = $("evalCandidate").value;
+      if (!candidateId) throw new Error("Choose a candidate first.");
+
+      const reqs = reqsCache.length ? reqsCache : await loadRequirements();
+      const evals = await loadEvaluationsForCandidates([candidateId]);
+      const latest = latestEvalMapForCandidate(candidateId, evals);
+
+      const total = reqs.length;
+      const passed = reqs.filter(r => normalizeResult(latest.get(r.id)?.result) === "passed").length;
+
+      if (total === 0) throw new Error("No requirements exist yet.");
+      if (passed !== total) throw new Error(`Not eligible: ${passed}/${total} passed.`);
+
+      status("Marking credentialed…");
+      // PATCH candidates where id=eq.<uuid>
+      await restPatch(`candidates?id=eq.${encodeURIComponent(candidateId)}`, tokens.access_token, { status: "credentialed" });
+
+      $("evalOk").style.display="";
+      $("evalOk").textContent = "Candidate marked as credentialed.";
+      await loadQueue();
+      status("Ready");
+    }catch(err){
+      status("Credential error");
+      $("evalErr").style.display="";
+      $("evalErr").textContent = err.message || String(err);
+    }
+  });
+
+  // INIT
+  (async () => {
+    if (keysMissing()){
+      showLoginErr("Set SUPABASE_URL and SUPABASE_ANON_KEY at the bottom of this file, then refresh.");
+      status("Keys missing");
+      return;
+    }
+    status("Booting…");
+    // Auto-resume if tokens exist
+    try{ await refreshAll(); }catch(e){ status("Error"); showLoginErr(e.message || String(e)); }
+  })();
 </script>
-
 </body>
 </html>
