@@ -553,6 +553,52 @@ textarea{min-height:120px; resize:vertical}
       .search{width:100%}
       .rightTools{width:100%; justify-content:space-between}
     }
+
+    /* ---- Candidate Training File Panel ---- */
+    .cfSection{
+      margin-bottom:14px;
+      border:1px solid var(--stroke);
+      border-radius:var(--radius2);
+      overflow:hidden;
+    }
+    .cfSection.locked{
+      opacity:.48;
+      pointer-events:none;
+    }
+    .cfSectionHead{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 16px;
+      background:rgba(255,255,255,.04);
+      border-bottom:1px solid var(--stroke);
+    }
+    .cfSectionHead h4{
+      margin:0;
+      flex:1;
+      font-size:14px;
+      font-weight:600;
+    }
+    .cfLockIcon{
+      font-size:15px;
+      line-height:1;
+    }
+    .cfLockedMsg{
+      padding:12px 16px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .viewOnlyBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      padding:5px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.12);
+      font-size:12px;
+      color:var(--muted);
+    }
   </style>
 </head>
 
@@ -804,6 +850,7 @@ textarea{min-height:120px; resize:vertical}
       <span class="segHint" id="tmModeHint">Theme: Fire</span>
       <button class="btn" id="refreshTMBtn">Refresh</button>
       <button class="btn primary" id="openEvalBtn">Start Evaluation</button>
+      <span id="tmAccessHint" class="viewOnlyBadge" style="display:none;">👁 View Only</span>
     </div>
   </div>
 
@@ -832,6 +879,18 @@ textarea{min-height:120px; resize:vertical}
     </div>
 
     <div id="queueWrap"></div>
+  </div>
+
+  <!-- CANDIDATE TRAINING FILE PANEL -->
+  <div class="panel" id="candidateFilePanel" style="display:none; margin-top:20px;">
+    <div class="panelHead">
+      <div>
+        <h3>Training File: <span id="cfCandidateName">—</span></h3>
+        <div class="small">Requirements organized by section. Sections unlock in order as each is completed.</div>
+      </div>
+      <button class="btn" id="closeCFBtn">Close</button>
+    </div>
+    <div id="cfPanelBody"></div>
   </div>
 </section>
 
@@ -1202,6 +1261,9 @@ let currentCandidate = null;
 
 let access = { admin:false, instructor:false, emsInstr:false, fireInstr:false };
 let trainingMode = "fire"; // fire | ems (only for Training Manager page)
+let selectedCandidateId = null;
+let selectedCandidateName = "";
+let candidateFileRequirements = []; // cached for eval modal
 
 // ---------------- Pages ----------------
 const loginView = $("loginView");
@@ -1392,6 +1454,13 @@ $("openEvalBtn").addEventListener("click", async () => {
   await populateEvalModal();
 });
 
+$("closeCFBtn").addEventListener("click", () => {
+  $("candidateFilePanel").style.display = "none";
+  selectedCandidateId = null;
+  selectedCandidateName = "";
+  candidateFileRequirements = [];
+});
+
 $("submitEvalBtn").addEventListener("click", async () => {
   $("evalErr").style.display = "none";
   $("evalOk").style.display = "none";
@@ -1427,6 +1496,10 @@ $("submitEvalBtn").addEventListener("click", async () => {
     $("evalOk").style.display = "";
     $("evalOk").textContent = "Saved. Requirement updated to: " + result;
     await refreshAll();
+    // Refresh the candidate file panel if one is open
+    if (selectedCandidateId) {
+      await openCandidateFile(selectedCandidateId, selectedCandidateName, trainingMode);
+    }
   }catch(err){
     $("evalErr").style.display = "";
     $("evalErr").textContent = err.message;
@@ -1434,7 +1507,7 @@ $("submitEvalBtn").addEventListener("click", async () => {
   }
 });
 
-async function populateEvalModal(){
+async function populateEvalModal(preselectReqId){
   try{
     const cands = await restSelect("candidates", "id,full_name,station,status,created_at", {}, { order:"created_at.desc" });
     const candSel = $("evalCandidate");
@@ -1446,17 +1519,41 @@ async function populateEvalModal(){
       candSel.appendChild(opt);
     });
 
-    const reqs = await restSelect("requirements", "id,name,category,is_critical,created_at", {}, { order:"created_at.desc" });
+    // If a candidate file is open, only show their requirements; otherwise load all
+    let reqList;
+    if (candidateFileRequirements.length > 0) {
+      reqList = candidateFileRequirements
+        .filter(r => r.requirements?.id)
+        .map(r => ({
+          id: r.requirements.id,
+          name: r.requirements.name,
+          category: r.requirements.category,
+          is_critical: r.requirements.is_critical
+        }));
+    } else {
+      reqList = await restSelect("requirements", "id,name,category,is_critical,created_at", {}, { order:"created_at.desc" });
+    }
+
     const reqSel = $("evalRequirement");
     reqSel.innerHTML = "";
-    (reqs||[]).forEach(r => {
+    (reqList||[]).forEach(r => {
       const opt = document.createElement("option");
       opt.value = r.id;
       opt.textContent = `${r.name} • ${r.category ?? ""}${r.is_critical ? " • CRITICAL" : ""}`;
       reqSel.appendChild(opt);
     });
 
-    if (currentCandidate?.id) candSel.value = currentCandidate.id;
+    // Pre-select candidate: prefer the open file, fall back to linked candidate
+    if (selectedCandidateId) {
+      candSel.value = selectedCandidateId;
+    } else if (currentCandidate?.id) {
+      candSel.value = currentCandidate.id;
+    }
+
+    // Pre-select requirement if provided (called from candidate file)
+    if (preselectReqId) {
+      reqSel.value = preselectReqId;
+    }
   }catch(err){
     $("evalErr").style.display = "";
     $("evalErr").textContent = err.message;
@@ -1844,6 +1941,13 @@ async function loadQueue(){
 
   try{
     const track = trainingMode; // "ems" | "fire"
+    const canEval = (track === "ems" && access.emsInstr) || (track === "fire" && access.fireInstr);
+
+    // Show/hide Start Evaluation button and access hint based on permission
+    const evalBtn = $("openEvalBtn");
+    const accessHint = $("tmAccessHint");
+    if (evalBtn) evalBtn.style.display = canEval ? "" : "none";
+    if (accessHint) accessHint.style.display = canEval ? "none" : "";
 
     const enrollments = await restSelect(
       "candidate_enrollments",
@@ -1902,7 +2006,7 @@ async function loadQueue(){
                   </td>
                   <td style="color:rgba(255,255,255,.75); font-size:12px;">${enrolled}</td>
                   <td style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <button class="miniBtn" data-open-eval="${esc(c.id)}">Evaluate</button>
+                    <button class="miniBtn" data-view-file="${esc(c.id)}" data-view-name="${esc(c.full_name ?? "")}">View File</button>
                     <button class="miniBtn" data-unenroll="${esc(c.id)}">Unenroll</button>
                     ${adminBtns}
                   </td>
@@ -1920,13 +2024,12 @@ async function loadQueue(){
       </div>
     `;
 
-    // Evaluate
-    wrap.querySelectorAll("[data-open-eval]").forEach(btn => {
+    // View training file
+    wrap.querySelectorAll("[data-view-file]").forEach(btn => {
       btn.addEventListener("click", async () => {
-        const id = btn.getAttribute("data-open-eval");
-        overlayEval.classList.add("show");
-        await populateEvalModal();
-        $("evalCandidate").value = id;
+        const id = btn.getAttribute("data-view-file");
+        const name = btn.getAttribute("data-view-name");
+        await openCandidateFile(id, name, track);
       });
     });
 
@@ -1977,6 +2080,133 @@ async function loadQueue(){
 
   }catch(err){
     wrap.innerHTML = `<div class="panelBody"><div class="card"><h4>Error</h4><p>${esc(err.message)}</p></div></div>`;
+    setLastError(err.message);
+  }
+}
+
+
+// ---- Candidate Training File ----
+async function openCandidateFile(candidateId, name, track){
+  selectedCandidateId = candidateId;
+  selectedCandidateName = name;
+  candidateFileRequirements = [];
+
+  const panel = $("candidateFilePanel");
+  if (!panel) return;
+  panel.style.display = "";
+
+  const titleEl = $("cfCandidateName");
+  if (titleEl) titleEl.textContent = name;
+
+  const body = $("cfPanelBody");
+  body.innerHTML = `<div class="panelBody"><div class="hint">Loading…</div></div>`;
+  panel.scrollIntoView({ behavior:"smooth", block:"start" });
+
+  // Can this instructor evaluate requirements on this track?
+  const canEval = (track === "ems" && access.emsInstr) || (track === "fire" && access.fireInstr);
+
+  try{
+    const rows = await restSelect(
+      "candidate_requirements",
+      "requirement_id,status,updated_at,requirements(id,name,category,is_critical)",
+      { candidate_id: `eq.${candidateId}` },
+      {}
+    );
+
+    candidateFileRequirements = rows || [];
+
+    // Group by section (category)
+    const sections = {};
+    candidateFileRequirements.forEach(r => {
+      const cat = r.requirements?.category ?? "Uncategorized";
+      if (!sections[cat]) sections[cat] = [];
+      sections[cat].push(r);
+    });
+
+    const sectionNames = Object.keys(sections).sort();
+
+    if (!sectionNames.length){
+      body.innerHTML = `<div class="panelBody"><div class="card"><h4>No requirements assigned</h4><p>No candidate_requirements rows found for this candidate.</p></div></div>`;
+      return;
+    }
+
+    // Calculate locked/unlocked: each section unlocks only when ALL reqs in the prior section are Passed
+    const sectionUnlocked = [];
+    let prevComplete = true;
+    for (const sName of sectionNames){
+      sectionUnlocked.push(prevComplete);
+      const allPassed = sections[sName].every(r => r.status === "Passed");
+      prevComplete = allPassed;
+    }
+
+    const sectionsHtml = sectionNames.map((sName, idx) => {
+      const reqs = sections[sName];
+      const unlocked = sectionUnlocked[idx];
+      const passedCount = reqs.filter(r => r.status === "Passed").length;
+      const allPassed = passedCount === reqs.length;
+
+      const iconEl = !unlocked ? "🔒" : allPassed ? "✅" : "📋";
+      const badgeClass = !unlocked ? "" : allPassed ? "good" : "warn";
+      const badgeText = !unlocked ? "Locked" : allPassed ? "Complete" : `${passedCount} / ${reqs.length} Passed`;
+
+      const tableHead = `
+        <thead>
+          <tr>
+            <th style="width:44%;">Requirement</th>
+            <th style="width:17%;">Status</th>
+            <th style="width:24%;">Last Updated</th>
+            ${canEval ? '<th style="width:15%;">Action</th>' : ""}
+          </tr>
+        </thead>`;
+
+      const tableRows = reqs.map(r => {
+        const s = r.status || "";
+        const tagClass = s === "Passed" ? "good" : s === "Retake" ? "warn" : s === "Failed" ? "bad" : "";
+        const crit = r.requirements?.is_critical
+          ? `<span class="badge bad" style="font-size:10px;padding:2px 6px;">CRIT</span>` : "";
+        const evalTd = canEval
+          ? `<td><button class="miniBtn" data-eval-req="${esc(r.requirements?.id ?? "")}" data-eval-name="${esc(r.requirements?.name ?? "")}">Evaluate</button></td>`
+          : "";
+        return `
+          <tr class="row">
+            <td><b>${esc(r.requirements?.name ?? "")}</b> ${crit}</td>
+            <td><span class="badge ${tagClass}">${esc(s || "Pending")}</span></td>
+            <td style="color:rgba(255,255,255,.60);font-size:12px;">${r.updated_at ? new Date(r.updated_at).toLocaleString() : "—"}</td>
+            ${evalTd}
+          </tr>`;
+      }).join("");
+
+      return `
+        <div class="cfSection${!unlocked ? " locked" : ""}">
+          <div class="cfSectionHead">
+            <span class="cfLockIcon">${iconEl}</span>
+            <h4>${esc(sName)}</h4>
+            <span class="badge ${badgeClass}">${badgeText}</span>
+          </div>
+          ${!unlocked
+            ? `<div class="cfLockedMsg">Complete all requirements in the previous section to unlock this one.</div>`
+            : `<table class="table">${tableHead}<tbody>${tableRows}</tbody></table>`
+          }
+        </div>`;
+    }).join("");
+
+    body.innerHTML = `<div class="panelBody">${sectionsHtml}</div>`;
+
+    // Wire up inline evaluate buttons
+    if (canEval){
+      body.querySelectorAll("[data-eval-req]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const reqId = btn.getAttribute("data-eval-req");
+          $("evalErr").style.display = "none";
+          $("evalOk").style.display = "none";
+          overlayEval.classList.add("show");
+          await populateEvalModal(reqId);
+        });
+      });
+    }
+
+  }catch(err){
+    body.innerHTML = `<div class="panelBody"><div class="card"><h4>Error</h4><p>${esc(err.message)}</p></div></div>`;
     setLastError(err.message);
   }
 }
